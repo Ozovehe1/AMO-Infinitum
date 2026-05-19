@@ -246,9 +246,9 @@ export default function PostForm({ post }: { post?: PostData }) {
           />
           {/* Divider */}
           <div style={{ height: 1, background: "rgba(13,31,60,0.08)", margin: "0.5rem 1.25rem" }} />
-          {/* Body editor */}
-          <div style={{ padding: "0 0.75rem" }}>
-            <Editor content={content} onChange={setContent} placeholder="Start writing…" />
+          {/* Body editor — no box on mobile, blends into canvas */}
+          <div style={{ padding: "0" }}>
+            <Editor content={content} onChange={setContent} placeholder="Start writing…" compact />
           </div>
         </div>
       </div>

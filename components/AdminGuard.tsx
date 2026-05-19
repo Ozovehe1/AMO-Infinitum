@@ -15,6 +15,15 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   useEffect(() => {
+    // sessionStorage is cleared when the browser tab is closed.
+    // No session flag = new session = always re-authenticate.
+    const sessionActive = typeof window !== "undefined" && sessionStorage.getItem("amo_session");
+    if (!sessionActive) {
+      // Clear any lingering cookie so old mobile sessions don't skip login
+      fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) })
+        .finally(() => setStatus("login"));
+      return;
+    }
     fetch("/api/auth/check")
       .then(r => setStatus(r.ok ? "authed" : "login"))
       .catch(() => setStatus("login"));
@@ -26,6 +35,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     setError("");
     const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "login", password }) });
     if (res.ok) {
+      sessionStorage.setItem("amo_session", "1");
       setStatus("authed");
       router.push("/inkwell");
     } else {
@@ -36,6 +46,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   };
 
   const logout = async () => {
+    sessionStorage.removeItem("amo_session");
     await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
     setStatus("login");
     router.push("/inkwell");
