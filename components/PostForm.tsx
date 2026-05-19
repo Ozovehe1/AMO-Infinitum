@@ -1,8 +1,16 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+
+function timeSince(date: Date) {
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 10) return "just now";
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  return m === 1 ? "1 min ago" : `${m} mins ago`;
+}
 
 const Editor = dynamic(() => import("./Editor"), {
   ssr: false,
@@ -27,9 +35,9 @@ interface PostData {
 
 export default function PostForm({ post }: { post?: PostData }) {
   const router = useRouter();
-  const isEdit = !!post?.id;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [postId, setPostId] = useState<number | undefined>(post?.id);
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState(post?.content || "");
   const [excerpt, setExcerpt] = useState(post?.excerpt || "");
@@ -41,28 +49,34 @@ export default function PostForm({ post }: { post?: PostData }) {
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
 
-  const save = async (publish?: boolean) => {
-    if (!title.trim()) { setError("Add a title first."); return; }
-    if (!content.trim() || content === "<p></p>") { setError("Write something first."); return; }
-    setError("");
-    setSaving(true);
+  // Core save — used by both manual actions and auto-save
+  const performSave = useCallback(async (options: {
+    publish?: boolean;
+    silent?: boolean; // true = auto-save (no error UI, no redirect)
+  } = {}) => {
+    if (!title.trim() || !content.trim() || content === "<p></p>") return false;
+
+    if (options.silent) setAutoSaving(true);
+    else { setError(""); setSaving(true); }
 
     const body = {
       title, content, excerpt, coverImage,
-      published: publish ?? published,
+      published: options.publish ?? published,
       featured, categoryIds: selectedCats,
     };
-    const url = isEdit ? `/api/posts/${post!.id}` : "/api/posts";
-    const method = isEdit ? "PUT" : "POST";
+    const url = postId ? `/api/posts/${postId}` : "/api/posts";
+    const method = postId ? "PUT" : "POST";
 
     try {
       const res = await fetch(url, {
@@ -71,20 +85,50 @@ export default function PostForm({ post }: { post?: PostData }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setSaved(true);
-        setSheetOpen(false);
-        setTimeout(() => setSaved(false), 3000);
-        if (!isEdit) router.push(`/inkwell/posts/${data.id}`);
-        if (publish !== undefined) setPublished(publish);
+        if (!postId) {
+          setPostId(data.id);
+          // Silent: replace URL without navigation flash; manual: push
+          if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
+          else router.push(`/inkwell/posts/${data.id}`);
+        }
+        if (options.publish !== undefined) setPublished(options.publish);
+        setLastSaved(new Date());
+        if (!options.silent) {
+          setSaved(true);
+          setSheetOpen(false);
+          setTimeout(() => setSaved(false), 3000);
+        }
+        return true;
       } else {
-        const data = await res.json();
-        setError(data.error || "Something went wrong.");
+        if (!options.silent) {
+          const data = await res.json();
+          setError(data.error || "Something went wrong.");
+        }
+        return false;
       }
     } catch {
-      setError("Network error. Try again.");
+      if (!options.silent) setError("Network error. Try again.");
+      return false;
+    } finally {
+      if (options.silent) setAutoSaving(false);
+      else setSaving(false);
     }
-    setSaving(false);
+  }, [title, content, excerpt, coverImage, published, featured, selectedCats, postId, router]);
+
+  // Auto-save: 3 s after last change (debounced via useCallback deps)
+  useEffect(() => {
+    if (!title.trim() || !content.trim() || content === "<p></p>") return;
+    const timer = setTimeout(() => performSave({ silent: true }), 3000);
+    return () => clearTimeout(timer);
+  }, [performSave]);
+
+  const save = async (publish?: boolean) => {
+    if (!title.trim()) { setError("Add a title first."); return; }
+    if (!content.trim() || content === "<p></p>") { setError("Write something first."); return; }
+    await performSave({ publish });
   };
+
+  const isEdit = !!postId;
 
   const uploadImage = async (file: File) => {
     setUploading(true);
@@ -165,17 +209,14 @@ export default function PostForm({ post }: { post?: PostData }) {
           padding: "0.75rem 1rem", display: "flex", gap: "0.75rem", alignItems: "center",
           boxShadow: "0 -4px 20px rgba(13,31,60,0.08)",
         }}>
-          {saved && (
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#4a9e7a", flex: 1 }}>✓ Saved</span>
-          )}
-          {error && !sheetOpen && (
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#c04040", flex: 1 }}>{error}</span>
-          )}
-          {!saved && !error && (
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", flex: 1 }}>
-              {published ? "Published" : "Draft"}
-            </span>
-          )}
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", flex: 1,
+            color: error && !sheetOpen ? "#c04040" : saved ? "#4a9e7a" : "#8fa3b1" }}>
+            {error && !sheetOpen ? error
+              : saved ? "✓ Saved"
+              : autoSaving ? "Saving…"
+              : lastSaved ? `Saved ${timeSince(lastSaved)}`
+              : published ? "Published" : "Draft"}
+          </span>
           <button
             onClick={() => save(false)}
             disabled={saving}
