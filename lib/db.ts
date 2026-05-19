@@ -1,24 +1,18 @@
 import { PrismaClient } from "../app/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const Database = require("better-sqlite3");
-import path from "path";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createClient() {
-  const dbUrl = process.env.DATABASE_URL || "file:./prisma/dev.db";
-  const dbPath = dbUrl.replace(/^file:/, "");
-  const resolvedPath = path.isAbsolute(dbPath)
-    ? dbPath
-    : path.resolve(process.cwd(), dbPath);
-
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+  });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sqlite = new Database(resolvedPath) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adapter = new PrismaBetterSqlite3(sqlite) as any;
+  const adapter = new PrismaPg(pool) as any;
   return new PrismaClient({ adapter });
 }
 
