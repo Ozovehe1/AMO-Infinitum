@@ -74,14 +74,14 @@ export default async function Home({
         }} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 8rem" }}>
           <p style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "1.25rem", margin: "0 0 1.25rem" }}>
-            A Journal of Infinite Thought
+            On the Infinitudes of Life
           </p>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(3rem, 8vw, 6rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.05, margin: "0 0 1.5rem", maxWidth: 820 }}>
             AMO{" "}
             <span style={{ fontStyle: "italic", color: "#c8a97e" }}>Infinitum</span>
           </h1>
-          <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(245,240,232,0.75)", maxWidth: 500, lineHeight: 1.75, margin: "0 0 2.5rem" }}>
-            Thoughts without end — on life, meaning, and the art of paying attention.
+          <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(245,240,232,0.75)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic" }}>
+            We stretch our hands toward the end, only to find that every horizon is another dawn.
           </p>
           <a
             href="#posts"
