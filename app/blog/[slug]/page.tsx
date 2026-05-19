@@ -15,7 +15,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
   const url = `${siteUrl}/blog/${slug}`;
   const desc = post.excerpt || post.title;
-  const images = post.coverImage ? [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }] : [];
+
+  // Generated branded OG image — title + cover photo + AMO Infinitum branding
+  const ogImageUrl =
+    `${siteUrl}/api/og` +
+    `?title=${encodeURIComponent(post.title)}` +
+    `&excerpt=${encodeURIComponent(post.excerpt || "")}` +
+    `&cover=${encodeURIComponent(post.coverImage || "")}`;
+
+  const ogImage = { url: ogImageUrl, width: 1200, height: 630, alt: post.title };
+
   return {
     title: `${post.title} — AMO Infinitum`,
     description: desc,
@@ -24,15 +33,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       url,
       title: post.title,
       description: desc,
-      images,
+      images: [ogImage],
       publishedTime: (post.publishedAt || post.createdAt).toISOString(),
       siteName: "AMO Infinitum",
     },
     twitter: {
-      card: post.coverImage ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: post.title,
       description: desc,
-      images: post.coverImage ? [post.coverImage] : [],
+      images: [ogImageUrl],
       site: "@Cryptnate",
       creator: "@Cryptnate",
     },
