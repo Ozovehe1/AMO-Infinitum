@@ -27,6 +27,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "login", password }) });
     if (res.ok) {
       setStatus("authed");
+      router.push("/inkwell");
     } else {
       const data = await res.json();
       setError(data.error || "Invalid password");

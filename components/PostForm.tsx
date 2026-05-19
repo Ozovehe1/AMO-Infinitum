@@ -42,7 +42,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(true);
 
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
@@ -127,12 +127,17 @@ export default function PostForm({ post }: { post?: PostData }) {
         }}>
           {saving ? "…" : published ? "Update" : "Publish"}
         </button>
-        <button onClick={() => setSettingsOpen(s => !s)} style={{
-          width: 46, height: 46, background: settingsOpen ? "#0d1f3c" : "transparent",
-          border: "1px solid rgba(13,31,60,0.2)", borderRadius: 8,
-          color: settingsOpen ? "#c8a97e" : "#3a5068", fontSize: "1.1rem",
-          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-        }}>⚙</button>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          style={{
+            width: 46, height: 46, background: "transparent",
+            border: "1px solid rgba(13,31,60,0.2)", borderRadius: 8,
+            color: "#3a5068", fontSize: "1.2rem",
+            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+          title="Upload cover image"
+        >📷</button>
       </div>
 
       {/* ── DESKTOP: two-column layout ── */}
