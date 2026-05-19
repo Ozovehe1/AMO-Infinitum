@@ -14,7 +14,7 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export function signToken(payload: object) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "12h" });
 }
 
 export function verifyToken(token: string) {
@@ -39,7 +39,7 @@ export function setAuthCookie(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
-    maxAge: 60 * 60 * 24 * 7,
+    // No maxAge = session cookie: deleted when browser closes
     path: "/",
   };
 }
