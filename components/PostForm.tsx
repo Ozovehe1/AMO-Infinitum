@@ -171,14 +171,64 @@ export default function PostForm({ post }: { post?: PostData }) {
     <>
       {/* ══════════════════════════════════════════
           MOBILE LAYOUT  (≤ 768 px)
-          Full-screen writing canvas, sheet for settings
+          True full-screen overlay — covers nav & headers
       ══════════════════════════════════════════ */}
-      <div className="mobile-write-wrap">
+      <div className="mobile-write-wrap" style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "#fffef9", display: "flex", flexDirection: "column",
+        overflow: "hidden",
+      }}>
 
-        {/* ── Clean writing canvas ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+        {/* ── Top bar ── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0 1rem",
+          height: 52,
+          borderBottom: "1px solid rgba(13,31,60,0.08)",
+          background: "#fffef9",
+          flexShrink: 0,
+        }}>
+          {/* Back */}
+          <button
+            onClick={() => router.back()}
+            style={{
+              background: "none", border: "none", color: "#3a5068",
+              fontFamily: "Inter, sans-serif", fontSize: "0.9rem",
+              cursor: "pointer", padding: "0.5rem 0", display: "flex", alignItems: "center", gap: "0.3rem",
+            }}
+          >
+            ← Back
+          </button>
 
-          {/* Title — big, inline, no label */}
+          {/* Save status */}
+          <span style={{
+            fontFamily: "Inter, sans-serif", fontSize: "0.75rem",
+            color: error ? "#c04040" : saved ? "#4a9e7a" : "#8fa3b1",
+          }}>
+            {error ? error
+              : saved ? "✓ Saved"
+              : autoSaving ? "Saving…"
+              : lastSaved ? `Saved ${timeSince(lastSaved)}`
+              : published ? "Published" : "Draft"}
+          </span>
+
+          {/* Continue */}
+          <button
+            onClick={() => setSheetOpen(true)}
+            style={{
+              background: "#0d1f3c", color: "#c8a97e",
+              border: "none", borderRadius: 8,
+              padding: "0.55rem 1.1rem", fontFamily: "Inter, sans-serif",
+              fontSize: "0.85rem", fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            Continue →
+          </button>
+        </div>
+
+        {/* ── Scrollable writing area ── */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 0 40px" }}>
+          {/* Title */}
           <textarea
             value={title}
             onChange={e => { setTitle(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
@@ -190,58 +240,16 @@ export default function PostForm({ post }: { post?: PostData }) {
               fontFamily: "'Playfair Display', serif",
               fontSize: "clamp(1.6rem, 6vw, 2.2rem)",
               fontWeight: 700, color: "#0d1f3c",
-              lineHeight: 1.25, padding: "1rem 1rem 0.5rem",
+              lineHeight: 1.25, padding: "1.25rem 1.25rem 0.5rem",
               overflowY: "hidden",
             }}
           />
-
           {/* Divider */}
-          <div style={{ height: 1, background: "rgba(13,31,60,0.08)", margin: "0.5rem 1rem" }} />
-
+          <div style={{ height: 1, background: "rgba(13,31,60,0.08)", margin: "0.5rem 1.25rem" }} />
           {/* Body editor */}
-          <div style={{ padding: "0 0.5rem 120px" }}>
+          <div style={{ padding: "0 0.75rem" }}>
             <Editor content={content} onChange={setContent} placeholder="Start writing…" />
           </div>
-        </div>
-
-        {/* ── Sticky bottom action bar ── */}
-        <div style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 80,
-          background: "#fffef9", borderTop: "1px solid rgba(13,31,60,0.1)",
-          padding: "0.75rem 1rem", display: "flex", gap: "0.75rem", alignItems: "center",
-          boxShadow: "0 -4px 20px rgba(13,31,60,0.08)",
-        }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", flex: 1,
-            color: error && !sheetOpen ? "#c04040" : saved ? "#4a9e7a" : "#8fa3b1" }}>
-            {error && !sheetOpen ? error
-              : saved ? "✓ Saved"
-              : autoSaving ? "Saving…"
-              : lastSaved ? `Saved ${timeSince(lastSaved)}`
-              : published ? "Published" : "Draft"}
-          </span>
-          <button
-            onClick={() => save(false)}
-            disabled={saving}
-            style={{
-              background: "transparent", color: "#3a5068",
-              border: "1px solid rgba(13,31,60,0.2)", borderRadius: 10,
-              padding: "0.7rem 1.1rem", fontFamily: "Inter, sans-serif",
-              fontSize: "0.88rem", cursor: "pointer", whiteSpace: "nowrap",
-            }}
-          >
-            {saving ? "…" : "Save"}
-          </button>
-          <button
-            onClick={() => setSheetOpen(true)}
-            style={{
-              background: "#0d1f3c", color: "#c8a97e",
-              border: "none", borderRadius: 10,
-              padding: "0.7rem 1.4rem", fontFamily: "Inter, sans-serif",
-              fontSize: "0.88rem", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-            }}
-          >
-            Continue →
-          </button>
         </div>
       </div>
 
@@ -504,13 +512,12 @@ export default function PostForm({ post }: { post?: PostData }) {
       />
 
       <style>{`
-        /* Mobile: full-screen write canvas */
         .mobile-write-wrap  { display: none; }
         .desktop-write-wrap { display: block; }
 
         @media (max-width: 768px) {
-          .mobile-write-wrap  { display: block; }
-          .desktop-write-wrap { display: none; }
+          .mobile-write-wrap  { display: flex !important; }
+          .desktop-write-wrap { display: none !important; }
         }
       `}</style>
     </>
