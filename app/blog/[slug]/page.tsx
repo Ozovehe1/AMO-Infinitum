@@ -12,10 +12,30 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await prisma.post.findUnique({ where: { slug, published: true } });
   if (!post) return {};
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+  const url = `${siteUrl}/blog/${slug}`;
+  const desc = post.excerpt || post.title;
+  const images = post.coverImage ? [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }] : [];
   return {
     title: `${post.title} — AMO Infinitum`,
-    description: post.excerpt || post.title,
-    openGraph: { title: post.title, description: post.excerpt || "", images: post.coverImage ? [post.coverImage] : [] },
+    description: desc,
+    openGraph: {
+      type: "article",
+      url,
+      title: post.title,
+      description: desc,
+      images,
+      publishedTime: (post.publishedAt || post.createdAt).toISOString(),
+      siteName: "AMO Infinitum",
+    },
+    twitter: {
+      card: post.coverImage ? "summary_large_image" : "summary",
+      title: post.title,
+      description: desc,
+      images: post.coverImage ? [post.coverImage] : [],
+      site: "@Cryptnate",
+      creator: "@Cryptnate",
+    },
   };
 }
 

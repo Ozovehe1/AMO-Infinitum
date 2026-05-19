@@ -24,6 +24,7 @@ const Editor = dynamic(() => import("./Editor"), {
 interface Category { id: number; name: string; slug: string; color: string; }
 interface PostData {
   id?: number;
+  slug?: string;
   title?: string;
   content?: string;
   excerpt?: string;
@@ -38,6 +39,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [postId, setPostId] = useState<number | undefined>(post?.id);
+  const [postSlug, setPostSlug] = useState<string | undefined>(post?.slug);
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState(post?.content || "");
   const [excerpt, setExcerpt] = useState(post?.excerpt || "");
@@ -85,9 +87,9 @@ export default function PostForm({ post }: { post?: PostData }) {
       });
       if (res.ok) {
         const data = await res.json();
+        if (data.slug) setPostSlug(data.slug);
         if (!postId) {
           setPostId(data.id);
-          // Silent: replace URL without navigation flash; manual: push
           if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
           else router.push(`/inkwell/posts/${data.id}`);
         }
@@ -332,7 +334,7 @@ export default function PostForm({ post }: { post?: PostData }) {
             {/* Sheet content */}
             <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1.1rem" }}>
 
-              {/* Status */}
+              {/* Status + share link */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#3a5068" }}>Status</span>
                 <span style={{
@@ -345,6 +347,11 @@ export default function PostForm({ post }: { post?: PostData }) {
                   {published ? "Published" : "Draft"}
                 </span>
               </div>
+
+              {/* Share / View Live — shown once post is published */}
+              {published && postSlug && (
+                <ShareRow slug={postSlug} />
+              )}
 
               {/* Featured */}
               <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
@@ -611,6 +618,64 @@ function SettingsPanel({ published, featured, setFeatured, save, saving, isEdit,
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ShareRow({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+  const siteUrl = typeof window !== "undefined"
+    ? window.location.origin
+    : "https://amo-infinitum.vercel.app";
+  const link = `${siteUrl}/blog/${slug}`;
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // clipboard blocked — show the link in a prompt fallback
+      window.prompt("Copy this link:", link);
+    }
+  };
+
+  return (
+    <div style={{
+      background: "rgba(45,125,154,0.06)", border: "1px solid rgba(45,125,154,0.2)",
+      borderRadius: 10, padding: "0.875rem 1rem",
+      display: "flex", flexDirection: "column", gap: "0.625rem",
+    }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "#8fa3b1", margin: 0 }}>
+        Share this post
+      </p>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#2d7d9a", margin: 0, wordBreak: "break-all" }}>
+        {link}
+      </p>
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button
+          onPointerDown={e => { e.preventDefault(); copy(); }}
+          style={{
+            flex: 1, background: copied ? "#4a9e7a" : "#2d7d9a", color: "#fff",
+            border: "none", borderRadius: 8, padding: "0.6rem",
+            fontFamily: "Inter, sans-serif", fontSize: "0.82rem",
+            fontWeight: 600, cursor: "pointer", transition: "background 0.2s",
+          }}
+        >
+          {copied ? "✓ Copied!" : "Copy Link"}
+        </button>
+        <a
+          href={link} target="_blank" rel="noreferrer"
+          style={{
+            flex: 1, background: "transparent", color: "#2d7d9a",
+            border: "1px solid rgba(45,125,154,0.3)", borderRadius: 8,
+            padding: "0.6rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem",
+            textDecoration: "none", textAlign: "center",
+          }}
+        >
+          View Live ↗
+        </a>
       </div>
     </div>
   );
