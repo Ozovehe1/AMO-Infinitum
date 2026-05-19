@@ -41,7 +41,7 @@ export default function EditPost() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
       <AdminNav />
-      <main style={{ marginLeft: 220, flex: 1, padding: "2.5rem" }}>
+      <main className="admin-main" style={{ flex: 1 }}>
         <div style={{ maxWidth: 1100 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.75rem" }}>
             <div>

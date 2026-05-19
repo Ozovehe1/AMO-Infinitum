@@ -2,7 +2,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
+import LinkExt from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
@@ -15,12 +15,12 @@ interface EditorProps {
   placeholder?: string;
 }
 
-export default function Editor({ content, onChange, placeholder = "Begin writing your thoughts..." }: EditorProps) {
+export default function Editor({ content, onChange, placeholder = "Begin writing…" }: EditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder }),
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: "editor-link" } }),
+      LinkExt.configure({ openOnClick: false }),
       Underline,
       Highlight.configure({ multicolor: false }),
       Typography,
@@ -51,66 +51,97 @@ export default function Editor({ content, onChange, placeholder = "Begin writing
 
   if (!editor) return null;
 
-  const btnStyle = (active: boolean) => ({
-    background: active ? "#2d7d9a" : "transparent",
-    color: active ? "#fff" : "#0d1f3c",
-    border: "1px solid " + (active ? "#2d7d9a" : "rgba(13,31,60,0.2)"),
-    borderRadius: 4,
-    padding: "0.3rem 0.5rem",
-    cursor: "pointer",
-    fontSize: "0.78rem",
-    fontFamily: "Inter, sans-serif",
-    fontWeight: 500,
-    transition: "all 0.15s",
-    lineHeight: 1,
-    minWidth: 28,
-  });
+  const btn = (active: boolean, onClick: () => void, label: string, title: string, extraStyle?: React.CSSProperties) => (
+    <button
+      key={title}
+      onMouseDown={e => { e.preventDefault(); onClick(); }}
+      title={title}
+      style={{
+        minWidth: 40, height: 40,
+        background: active ? "#2d7d9a" : "transparent",
+        color: active ? "#fff" : "#0d1f3c",
+        border: "1px solid " + (active ? "#2d7d9a" : "rgba(13,31,60,0.18)"),
+        borderRadius: 6,
+        cursor: "pointer",
+        fontSize: "0.82rem",
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 500,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+        transition: "all 0.15s",
+        padding: "0 0.5rem",
+        ...extraStyle,
+      }}
+    >
+      {label}
+    </button>
+  );
 
-  const sep = () => <div style={{ width: 1, background: "rgba(13,31,60,0.12)", margin: "0 0.25rem", height: 20, alignSelf: "center" }} />;
+  const sep = <div key={Math.random()} style={{ width: 1, background: "rgba(13,31,60,0.12)", margin: "0 4px", height: 24, alignSelf: "center", flexShrink: 0 }} />;
 
   return (
-    <div style={{ border: "1px solid rgba(13,31,60,0.2)", borderRadius: 8, overflow: "hidden", background: "#fffef9" }}>
-      {/* Toolbar */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", padding: "0.625rem 0.75rem", borderBottom: "1px solid rgba(13,31,60,0.1)", background: "#f5f0e8" }}>
-        {/* Headings */}
-        <button style={btnStyle(editor.isActive("heading", { level: 1 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} title="Heading 1">H1</button>
-        <button style={btnStyle(editor.isActive("heading", { level: 2 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="Heading 2">H2</button>
-        <button style={btnStyle(editor.isActive("heading", { level: 3 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="Heading 3">H3</button>
-        {sep()}
-        {/* Formatting */}
-        <button style={{ ...btnStyle(editor.isActive("bold")), fontWeight: 700 }} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold">B</button>
-        <button style={{ ...btnStyle(editor.isActive("italic")), fontStyle: "italic" }} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic">I</button>
-        <button style={{ ...btnStyle(editor.isActive("underline")), textDecoration: "underline" }} onClick={() => editor.chain().focus().toggleUnderline().run()} title="Underline">U</button>
-        <button style={btnStyle(editor.isActive("highlight"))} onClick={() => editor.chain().focus().toggleHighlight().run()} title="Highlight">✦</button>
-        <button style={btnStyle(editor.isActive("strike"))} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough"><s>S</s></button>
-        {sep()}
-        {/* Lists */}
-        <button style={btnStyle(editor.isActive("bulletList"))} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list">• List</button>
-        <button style={btnStyle(editor.isActive("orderedList"))} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Ordered list">1. List</button>
-        {sep()}
-        {/* Blocks */}
-        <button style={btnStyle(editor.isActive("blockquote"))} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Blockquote">&ldquo;</button>
-        <button style={btnStyle(editor.isActive("code"))} onClick={() => editor.chain().focus().toggleCode().run()} title="Inline code">`code`</button>
-        <button style={btnStyle(editor.isActive("codeBlock"))} onClick={() => editor.chain().focus().toggleCodeBlock().run()} title="Code block">```</button>
-        {sep()}
-        {/* Link + HR */}
-        <button style={btnStyle(editor.isActive("link"))} onClick={setLink} title="Link">🔗</button>
-        <button style={btnStyle(false)} onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal rule">—</button>
-        {sep()}
-        {/* History */}
-        <button style={btnStyle(false)} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">↩</button>
-        <button style={btnStyle(false)} onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo">↪</button>
+    <div style={{ border: "1px solid rgba(13,31,60,0.18)", borderRadius: 8, overflow: "hidden", background: "#fffef9" }}>
+      {/* Scrollable toolbar */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 4,
+        padding: "8px 10px",
+        borderBottom: "1px solid rgba(13,31,60,0.1)",
+        background: "#f5f0e8",
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "none",
+      }}>
+        {btn(editor.isActive("heading", { level: 1 }), () => editor.chain().focus().toggleHeading({ level: 1 }).run(), "H1", "Heading 1")}
+        {btn(editor.isActive("heading", { level: 2 }), () => editor.chain().focus().toggleHeading({ level: 2 }).run(), "H2", "Heading 2")}
+        {btn(editor.isActive("heading", { level: 3 }), () => editor.chain().focus().toggleHeading({ level: 3 }).run(), "H3", "Heading 3")}
+        {sep}
+        {btn(editor.isActive("bold"), () => editor.chain().focus().toggleBold().run(), "B", "Bold", { fontWeight: 700 })}
+        {btn(editor.isActive("italic"), () => editor.chain().focus().toggleItalic().run(), "I", "Italic", { fontStyle: "italic" })}
+        {btn(editor.isActive("underline"), () => editor.chain().focus().toggleUnderline().run(), "U", "Underline", { textDecoration: "underline" })}
+        {btn(editor.isActive("highlight"), () => editor.chain().focus().toggleHighlight().run(), "✦", "Highlight")}
+        {btn(editor.isActive("strike"), () => editor.chain().focus().toggleStrike().run(), "S̶", "Strikethrough")}
+        {sep}
+        {btn(editor.isActive("bulletList"), () => editor.chain().focus().toggleBulletList().run(), "• List", "Bullet list")}
+        {btn(editor.isActive("orderedList"), () => editor.chain().focus().toggleOrderedList().run(), "1. List", "Numbered list")}
+        {sep}
+        {btn(editor.isActive("blockquote"), () => editor.chain().focus().toggleBlockquote().run(), "❝", "Blockquote")}
+        {btn(editor.isActive("code"), () => editor.chain().focus().toggleCode().run(), "`code`", "Inline code")}
+        {btn(editor.isActive("codeBlock"), () => editor.chain().focus().toggleCodeBlock().run(), "```", "Code block")}
+        {sep}
+        {btn(editor.isActive("link"), setLink, "🔗", "Link")}
+        {btn(false, () => editor.chain().focus().setHorizontalRule().run(), "—", "Divider")}
+        {sep}
+        {btn(false, () => editor.chain().focus().undo().run(), "↩", "Undo")}
+        {btn(false, () => editor.chain().focus().redo().run(), "↪", "Redo")}
       </div>
 
-      {/* Editor area */}
-      <div style={{ padding: "1.5rem 2rem", minHeight: 400 }}>
+      {/* Writing area */}
+      <div style={{ padding: "1.25rem 1.5rem", minHeight: 320 }}>
         <EditorContent editor={editor} />
       </div>
 
       {/* Word count */}
-      <div style={{ padding: "0.4rem 0.75rem", borderTop: "1px solid rgba(13,31,60,0.08)", background: "#f5f0e8", textAlign: "right", color: "#8fa3b1", fontSize: "0.72rem", fontFamily: "Inter, sans-serif" }}>
+      <div style={{
+        padding: "6px 12px",
+        borderTop: "1px solid rgba(13,31,60,0.07)",
+        background: "#f5f0e8",
+        textAlign: "right",
+        color: "#8fa3b1",
+        fontSize: "0.7rem",
+        fontFamily: "Inter, sans-serif",
+      }}>
         {editor.storage.characterCount.words()} words · {editor.storage.characterCount.characters()} chars
       </div>
+
+      <style>{`
+        .tiptap-editor .ProseMirror { outline: none; min-height: 280px; }
+        .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+          color: #8fa3b1; content: attr(data-placeholder);
+          float: left; height: 0; pointer-events: none;
+        }
+        /* Hide scrollbar on toolbar */
+        div::-webkit-scrollbar { display: none; }
+      `}</style>
     </div>
   );
 }

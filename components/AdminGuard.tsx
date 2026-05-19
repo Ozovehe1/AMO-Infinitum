@@ -15,8 +15,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check auth by hitting a protected endpoint
-    fetch("/api/posts?admin=true&limit=1")
+    fetch("/api/auth/check")
       .then(r => setStatus(r.ok ? "authed" : "login"))
       .catch(() => setStatus("login"));
   }, [pathname]);

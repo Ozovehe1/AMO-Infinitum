@@ -42,7 +42,7 @@ export default function AdminDashboard() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
       <AdminNav />
-      <main style={{ marginLeft: 220, flex: 1, padding: "2.5rem" }}>
+      <main className="admin-main" style={{ flex: 1 }}>
         <div style={{ maxWidth: 900 }}>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#0d1f3c", margin: "0 0 0.5rem" }}>
             Good to see you.
