@@ -38,7 +38,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   const logout = async () => {
     await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
     setStatus("login");
-    router.push("/admin");
+    router.push("/inkwell");
   };
 
   if (status === "loading") {

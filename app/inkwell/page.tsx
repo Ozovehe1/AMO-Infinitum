@@ -68,10 +68,10 @@ export default function AdminDashboard() {
 
           {/* Quick actions */}
           <div style={{ display: "flex", gap: "1rem", marginBottom: "3rem", flexWrap: "wrap" }}>
-            <Link href="/admin/posts/new" style={{ background: "#0d1f3c", color: "#c8a97e", textDecoration: "none", padding: "0.75rem 1.5rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem", transition: "background 0.2s" }}>
+            <Link href="/inkwell/posts/new" style={{ background: "#0d1f3c", color: "#c8a97e", textDecoration: "none", padding: "0.75rem 1.5rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem", transition: "background 0.2s" }}>
               ✎ Write New Post
             </Link>
-            <Link href="/admin/categories" style={{ background: "transparent", color: "#0d1f3c", textDecoration: "none", padding: "0.75rem 1.5rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", border: "1px solid rgba(13,31,60,0.2)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Link href="/inkwell/categories" style={{ background: "transparent", color: "#0d1f3c", textDecoration: "none", padding: "0.75rem 1.5rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", border: "1px solid rgba(13,31,60,0.2)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               ◈ Manage Categories
             </Link>
           </div>
@@ -82,7 +82,7 @@ export default function AdminDashboard() {
             <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, overflow: "hidden" }}>
               {recent.length === 0 ? (
                 <p style={{ padding: "2rem", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", textAlign: "center" }}>
-                  No posts yet. <Link href="/admin/posts/new" style={{ color: "#2d7d9a" }}>Write your first one.</Link>
+                  No posts yet. <Link href="/inkwell/posts/new" style={{ color: "#2d7d9a" }}>Write your first one.</Link>
                 </p>
               ) : (
                 recent.map((p, i) => (
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
                       <span style={{ background: p.published ? "#4a9e7a18" : "#c8a97e18", color: p.published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${p.published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.2rem 0.6rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>
                         {p.published ? "Published" : "Draft"}
                       </span>
-                      <Link href={`/admin/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
+                      <Link href={`/inkwell/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
                     </div>
                   </div>
                 ))

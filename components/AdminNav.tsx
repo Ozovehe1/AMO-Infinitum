@@ -4,10 +4,10 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "./AdminGuard";
 
 const links = [
-  { href: "/admin", label: "Dashboard", icon: "⌂" },
-  { href: "/admin/posts/new", label: "New Post", icon: "✎" },
-  { href: "/admin/posts", label: "All Posts", icon: "≡" },
-  { href: "/admin/categories", label: "Categories", icon: "◈" },
+  { href: "/inkwell", label: "Dashboard", icon: "⌂" },
+  { href: "/inkwell/posts/new", label: "New Post", icon: "✎" },
+  { href: "/inkwell/posts", label: "All Posts", icon: "≡" },
+  { href: "/inkwell/categories", label: "Categories", icon: "◈" },
 ];
 
 export default function AdminNav() {
@@ -29,7 +29,7 @@ export default function AdminNav() {
       {/* Nav links */}
       <nav style={{ flex: 1, padding: "1rem 0.75rem" }}>
         {links.map(l => {
-          const active = l.href === "/admin" ? pathname === "/admin" : pathname.startsWith(l.href);
+          const active = l.href === "/inkwell" ? pathname === "/inkwell" : pathname.startsWith(l.href);
           return (
             <Link key={l.href} href={l.href} style={{
               display: "flex", alignItems: "center", gap: "0.625rem",

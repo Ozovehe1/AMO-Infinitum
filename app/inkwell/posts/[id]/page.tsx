@@ -35,7 +35,7 @@ export default function EditPost() {
     if (!confirm("Delete this post? This cannot be undone.")) return;
     setDeleting(true);
     await fetch(`/api/posts/${params.id}`, { method: "DELETE" });
-    router.push("/admin/posts");
+    router.push("/inkwell/posts");
   };
 
   return (
@@ -67,7 +67,7 @@ export default function EditPost() {
           ) : !post ? (
             <div style={{ textAlign: "center", padding: "5rem" }}>
               <p style={{ fontFamily: "'Playfair Display', serif", color: "#0d1f3c" }}>Post not found.</p>
-              <Link href="/admin/posts" style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>← Back to posts</Link>
+              <Link href="/inkwell/posts" style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>← Back to posts</Link>
             </div>
           ) : (
             <PostForm post={{ ...post, coverImage: post.coverImage ?? undefined }} />

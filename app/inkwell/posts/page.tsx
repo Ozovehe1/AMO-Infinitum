@@ -44,7 +44,7 @@ export default function AllPosts() {
               <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>All Posts · {total}</p>
               <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Your Writings</h1>
             </div>
-            <Link href="/admin/posts/new" style={{ background: "#0d1f3c", color: "#c8a97e", textDecoration: "none", padding: "0.65rem 1.25rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>
+            <Link href="/inkwell/posts/new" style={{ background: "#0d1f3c", color: "#c8a97e", textDecoration: "none", padding: "0.65rem 1.25rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>
               ✎ New Post
             </Link>
           </div>
@@ -63,7 +63,7 @@ export default function AllPosts() {
               <p style={{ padding: "2rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.9rem" }}>Loading…</p>
             ) : posts.length === 0 ? (
               <p style={{ padding: "3rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.9rem" }}>
-                {search ? "No posts match your search." : <>No posts yet. <Link href="/admin/posts/new" style={{ color: "#2d7d9a" }}>Write your first one.</Link></>}
+                {search ? "No posts match your search." : <>No posts yet. <Link href="/inkwell/posts/new" style={{ color: "#2d7d9a" }}>Write your first one.</Link></>}
               </p>
             ) : (
               posts.map((p, i) => (
@@ -86,7 +86,7 @@ export default function AllPosts() {
                     <span style={{ background: p.published ? "#4a9e7a18" : "#c8a97e18", color: p.published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${p.published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.2rem 0.6rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>
                       {p.published ? "Live" : "Draft"}
                     </span>
-                    <Link href={`/admin/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
+                    <Link href={`/inkwell/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
                     {p.published && (
                       <Link href={`/blog/${p.slug}`} target="_blank" style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>↗</Link>
                     )}
