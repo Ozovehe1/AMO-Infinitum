@@ -91,6 +91,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | null>(null);
   const [mobileUrlValue, setMobileUrlValue] = useState("");
   const [deleting,       setDeleting]       = useState(false);
+  const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
 
   // AI chat state
   const [aiOpen,       setAiOpen]       = useState(false);
@@ -281,6 +282,10 @@ export default function PostForm({ post }: { post?: PostData }) {
         if (!options.silent) {
           setSaved(true); setSheetOpen(false);
           setTimeout(() => setSaved(false), 3000);
+          // Show publish success overlay on first publish
+          if (options.publish === true && !published && data.slug) {
+            setPublishedSlug(data.slug);
+          }
         }
         return true;
       } else {
@@ -415,8 +420,53 @@ export default function PostForm({ post }: { post?: PostData }) {
     : published ? "Published" : "Draft";
   const statusDot = saved || lastSaved ? "#c8a97e" : "#8fa3b1";
 
+  const sharePublishedPost = async () => {
+    if (!publishedSlug) return;
+    const url = `${window.location.origin}/blog/${publishedSlug}`;
+    try {
+      if (navigator.share) await navigator.share({ title, url });
+      else { await navigator.clipboard.writeText(url); }
+    } catch { /* cancelled */ }
+  };
+
   return (
     <>
+      {/* ── Publish success overlay ── */}
+      {publishedSlug && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={() => setPublishedSlug(null)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: "#fffef9", borderRadius: "20px 20px 0 0", padding: "2rem 1.5rem 2.5rem",
+            width: "100%", maxWidth: 480,
+          }}>
+            <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto 1.75rem" }} />
+            <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>🎉</div>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#0d1f3c", margin: "0 0 0.4rem", fontWeight: 600 }}>
+                Your post is live!
+              </h2>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#8fa3b1", margin: 0 }}>
+                {title}
+              </p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <a href={`/blog/${publishedSlug}`} target="_blank" rel="noreferrer"
+                style={{ display: "block", background: "#0d1f3c", color: "#c8a97e", textAlign: "center", textDecoration: "none", borderRadius: 12, padding: "1rem", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700 }}>
+                View Post ↗
+              </a>
+              <button onClick={sharePublishedPost}
+                style={{ background: "rgba(200,169,126,0.1)", color: "#0d1f3c", border: "1px solid rgba(200,169,126,0.3)", borderRadius: 12, padding: "1rem", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer" }}>
+                Share Post 📤
+              </button>
+              <button onClick={() => setPublishedSlug(null)}
+                style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer" }}>
+                Continue editing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ════════════════════════════════════
           MOBILE — Substack-style full canvas
       ════════════════════════════════════ */}
