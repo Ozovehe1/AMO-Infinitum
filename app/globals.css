@@ -162,6 +162,21 @@ body {
   pointer-events: none;
 }
 
+/* Mobile prose adjustments */
+@media (max-width: 640px) {
+  .prose-amo ul,
+  .prose-amo ol {
+    margin-left: 1em;
+  }
+  .prose-amo blockquote {
+    padding: 0.6em 1em;
+    margin: 1.25em 0;
+  }
+  .prose-amo h1 { font-size: 1.75rem; }
+  .prose-amo h2 { font-size: 1.35rem; }
+  .prose-amo h3 { font-size: 1.1rem; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

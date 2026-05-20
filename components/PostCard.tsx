@@ -115,13 +115,16 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             </div>
           </div>
           {post.coverImage && (
-            <div style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#1a4a5c" }}>
+            <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#1a4a5c" }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           )}
         </div>
       </article>
-      <style>{`.post-list-hover:hover { opacity: 0.8; }`}</style>
+      <style>{`
+        .post-list-hover:hover { opacity: 0.8; }
+        @media (max-width: 380px) { .post-list-thumb { display: none !important; } }
+      `}</style>
     </Link>
   );
 }
