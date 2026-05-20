@@ -84,22 +84,6 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         style={{ display: "none" }}
       />
 
-      {/* Loading — subtle pill so user knows audio is being generated */}
-      {status === "loading" && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 0 1.5rem" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: "0.5rem",
-            background: "rgba(13,31,60,0.04)", border: "1px solid rgba(13,31,60,0.1)",
-            borderRadius: 20, padding: "0.4rem 1rem",
-            fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1",
-          }}>
-            <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#c8a97e", animation: "pulse 1.4s ease-in-out infinite" }} />
-            Generating audio…
-          </div>
-          <style>{`@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }`}</style>
-        </div>
-      )}
-
       {/* Player — visible once audio metadata is loaded */}
       {status === "ready" && (
         <div style={{
