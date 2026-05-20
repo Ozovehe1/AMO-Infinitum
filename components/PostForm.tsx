@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -64,6 +64,13 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [mobileUrlValue, setMobileUrlValue] = useState("");
   const [deleting,       setDeleting]       = useState(false);
 
+  // AI chat state
+  const [aiOpen,     setAiOpen]     = useState(false);
+  const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [aiInput,    setAiInput]    = useState("");
+  const [aiLoading,  setAiLoading]  = useState(false);
+  const aiEndRef = useRef<HTMLDivElement>(null);
+
   // Mobile TipTap editor instance (exposed via onEditorReady)
   const [mobileEditor, setMobileEditor] = useState<TiptapEditorType | null>(null);
   // Force re-render when editor selection changes (for toolbar active states)
@@ -80,6 +87,51 @@ export default function PostForm({ post }: { post?: PostData }) {
     mobileEditor.on("transaction", handler);
     return () => { mobileEditor.off("transaction", handler); };
   }, [mobileEditor]);
+
+  // Auto-scroll AI chat to latest message
+  useEffect(() => {
+    aiEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiMessages]);
+
+  // ── AI chat ──────────────────────────────────────────────
+  const sendAiMessage = useCallback(async () => {
+    const msg = aiInput.trim();
+    if (!msg || aiLoading) return;
+
+    const userMsg   = { role: "user"      as const, content: msg };
+    const botMsg    = { role: "assistant" as const, content: "" };
+    const history   = [...aiMessages, userMsg];
+
+    setAiMessages([...history, botMsg]);
+    setAiInput("");
+    setAiLoading(true);
+
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history, title, content }),
+      });
+
+      if (!res.ok || !res.body) {
+        setAiMessages(prev => { const a = [...prev]; a[a.length - 1] = { ...a[a.length - 1], content: "Sorry, something went wrong." }; return a; });
+        return;
+      }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setAiMessages(prev => { const a = [...prev]; a[a.length - 1] = { ...a[a.length - 1], content: a[a.length - 1].content + chunk }; return a; });
+      }
+    } catch {
+      setAiMessages(prev => { const a = [...prev]; a[a.length - 1] = { ...a[a.length - 1], content: "Network error. Try again." }; return a; });
+    } finally {
+      setAiLoading(false);
+    }
+  }, [aiInput, aiLoading, aiMessages, title, content]);
 
   // ── Save logic ──────────────────────────────────────────
   const performSave = useCallback(async (options: { publish?: boolean; silent?: boolean } = {}) => {
@@ -264,6 +316,20 @@ export default function PostForm({ post }: { post?: PostData }) {
               {statusText}
             </span>
           </div>
+
+          <button
+            onClick={() => setAiOpen(o => !o)}
+            title="AI assistant"
+            style={{
+              background: aiOpen ? "#c8a97e" : "rgba(13,31,60,0.08)",
+              color: aiOpen ? "#0d1f3c" : "#555",
+              border: "none", borderRadius: 8,
+              padding: "8px 12px",
+              fontFamily: "system-ui, sans-serif",
+              fontSize: "0.88rem", fontWeight: 600,
+              cursor: "pointer", lineHeight: 1,
+            }}
+          >🧠</button>
 
           <button
             onClick={() => setSheetOpen(true)}
@@ -611,12 +677,68 @@ export default function PostForm({ post }: { post?: PostData }) {
         <input ref={bodyImgRef} type="file" accept="image/*" style={{ display: "none" }}
           onChange={e => { const f = e.target.files?.[0]; if (f) uploadBodyImage(f); e.target.value = ""; }}
         />
+
+        {/* ── Mobile AI drawer ─────────────────────── */}
+        {aiOpen && (
+          <>
+            <div
+              onClick={() => setAiOpen(false)}
+              style={{ position: "fixed", inset: 0, background: "rgba(13,31,60,0.45)", zIndex: 410, backdropFilter: "blur(2px)" }}
+            />
+            <div style={{
+              position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 411,
+              background: "#0d1f3c", borderRadius: "18px 18px 0 0",
+              boxShadow: "0 -8px 40px rgba(13,31,60,0.4)",
+              height: "78vh", display: "flex", flexDirection: "column",
+              paddingBottom: "env(safe-area-inset-bottom)",
+            }}>
+              {/* Handle */}
+              <div style={{ display: "flex", justifyContent: "center", padding: "0.75rem 0 0" }}>
+                <div style={{ width: 36, height: 4, background: "rgba(200,169,126,0.35)", borderRadius: 2 }} />
+              </div>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1.25rem 0.625rem", borderBottom: "1px solid rgba(200,169,126,0.12)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ color: "#c8a97e", fontSize: "0.85rem" }}>✦</span>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>AI Assistant</h3>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  {aiMessages.length > 0 && (
+                    <button onClick={() => setAiMessages([])} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+                      Clear
+                    </button>
+                  )}
+                  <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
+                </div>
+              </div>
+              {/* Messages */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+                {aiMessages.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "2rem 0" }}>
+                    <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: "0 0 0.5rem" }}>
+                      Ask me anything about your post —<br />titles, angles, edits, ideas.
+                    </p>
+                  </div>
+                )}
+                {aiMessages.map((m, i) => (
+                  <AiMessage key={i} role={m.role} content={m.content} />
+                ))}
+                {aiLoading && aiMessages[aiMessages.length - 1]?.content === "" && (
+                  <AiTypingDot />
+                )}
+                <div ref={aiEndRef} />
+              </div>
+              {/* Input */}
+              <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />
+            </div>
+          </>
+        )}
       </div>
 
       {/* ════════════════════════════════════
           DESKTOP — two-column layout
       ════════════════════════════════════ */}
-      <div className="desktop-write-wrap" style={{ maxWidth: 860, margin: "0 auto" }}>
+      <div className={`desktop-write-wrap${aiOpen ? " ai-open" : ""}`} style={{ maxWidth: 860, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 270px", gap: "2rem", alignItems: "start" }}>
 
           {/* Editor column */}
@@ -636,9 +758,71 @@ export default function PostForm({ post }: { post?: PostData }) {
           {/* Sidebar */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", position: "sticky", top: "1.5rem" }}>
             <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug }} />
+            {/* AI toggle */}
+            <button
+              onClick={() => setAiOpen(o => !o)}
+              style={{
+                width: "100%", background: aiOpen ? "#0d1f3c" : "rgba(13,31,60,0.04)",
+                color: aiOpen ? "#c8a97e" : "#0d1f3c",
+                border: `1px solid ${aiOpen ? "#0d1f3c" : "rgba(13,31,60,0.15)"}`,
+                borderRadius: 8, padding: "0.75rem",
+                fontFamily: "Inter, sans-serif", fontSize: "0.875rem", fontWeight: 600,
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                transition: "background 0.2s, color 0.2s",
+              }}
+            >
+              <span style={{ fontSize: "1rem" }}>🧠</span>
+              {aiOpen ? "Close AI" : "AI Assistant"}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* ════════════════════════════════════
+          DESKTOP AI PANEL — fixed right sidebar
+      ════════════════════════════════════ */}
+      {aiOpen && (
+        <div className="desktop-ai-panel" style={{
+          position: "fixed", top: 0, right: 0, bottom: 0, width: "min(380px, 35vw)", zIndex: 350,
+          background: "#0d1f3c", display: "flex", flexDirection: "column",
+          boxShadow: "-6px 0 32px rgba(13,31,60,0.25)",
+        }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid rgba(200,169,126,0.12)", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ fontSize: "1.1rem" }}>🧠</span>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>AI Assistant</h3>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              {aiMessages.length > 0 && (
+                <button onClick={() => setAiMessages([])} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
+                  Clear
+                </button>
+              )}
+              <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
+            </div>
+          </div>
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+            {aiMessages.length === 0 && (
+              <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.7, margin: 0 }}>
+                  Ask me anything about your post —<br />titles, angles, edits, ideas.
+                </p>
+              </div>
+            )}
+            {aiMessages.map((m, i) => (
+              <AiMessage key={i} role={m.role} content={m.content} />
+            ))}
+            {aiLoading && aiMessages[aiMessages.length - 1]?.content === "" && (
+              <AiTypingDot />
+            )}
+            <div ref={aiEndRef} />
+          </div>
+          {/* Input */}
+          <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />
+        </div>
+      )}
 
       {/* ════════════════════════════════════
           BOTTOM SHEET — publish settings (mobile)
@@ -758,10 +942,13 @@ export default function PostForm({ post }: { post?: PostData }) {
 
       <style>{`
         .mobile-write-wrap  { display: none; }
-        .desktop-write-wrap { display: block; }
+        .desktop-write-wrap { display: block; transition: padding-right 0.25s ease; }
+        .desktop-write-wrap.ai-open { padding-right: min(380px, 35vw); max-width: none !important; }
+        .desktop-ai-panel   { display: flex; }
         @media (max-width: 768px) {
           .mobile-write-wrap  { display: flex !important; }
           .desktop-write-wrap { display: none !important; }
+          .desktop-ai-panel   { display: none !important; }
         }
       `}</style>
     </>
@@ -886,6 +1073,84 @@ function ShareRow({ slug }: { slug: string }) {
           View Live ↗
         </a>
       </div>
+    </div>
+  );
+}
+
+/* ── AI chat helpers ─────────────────────────────── */
+
+function AiMessage({ role, content }: { role: "user" | "assistant"; content: string }) {
+  const isUser = role === "user";
+  return (
+    <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
+      <div style={{
+        maxWidth: "84%",
+        background: isUser ? "#c8a97e" : "rgba(255,254,249,0.07)",
+        color: isUser ? "#0d1f3c" : "#fffef9",
+        borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+        padding: "0.625rem 0.875rem",
+        fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6,
+        whiteSpace: "pre-wrap", wordBreak: "break-word",
+      }}>
+        {content || <span style={{ opacity: 0.45 }}>…</span>}
+      </div>
+    </div>
+  );
+}
+
+function AiTypingDot() {
+  return (
+    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+      <div style={{ background: "rgba(255,254,249,0.07)", borderRadius: "14px 14px 14px 4px", padding: "0.625rem 0.875rem", display: "flex", gap: 4, alignItems: "center" }}>
+        {[0, 150, 300].map(delay => (
+          <span key={delay} style={{ width: 6, height: 6, borderRadius: "50%", background: "#c8a97e", display: "inline-block", animation: "aiBounce 1.1s ease-in-out infinite", animationDelay: `${delay}ms` }} />
+        ))}
+        <style>{`@keyframes aiBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }`}</style>
+      </div>
+    </div>
+  );
+}
+
+function AiInput({ value, onChange, onSend, loading }: {
+  value: string;
+  onChange: (v: string) => void;
+  onSend: () => void;
+  loading: boolean;
+}) {
+  const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); }
+  };
+  return (
+    <div style={{ padding: "0.875rem 1rem", borderTop: "1px solid rgba(200,169,126,0.12)", flexShrink: 0, display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
+      <textarea
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onKeyDown={handleKey}
+        placeholder="Ask anything…"
+        rows={1}
+        disabled={loading}
+        style={{
+          flex: 1, background: "rgba(255,254,249,0.07)", border: "1px solid rgba(200,169,126,0.2)",
+          borderRadius: 10, padding: "0.6rem 0.75rem",
+          fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#fffef9",
+          outline: "none", resize: "none", lineHeight: 1.5,
+          minHeight: 38, maxHeight: 120, overflowY: "auto",
+        }}
+      />
+      <button
+        onClick={onSend}
+        disabled={loading || !value.trim()}
+        style={{
+          background: loading || !value.trim() ? "rgba(200,169,126,0.25)" : "#c8a97e",
+          color: "#0d1f3c", border: "none", borderRadius: 8,
+          width: 38, height: 38, flexShrink: 0,
+          cursor: loading || !value.trim() ? "default" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "0.9rem", transition: "background 0.15s",
+        }}
+      >
+        {loading ? <SpinnerIcon /> : "↑"}
+      </button>
     </div>
   );
 }
