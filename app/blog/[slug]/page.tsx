@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
+import ShareButtons from "@/components/ShareButtons";
 
 export const revalidate = 60;
 
@@ -103,6 +104,9 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </article>
+
+        {/* Share buttons */}
+        <ShareButtons title={post.title} slug={post.slug} />
 
         {/* Category tags */}
         {post.categories.length > 0 && (

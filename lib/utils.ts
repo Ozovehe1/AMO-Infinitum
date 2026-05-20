@@ -5,8 +5,9 @@ export function slugify(text: string) {
 }
 
 export function estimateReadingTime(content: string): number {
-  const wordsPerMinute = 200;
-  const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;
+  const wordsPerMinute = 238;
+  const text = content.replace(/<[^>]*>/g, " ");
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 

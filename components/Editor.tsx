@@ -120,27 +120,37 @@ export default function Editor({
           onChange={e => { const f = e.target.files?.[0]; if (f) uploadInlineImage(f); e.target.value = ""; }}
         />
         <style>{`
-          .tiptap-editor, .tiptap-editor .ProseMirror, .tiptap-editor .ProseMirror:focus { border: none !important; outline: none !important; box-shadow: none !important; }
-          .tiptap-editor .ProseMirror { min-height: 220px; font-size: 1.05rem; line-height: 1.75; color: #1a1a1a; font-family: Georgia, 'Source Serif 4', serif; }
-          .tiptap-editor .ProseMirror p { margin: 0 0 1.25em; }
-          .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+          /* .tiptap-editor IS the ProseMirror contenteditable div — target it directly */
+          .tiptap-editor {
+            min-height: 220px !important;
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: #1a1a1a;
+            font-family: Georgia, 'Source Serif 4', serif;
+            padding: 0 !important;
+          }
+          .tiptap-editor p { margin: 0 0 1.4em; padding: 0; }
+          .tiptap-editor p.is-editor-empty:first-child::before {
             color: #aaa; content: attr(data-placeholder); float: left; height: 0; pointer-events: none; font-family: system-ui, sans-serif;
           }
-          .tiptap-editor .ProseMirror h1 { font-size: 1.8rem; font-weight: 700; margin: 1.75rem 0 0.5rem; font-family: 'Playfair Display', Georgia, serif; }
-          .tiptap-editor .ProseMirror h2 { font-size: 1.4rem; font-weight: 700; margin: 1.5rem 0 0.4rem; font-family: 'Playfair Display', Georgia, serif; }
-          .tiptap-editor .ProseMirror h3 { font-size: 1.15rem; font-weight: 600; margin: 1.25rem 0 0.3rem; font-family: 'Playfair Display', Georgia, serif; }
-          .tiptap-editor .ProseMirror blockquote { border-left: 3px solid #c8a97e; padding-left: 1.25rem; color: #555; margin: 1.5rem 0; font-style: italic; }
-          .tiptap-editor .ProseMirror ul { padding-left: 1.75rem; margin: 0.5rem 0 1.25em; }
-          .tiptap-editor .ProseMirror ol { padding-left: 1.75rem; margin: 0.5rem 0 1.25em; }
-          .tiptap-editor .ProseMirror li { margin-bottom: 0.35em; }
-          .tiptap-editor .ProseMirror img { max-width: 100%; border-radius: 6px; margin: 1.5rem 0; display: block; }
-          .tiptap-editor .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #0d1f3c; }
-          .tiptap-editor .ProseMirror a { color: #2d7d9a; text-decoration: underline; }
-          .tiptap-editor .ProseMirror code { background: rgba(0,0,0,0.06); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; font-family: 'Courier New', monospace; }
-          .tiptap-editor .ProseMirror mark { background: #fff3b0; border-radius: 2px; padding: 0 2px; }
-          .tiptap-editor .ProseMirror hr { border: none; border-top: 1px solid rgba(0,0,0,0.12); margin: 2rem 0; }
-          .tiptap-editor .ProseMirror [style*="text-align: center"] { text-align: center; }
-          .tiptap-editor .ProseMirror [style*="text-align: right"] { text-align: right; }
+          .tiptap-editor h1 { font-size: 1.8rem; font-weight: 700; margin: 2rem 0 0.6rem; line-height: 1.2; font-family: 'Playfair Display', Georgia, serif; }
+          .tiptap-editor h2 { font-size: 1.4rem; font-weight: 700; margin: 1.75rem 0 0.5rem; line-height: 1.25; font-family: 'Playfair Display', Georgia, serif; }
+          .tiptap-editor h3 { font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.4rem; line-height: 1.3; font-family: 'Playfair Display', Georgia, serif; }
+          .tiptap-editor blockquote { border-left: 3px solid #c8a97e; padding-left: 1.25rem; color: #555; margin: 1.5rem 0; font-style: italic; border-radius: 0; }
+          .tiptap-editor ul { padding-left: 1.75rem; margin: 0 0 1.4em; }
+          .tiptap-editor ol { padding-left: 1.75rem; margin: 0 0 1.4em; }
+          .tiptap-editor li { margin-bottom: 0.4em; }
+          .tiptap-editor img { max-width: 100%; border-radius: 6px; margin: 1.5rem auto; display: block; }
+          .tiptap-editor img.ProseMirror-selectednode { outline: 2px solid #0d1f3c; }
+          .tiptap-editor a { color: #2d7d9a; text-decoration: underline; }
+          .tiptap-editor code { background: rgba(0,0,0,0.06); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.88em; font-family: 'Courier New', monospace; }
+          .tiptap-editor pre { background: #0d1f3c; color: #f5f0e8; padding: 1rem 1.25rem; border-radius: 6px; overflow-x: auto; margin: 1.5rem 0; }
+          .tiptap-editor pre code { background: none; padding: 0; color: inherit; font-size: 0.9em; }
+          .tiptap-editor mark { background: #fff3b0; border-radius: 2px; padding: 0.05em 0.2em; }
+          .tiptap-editor hr { border: none; border-top: 1px solid rgba(0,0,0,0.12); margin: 2rem 0; }
+          .tiptap-editor [style*="text-align: center"] { text-align: center; }
+          .tiptap-editor [style*="text-align: right"] { text-align: right; }
+          .tiptap-editor [style*="text-align: justify"] { text-align: justify; }
         `}</style>
       </div>
     );
@@ -230,12 +240,27 @@ export default function Editor({
       />
 
       <style>{`
-        .tiptap-editor .ProseMirror { outline: none; min-height: 240px; font-size: 1rem; line-height: 1.75; }
-        .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before { color: #8fa3b1; content: attr(data-placeholder); float: left; height: 0; pointer-events: none; }
-        .tiptap-editor .ProseMirror img { max-width: 100%; border-radius: 6px; margin: 1rem 0; cursor: pointer; }
-        .tiptap-editor .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #2d7d9a; }
-        .tiptap-editor .ProseMirror [style*="text-align: center"] { text-align: center; }
-        .tiptap-editor .ProseMirror [style*="text-align: right"] { text-align: right; }
+        /* .tiptap-editor IS the ProseMirror div — target it directly, not as a descendant */
+        .tiptap-editor { min-height: 240px; font-size: 1rem; line-height: 1.75; font-family: Georgia, 'Source Serif 4', serif; padding: 0 !important; }
+        .tiptap-editor p { margin: 0 0 1.4em; }
+        .tiptap-editor p.is-editor-empty:first-child::before { color: #8fa3b1; content: attr(data-placeholder); float: left; height: 0; pointer-events: none; }
+        .tiptap-editor h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin: 2rem 0 0.6rem; line-height: 1.2; }
+        .tiptap-editor h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin: 1.75rem 0 0.5rem; line-height: 1.25; }
+        .tiptap-editor h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.4rem; line-height: 1.3; }
+        .tiptap-editor blockquote { border-left: 3px solid #c8a97e; padding-left: 1.25rem; color: #555; margin: 1.5rem 0; font-style: italic; }
+        .tiptap-editor ul, .tiptap-editor ol { margin: 0 0 1.4em; padding-left: 1.75rem; }
+        .tiptap-editor li { margin-bottom: 0.4em; }
+        .tiptap-editor a { color: #2d7d9a; text-decoration: underline; }
+        .tiptap-editor code { background: rgba(13,31,60,0.07); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.88em; font-family: 'Courier New', monospace; }
+        .tiptap-editor pre { background: #0d1f3c; color: #f5f0e8; padding: 1rem 1.25rem; border-radius: 6px; overflow-x: auto; margin: 1.5rem 0; }
+        .tiptap-editor pre code { background: none; padding: 0; color: inherit; }
+        .tiptap-editor mark { background: #fff3b0; padding: 0.05em 0.2em; border-radius: 2px; }
+        .tiptap-editor img { max-width: 100%; border-radius: 6px; margin: 1.5rem auto; display: block; cursor: pointer; }
+        .tiptap-editor img.ProseMirror-selectednode { outline: 2px solid #2d7d9a; }
+        .tiptap-editor hr { border: none; border-top: 1px solid rgba(13,31,60,0.12); margin: 2rem 0; }
+        .tiptap-editor [style*="text-align: center"] { text-align: center; }
+        .tiptap-editor [style*="text-align: right"] { text-align: right; }
+        .tiptap-editor [style*="text-align: justify"] { text-align: justify; }
       `}</style>
     </div>
   );
