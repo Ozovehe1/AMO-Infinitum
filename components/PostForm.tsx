@@ -321,14 +321,23 @@ export default function PostForm({ post }: { post?: PostData }) {
   // ── Image upload ─────────────────────────────────────────
   const uploadCover = async (file: File) => {
     setUploading(true); setError("");
+    let res: Response | undefined;
     try {
       const fd = new FormData(); fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      res = await fetch("/api/upload", { method: "POST", body: fd });
+    } catch {
+      setUploading(false);
+      setError("Network error — could not reach the server.");
+      return;
+    }
+    try {
       const data = await res.json();
       if (res.ok) setCoverImage(data.url);
-      else setError(data.error || "Upload failed.");
-    } catch { setError("Upload failed — check your connection."); }
-    finally { setUploading(false); }
+      else setError(data.error || `Upload failed (${res.status}).`);
+    } catch {
+      setError(`Upload failed (HTTP ${res.status}) — please try again.`);
+    }
+    setUploading(false);
   };
 
   const uploadBodyImage = useCallback(async (file: File) => {
