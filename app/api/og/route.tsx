@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
   ).catch(() => null);
   const fontData = fontRes ? await fontRes.arrayBuffer() : null;
 
-  const shortExcerpt = excerpt.length > 130
-    ? excerpt.slice(0, 130).trimEnd() + "…"
+  const shortExcerpt = excerpt.length > 160
+    ? excerpt.slice(0, 160).trimEnd() + "…"
     : excerpt;
 
   return new ImageResponse(
@@ -73,16 +73,16 @@ export async function GET(req: NextRequest) {
         <div
           style={{
             position: "absolute",
-            top: 52, left: 64,
+            top: 48, left: 64,
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: 12,
           }}
         >
           <div
             style={{
-              width: 3,
-              height: 28,
+              width: 4,
+              height: 32,
               background: "#c8a97e",
               borderRadius: 2,
             }}
@@ -90,9 +90,9 @@ export async function GET(req: NextRequest) {
           <span
             style={{
               fontFamily: fontData ? "Playfair" : "Georgia, serif",
-              fontSize: 22,
+              fontSize: 26,
               color: "#c8a97e",
-              letterSpacing: "0.05em",
+              letterSpacing: "0.06em",
             }}
           >
             AMO{" "}
@@ -107,20 +107,20 @@ export async function GET(req: NextRequest) {
           style={{
             position: "absolute",
             bottom: 0, left: 0, right: 0,
-            padding: "0 64px 56px",
+            padding: "0 64px 60px",
             display: "flex",
             flexDirection: "column",
-            gap: 18,
+            gap: 20,
           }}
         >
-          {/* Thin gold rule above title */}
+          {/* Gold accent bar */}
           <div
             style={{
-              width: 48,
-              height: 2,
+              width: 52,
+              height: 3,
               background: "#c8a97e",
-              borderRadius: 1,
-              marginBottom: 4,
+              borderRadius: 2,
+              marginBottom: 2,
             }}
           />
 
@@ -128,25 +128,26 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               fontFamily: fontData ? "Playfair" : "Georgia, serif",
-              fontSize: title.length > 60 ? 48 : title.length > 40 ? 56 : 66,
+              fontSize: title.length > 60 ? 46 : title.length > 40 ? 54 : 64,
               fontWeight: 700,
               color: "#fffef9",
               lineHeight: 1.15,
-              maxWidth: 900,
+              maxWidth: 920,
             }}
           >
             {title}
           </div>
 
-          {/* Excerpt */}
+          {/* Excerpt — clearly readable subtitle */}
           {shortExcerpt && (
             <div
               style={{
                 fontFamily: "system-ui, sans-serif",
-                fontSize: 24,
-                color: "rgba(245,240,232,0.72)",
-                lineHeight: 1.55,
-                maxWidth: 820,
+                fontSize: 26,
+                fontWeight: 400,
+                color: "rgba(245,240,232,0.80)",
+                lineHeight: 1.5,
+                maxWidth: 840,
               }}
             >
               {shortExcerpt}
