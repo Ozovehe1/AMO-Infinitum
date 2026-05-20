@@ -65,11 +65,16 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [deleting,       setDeleting]       = useState(false);
 
   // AI chat state
-  const [aiOpen,     setAiOpen]     = useState(false);
-  const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
-  const [aiInput,    setAiInput]    = useState("");
-  const [aiLoading,  setAiLoading]  = useState(false);
-  const aiEndRef = useRef<HTMLDivElement>(null);
+  const [aiOpen,       setAiOpen]       = useState(false);
+  const [aiMessages,   setAiMessages]   = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [aiInput,      setAiInput]      = useState("");
+  const [aiLoading,    setAiLoading]    = useState(false);
+  const [drawerHeight, setDrawerHeight] = useState(60); // vh, user-resizable
+  const drawerHeightRef = useRef(60);
+  drawerHeightRef.current = drawerHeight;
+  const aiEndRef    = useRef<HTMLDivElement>(null);
+  const aiHandleRef = useRef<HTMLDivElement>(null);
+  const aiDragRef   = useRef({ isDragging: false, startY: 0, startH: 60 });
 
   // Mobile TipTap editor instance (exposed via onEditorReady)
   const [mobileEditor, setMobileEditor] = useState<TiptapEditorType | null>(null);
@@ -92,6 +97,31 @@ export default function PostForm({ post }: { post?: PostData }) {
   useEffect(() => {
     aiEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiMessages]);
+
+  // Drag-to-resize the mobile AI drawer
+  useEffect(() => {
+    const el = aiHandleRef.current;
+    if (!el) return;
+    const onStart = (e: TouchEvent) => {
+      aiDragRef.current = { isDragging: true, startY: e.touches[0].clientY, startH: drawerHeightRef.current };
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!aiDragRef.current.isDragging) return;
+      e.preventDefault();
+      const dy = aiDragRef.current.startY - e.touches[0].clientY;
+      const newH = Math.min(85, Math.max(25, aiDragRef.current.startH + (dy / window.innerHeight) * 100));
+      setDrawerHeight(newH);
+    };
+    const onEnd = () => { aiDragRef.current.isDragging = false; };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove",  onMove,  { passive: false });
+    el.addEventListener("touchend",   onEnd,   { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove",  onMove);
+      el.removeEventListener("touchend",   onEnd);
+    };
+  }, [aiOpen]);
 
   // ── AI chat ──────────────────────────────────────────────
   const sendAiMessage = useCallback(async () => {
@@ -691,23 +721,26 @@ export default function PostForm({ post }: { post?: PostData }) {
               position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 411,
               background: "#0d1f3c", borderRadius: "18px 18px 0 0",
               boxShadow: "0 -8px 40px rgba(13,31,60,0.4)",
-              height: "78vh", display: "flex", flexDirection: "column",
+              height: `${drawerHeight}vh`, display: "flex", flexDirection: "column",
               paddingBottom: "env(safe-area-inset-bottom)",
             }}>
-              {/* Handle */}
-              <div style={{ display: "flex", justifyContent: "center", padding: "0.75rem 0 0" }}>
-                <div style={{ width: 36, height: 4, background: "rgba(200,169,126,0.35)", borderRadius: 2 }} />
+              {/* Drag handle — touch here to resize */}
+              <div
+                ref={aiHandleRef}
+                style={{ display: "flex", justifyContent: "center", padding: "0.875rem 0 0.5rem", cursor: "ns-resize", touchAction: "none", flexShrink: 0 }}
+              >
+                <div style={{ width: 40, height: 5, background: "rgba(200,169,126,0.5)", borderRadius: 3 }} />
               </div>
               {/* Header */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1.25rem 0.625rem", borderBottom: "1px solid rgba(200,169,126,0.12)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.25rem 1.25rem 0.625rem", borderBottom: "1px solid rgba(200,169,126,0.12)", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span style={{ color: "#c8a97e", fontSize: "0.85rem" }}>✦</span>
+                  <span style={{ fontSize: "1rem" }}>🧠</span>
                   <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>AI Assistant</h3>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   {aiMessages.length > 0 && (
-                    <button onClick={() => setAiMessages([])} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
-                      Clear
+                    <button onClick={() => setAiMessages([])} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                      New chat
                     </button>
                   )}
                   <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
@@ -797,8 +830,8 @@ export default function PostForm({ post }: { post?: PostData }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
               {aiMessages.length > 0 && (
-                <button onClick={() => setAiMessages([])} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
-                  Clear
+                <button onClick={() => setAiMessages([])} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                  New chat
                 </button>
               )}
               <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
