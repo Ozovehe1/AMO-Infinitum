@@ -316,26 +316,26 @@ export default function PostForm({ post }: { post?: PostData }) {
             >✕</button>
           </div>
         ) : (
-          <div style={{
-            height: 44, display: "flex", alignItems: "center",
-            padding: "0 4px",
-            borderBottom: "1px solid rgba(0,0,0,0.07)",
-            background: "#fff",
-            overflowX: "auto", WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none", flexShrink: 0,
-          }}>
-            {/* Undo / Redo */}
-            {TB("↩", () => mobileEditor?.chain().focus().undo().run())}
-            {TB("↪", () => mobileEditor?.chain().focus().redo().run())}
-            <TSep />
+          /* Outer wrapper: position relative, NO overflow — lets dropdowns escape the scroll container */
+          <div style={{ position: "relative", flexShrink: 0, background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+            {/* Scrollable inner row — only buttons here, not dropdown panels */}
+            <div style={{
+              height: 44, display: "flex", alignItems: "center",
+              padding: "0 4px",
+              overflowX: "auto",
+              scrollbarWidth: "none",
+            }}>
+              {/* Undo / Redo */}
+              {TB("↩", () => mobileEditor?.chain().focus().undo().run())}
+              {TB("↪", () => mobileEditor?.chain().focus().redo().run())}
+              <TSep />
 
-            {/* Style dropdown */}
-            <div style={{ position: "relative", zIndex: 320, flexShrink: 0 }}>
+              {/* Style trigger — panel is a sibling of this scroll div, not a child */}
               <button
-                onPointerDown={e => { e.preventDefault(); setStyleOpen(s => !s); setCatPickerOpen(false); }}
+                onPointerDown={e => { e.preventDefault(); setStyleOpen(s => !s); setAlignOpen(false); setCatPickerOpen(false); }}
                 style={{
                   height: 38, padding: "0 9px",
-                  background: "transparent", color: "#1a1a1a",
+                  background: styleOpen ? "rgba(13,31,60,0.08)" : "transparent", color: "#1a1a1a",
                   border: "none", borderRadius: 4, cursor: "pointer",
                   fontSize: "0.82rem", fontFamily: "system-ui, sans-serif",
                   display: "flex", alignItems: "center", gap: 4,
@@ -343,50 +343,18 @@ export default function PostForm({ post }: { post?: PostData }) {
                   flexShrink: 0,
                 }}
               >Style <span style={{ fontSize: "0.6rem" }}>▾</span></button>
-              {styleOpen && (
-                <div style={{
-                  position: "absolute", top: "100%", left: 0,
-                  background: "#fff",
-                  border: "1px solid rgba(0,0,0,0.1)",
-                  borderRadius: 8,
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                  minWidth: 170, zIndex: 320, overflow: "hidden",
-                }}>
-                  {[
-                    { label: "Normal text", fs: "0.95rem", fw: 400, action: () => mobileEditor?.chain().focus().setParagraph().run() },
-                    { label: "Heading 1",   fs: "1.3rem",  fw: 700, action: () => mobileEditor?.chain().focus().toggleHeading({ level: 1 }).run() },
-                    { label: "Heading 2",   fs: "1.1rem",  fw: 700, action: () => mobileEditor?.chain().focus().toggleHeading({ level: 2 }).run() },
-                    { label: "Heading 3",   fs: "0.95rem", fw: 600, action: () => mobileEditor?.chain().focus().toggleHeading({ level: 3 }).run() },
-                  ].map(item => (
-                    <button
-                      key={item.label}
-                      onPointerDown={e => { e.preventDefault(); item.action(); setStyleOpen(false); }}
-                      style={{
-                        display: "block", width: "100%", padding: "10px 16px",
-                        background: "none", border: "none", textAlign: "left",
-                        cursor: "pointer",
-                        fontFamily: "'Playfair Display', Georgia, serif",
-                        fontSize: item.fs, fontWeight: item.fw, color: "#1a1a1a",
-                        borderBottom: "1px solid rgba(0,0,0,0.05)",
-                      }}
-                    >{item.label}</button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <TSep />
+              <TSep />
 
-            {/* Inline formatting */}
-            {TB("B",    () => mobileEditor?.chain().focus().toggleBold().run(),       mobileEditor?.isActive("bold"),      { fontWeight: 700 })}
-            {TB("I",    () => mobileEditor?.chain().focus().toggleItalic().run(),     mobileEditor?.isActive("italic"),    { fontStyle: "italic" })}
-            {TB("U",    () => mobileEditor?.chain().focus().toggleUnderline().run(),  mobileEditor?.isActive("underline"), { textDecoration: "underline" })}
-            {TB("S",    () => mobileEditor?.chain().focus().toggleStrike().run(),     mobileEditor?.isActive("strike"),    { textDecoration: "line-through" })}
-            {TB("Mark", () => mobileEditor?.chain().focus().toggleHighlight().run(),  mobileEditor?.isActive("highlight"))}
-            {TB("</>",  () => mobileEditor?.chain().focus().toggleCode().run(),       mobileEditor?.isActive("code"),      { fontFamily: "monospace", fontSize: "0.75rem" })}
-            <TSep />
+              {/* Inline formatting */}
+              {TB("B",    () => mobileEditor?.chain().focus().toggleBold().run(),       mobileEditor?.isActive("bold"),      { fontWeight: 700 })}
+              {TB("I",    () => mobileEditor?.chain().focus().toggleItalic().run(),     mobileEditor?.isActive("italic"),    { fontStyle: "italic" })}
+              {TB("U",    () => mobileEditor?.chain().focus().toggleUnderline().run(),  mobileEditor?.isActive("underline"), { textDecoration: "underline" })}
+              {TB("S",    () => mobileEditor?.chain().focus().toggleStrike().run(),     mobileEditor?.isActive("strike"),    { textDecoration: "line-through" })}
+              {TB("Mark", () => mobileEditor?.chain().focus().toggleHighlight().run(),  mobileEditor?.isActive("highlight"))}
+              {TB("</>",  () => mobileEditor?.chain().focus().toggleCode().run(),       mobileEditor?.isActive("code"),      { fontFamily: "monospace", fontSize: "0.75rem" })}
+              <TSep />
 
-            {/* Alignment dropdown */}
-            <div style={{ position: "relative", zIndex: 320, flexShrink: 0 }}>
+              {/* Align trigger — panel is a sibling of this scroll div, not a child */}
               <button
                 onPointerDown={e => { e.preventDefault(); setAlignOpen(s => !s); setStyleOpen(false); setCatPickerOpen(false); }}
                 style={{
@@ -398,57 +366,91 @@ export default function PostForm({ post }: { post?: PostData }) {
                   touchAction: "manipulation", WebkitTapHighlightColor: "transparent", flexShrink: 0,
                 }}
               >Align <span style={{ fontSize: "0.6rem" }}>▾</span></button>
-              {alignOpen && (
-                <div style={{
-                  position: "absolute", top: "100%", left: 0,
-                  background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
-                  borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                  minWidth: 130, zIndex: 320, overflow: "hidden",
-                }}>
-                  {[
-                    { label: "⬅ Left",   action: () => mobileEditor?.chain().focus().setTextAlign("left").run()   },
-                    { label: "↔ Center", action: () => mobileEditor?.chain().focus().setTextAlign("center").run() },
-                    { label: "➡ Right",  action: () => mobileEditor?.chain().focus().setTextAlign("right").run()  },
-                  ].map(item => (
-                    <button
-                      key={item.label}
-                      onPointerDown={e => { e.preventDefault(); item.action(); setAlignOpen(false); }}
-                      style={{
-                        display: "block", width: "100%", padding: "10px 16px",
-                        background: "none", border: "none", textAlign: "left",
-                        cursor: "pointer", fontFamily: "system-ui, sans-serif",
-                        fontSize: "0.88rem", color: "#1a1a1a",
-                        borderBottom: "1px solid rgba(0,0,0,0.05)",
-                      }}
-                    >{item.label}</button>
-                  ))}
-                </div>
-              )}
+              <TSep />
+
+              {/* Link */}
+              {TB("🔗", () => {
+                const href = mobileEditor?.getAttributes("link").href || "";
+                setMobileUrlValue(href);
+                setMobileUrlMode("link");
+              }, mobileEditor?.isActive("link"))}
+
+              {/* Image from gallery */}
+              <button
+                onPointerDown={e => { e.preventDefault(); bodyImgRef.current?.click(); }}
+                style={{ height: 38, padding: "0 9px", background: "transparent", color: "#1a1a1a", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.9rem", flexShrink: 0, display: "flex", alignItems: "center", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+              >📷</button>
+
+              {/* Image by URL */}
+              {TB("Img", () => { setMobileUrlValue(""); setMobileUrlMode("image"); }, mobileUrlMode === "image")}
+              <TSep />
+
+              {/* Lists + blocks */}
+              {TB("•",  () => mobileEditor?.chain().focus().toggleBulletList().run(),  mobileEditor?.isActive("bulletList"))}
+              {TB("1.", () => mobileEditor?.chain().focus().toggleOrderedList().run(), mobileEditor?.isActive("orderedList"))}
+              {TB("❝",  () => mobileEditor?.chain().focus().toggleBlockquote().run(), mobileEditor?.isActive("blockquote"))}
+              {TB("—",  () => mobileEditor?.chain().focus().setHorizontalRule().run())}
             </div>
-            <TSep />
 
-            {/* Link */}
-            {TB("🔗", () => {
-              const href = mobileEditor?.getAttributes("link").href || "";
-              setMobileUrlValue(href);
-              setMobileUrlMode("link");
-            }, mobileEditor?.isActive("link"))}
+            {/* Style dropdown — rendered outside scroll container so overflow doesn't clip it */}
+            {styleOpen && (
+              <div style={{
+                position: "absolute", top: 44, left: 0,
+                background: "#fff",
+                border: "1px solid rgba(0,0,0,0.1)",
+                borderRadius: 8,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                minWidth: 170, zIndex: 330, overflow: "hidden",
+              }}>
+                {[
+                  { label: "Normal text", fs: "0.95rem", fw: 400, action: () => mobileEditor?.chain().focus().setParagraph().run() },
+                  { label: "Heading 1",   fs: "1.3rem",  fw: 700, action: () => mobileEditor?.chain().focus().toggleHeading({ level: 1 }).run() },
+                  { label: "Heading 2",   fs: "1.1rem",  fw: 700, action: () => mobileEditor?.chain().focus().toggleHeading({ level: 2 }).run() },
+                  { label: "Heading 3",   fs: "0.95rem", fw: 600, action: () => mobileEditor?.chain().focus().toggleHeading({ level: 3 }).run() },
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    onPointerDown={e => { e.preventDefault(); item.action(); setStyleOpen(false); }}
+                    style={{
+                      display: "block", width: "100%", padding: "10px 16px",
+                      background: "none", border: "none", textAlign: "left",
+                      cursor: "pointer",
+                      fontFamily: "'Playfair Display', Georgia, serif",
+                      fontSize: item.fs, fontWeight: item.fw, color: "#1a1a1a",
+                      borderBottom: "1px solid rgba(0,0,0,0.05)",
+                    }}
+                  >{item.label}</button>
+                ))}
+              </div>
+            )}
 
-            {/* Image from gallery */}
-            <button
-              onPointerDown={e => { e.preventDefault(); bodyImgRef.current?.click(); }}
-              style={{ height: 38, padding: "0 9px", background: "transparent", color: "#1a1a1a", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.9rem", flexShrink: 0, display: "flex", alignItems: "center", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-            >📷</button>
-
-            {/* Image by URL */}
-            {TB("Img", () => { setMobileUrlValue(""); setMobileUrlMode("image"); }, mobileUrlMode === "image")}
-            <TSep />
-
-            {/* Lists + blocks */}
-            {TB("•",  () => mobileEditor?.chain().focus().toggleBulletList().run(),  mobileEditor?.isActive("bulletList"))}
-            {TB("1.", () => mobileEditor?.chain().focus().toggleOrderedList().run(), mobileEditor?.isActive("orderedList"))}
-            {TB("❝",  () => mobileEditor?.chain().focus().toggleBlockquote().run(), mobileEditor?.isActive("blockquote"))}
-            {TB("—",  () => mobileEditor?.chain().focus().setHorizontalRule().run())}
+            {/* Align dropdown — rendered outside scroll container so overflow doesn't clip it */}
+            {alignOpen && (
+              <div style={{
+                position: "absolute", top: 44, left: 0,
+                background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
+                borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                minWidth: 130, zIndex: 330, overflow: "hidden",
+              }}>
+                {[
+                  { label: "⬅ Left",   action: () => mobileEditor?.chain().focus().setTextAlign("left").run()   },
+                  { label: "↔ Center", action: () => mobileEditor?.chain().focus().setTextAlign("center").run() },
+                  { label: "➡ Right",  action: () => mobileEditor?.chain().focus().setTextAlign("right").run()  },
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    onPointerDown={e => { e.preventDefault(); item.action(); setAlignOpen(false); }}
+                    style={{
+                      display: "block", width: "100%", padding: "10px 16px",
+                      background: "none", border: "none", textAlign: "left",
+                      cursor: "pointer", fontFamily: "system-ui, sans-serif",
+                      fontSize: "0.88rem", color: "#1a1a1a",
+                      borderBottom: "1px solid rgba(0,0,0,0.05)",
+                    }}
+                  >{item.label}</button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

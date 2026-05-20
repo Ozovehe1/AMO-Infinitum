@@ -23,6 +23,7 @@ export default function EditPost() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     fetch(`/api/posts/${params.id}`)
@@ -36,6 +37,20 @@ export default function EditPost() {
     setDeleting(true);
     await fetch(`/api/posts/${params.id}`, { method: "DELETE" });
     router.push("/inkwell/posts");
+  };
+
+  const sharePost = async () => {
+    if (!post) return;
+    const url = `${window.location.origin}/blog/${post.slug}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: post.title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      }
+    } catch { /* user cancelled share */ }
   };
 
   return (
@@ -52,9 +67,14 @@ export default function EditPost() {
             </div>
             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
               {post?.published && (
-                <Link href={`/blog/${post.slug}`} target="_blank" style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>
-                  ↗ View Live
-                </Link>
+                <>
+                  <Link href={`/blog/${post.slug}`} target="_blank" style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>
+                    ↗ View Live
+                  </Link>
+                  <button onClick={sharePost} style={{ background: shareCopied ? "#4a9e7a" : "#0d1f3c", color: shareCopied ? "#fff" : "#c8a97e", border: "none", borderRadius: 4, padding: "0.4rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer", transition: "background 0.2s" }}>
+                    {shareCopied ? "✓ Copied!" : "📤 Share"}
+                  </button>
+                </>
               )}
               <button onClick={deletePost} disabled={deleting} style={{ background: "transparent", color: "#c04040", border: "1px solid rgba(192,64,64,0.3)", borderRadius: 4, padding: "0.4rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer" }}>
                 {deleting ? "Deleting…" : "Delete"}

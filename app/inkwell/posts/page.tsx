@@ -19,6 +19,20 @@ export default function AllPosts() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const sharePost = async (p: Post) => {
+    const url = `${window.location.origin}/blog/${p.slug}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: p.title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setCopiedId(p.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+    } catch { /* user cancelled */ }
+  };
 
   const load = (q = "") => {
     setLoading(true);
@@ -88,7 +102,14 @@ export default function AllPosts() {
                     </span>
                     <Link href={`/inkwell/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
                     {p.published && (
-                      <Link href={`/blog/${p.slug}`} target="_blank" style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>↗</Link>
+                      <>
+                        <Link href={`/blog/${p.slug}`} target="_blank" style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>↗</Link>
+                        <button
+                          onClick={() => sharePost(p)}
+                          style={{ background: "none", border: "none", color: copiedId === p.id ? "#4a9e7a" : "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer", padding: 0 }}
+                          title="Share post"
+                        >{copiedId === p.id ? "✓" : "📤"}</button>
+                      </>
                     )}
                   </div>
                 </div>
