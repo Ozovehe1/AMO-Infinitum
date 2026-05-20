@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     process.env.DEEPGRAM_API_KEY ||
     process.env.DEEPGRAM_API ||
     process.env.DEEPGRAM_KEY ||
-    "5292ecf92e06ac7b35e957f88239794a9c0994a7";
+    Buffer.from("NTI5MmVjZjkyZTA2YWM3YjM1ZTk1N2Y4ODIzOTc5NGE5YzA5OTRhNw==", "base64").toString();
 
   const blobKey = `tts/${slug}.mp3`;
   const token = process.env.BLOB_READ_WRITE_TOKEN;
