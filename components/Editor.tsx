@@ -120,20 +120,27 @@ export default function Editor({
           onChange={e => { const f = e.target.files?.[0]; if (f) uploadInlineImage(f); e.target.value = ""; }}
         />
         <style>{`
-          .tiptap-editor .ProseMirror { outline: none; min-height: 220px; font-size: 1.05rem; line-height: 1.8; color: #1a1a1a; font-family: Georgia, serif; }
+          .tiptap-editor, .tiptap-editor .ProseMirror, .tiptap-editor .ProseMirror:focus { border: none !important; outline: none !important; box-shadow: none !important; }
+          .tiptap-editor .ProseMirror { min-height: 220px; font-size: 1.05rem; line-height: 1.75; color: #1a1a1a; font-family: Georgia, 'Source Serif 4', serif; }
+          .tiptap-editor .ProseMirror p { margin: 0 0 1.25em; }
           .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
             color: #aaa; content: attr(data-placeholder); float: left; height: 0; pointer-events: none; font-family: system-ui, sans-serif;
           }
-          .tiptap-editor .ProseMirror h1 { font-size: 1.8rem; font-weight: 700; margin: 1.5rem 0 0.5rem; }
-          .tiptap-editor .ProseMirror h2 { font-size: 1.4rem; font-weight: 700; margin: 1.25rem 0 0.4rem; }
-          .tiptap-editor .ProseMirror h3 { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.3rem; }
-          .tiptap-editor .ProseMirror blockquote { border-left: 3px solid #ddd; padding-left: 1rem; color: #555; margin: 1rem 0; font-style: italic; }
-          .tiptap-editor .ProseMirror ul { padding-left: 1.5rem; }
-          .tiptap-editor .ProseMirror ol { padding-left: 1.5rem; }
-          .tiptap-editor .ProseMirror img { max-width: 100%; border-radius: 6px; margin: 1rem 0; display: block; }
-          .tiptap-editor .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #FF6B35; }
-          .tiptap-editor .ProseMirror a { color: #FF6B35; text-decoration: underline; }
-          .tiptap-editor .ProseMirror code { background: rgba(0,0,0,0.06); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; }
+          .tiptap-editor .ProseMirror h1 { font-size: 1.8rem; font-weight: 700; margin: 1.75rem 0 0.5rem; font-family: 'Playfair Display', Georgia, serif; }
+          .tiptap-editor .ProseMirror h2 { font-size: 1.4rem; font-weight: 700; margin: 1.5rem 0 0.4rem; font-family: 'Playfair Display', Georgia, serif; }
+          .tiptap-editor .ProseMirror h3 { font-size: 1.15rem; font-weight: 600; margin: 1.25rem 0 0.3rem; font-family: 'Playfair Display', Georgia, serif; }
+          .tiptap-editor .ProseMirror blockquote { border-left: 3px solid #c8a97e; padding-left: 1.25rem; color: #555; margin: 1.5rem 0; font-style: italic; }
+          .tiptap-editor .ProseMirror ul { padding-left: 1.75rem; margin: 0.5rem 0 1.25em; }
+          .tiptap-editor .ProseMirror ol { padding-left: 1.75rem; margin: 0.5rem 0 1.25em; }
+          .tiptap-editor .ProseMirror li { margin-bottom: 0.35em; }
+          .tiptap-editor .ProseMirror img { max-width: 100%; border-radius: 6px; margin: 1.5rem 0; display: block; }
+          .tiptap-editor .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #0d1f3c; }
+          .tiptap-editor .ProseMirror a { color: #2d7d9a; text-decoration: underline; }
+          .tiptap-editor .ProseMirror code { background: rgba(0,0,0,0.06); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; font-family: 'Courier New', monospace; }
+          .tiptap-editor .ProseMirror mark { background: #fff3b0; border-radius: 2px; padding: 0 2px; }
+          .tiptap-editor .ProseMirror hr { border: none; border-top: 1px solid rgba(0,0,0,0.12); margin: 2rem 0; }
+          .tiptap-editor .ProseMirror [style*="text-align: center"] { text-align: center; }
+          .tiptap-editor .ProseMirror [style*="text-align: right"] { text-align: right; }
         `}</style>
       </div>
     );

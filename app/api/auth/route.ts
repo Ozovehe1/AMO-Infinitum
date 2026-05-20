@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword, signToken, setAuthCookie, clearAuthCookie } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const { action, password } = await req.json();
+  const { action, password, currentPassword, newPassword } = await req.json();
 
   if (action === "login") {
     const admin = await prisma.admin.findFirst();
@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "change-password") {
-    const { currentPassword, newPassword } = await req.json();
     const admin = await prisma.admin.findFirst();
     if (!admin) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

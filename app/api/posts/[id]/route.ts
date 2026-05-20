@@ -5,7 +5,7 @@ import { slugify, estimateReadingTime } from "@/lib/utils";
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const postId = parseInt(id);
   if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -16,6 +16,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
   });
 
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  if (!post.published) {
+    const session = await getAdminSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   return NextResponse.json(post);
 }
 

@@ -56,9 +56,11 @@ export default function PostForm({ post }: { post?: PostData }) {
   // UI state
   const [sheetOpen,      setSheetOpen]      = useState(false);
   const [styleOpen,      setStyleOpen]      = useState(false);
+  const [alignOpen,      setAlignOpen]      = useState(false);
   const [catPickerOpen,  setCatPickerOpen]  = useState(false);
   const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | null>(null);
   const [mobileUrlValue, setMobileUrlValue] = useState("");
+  const [deleting,       setDeleting]       = useState(false);
 
   // Mobile TipTap editor instance (exposed via onEditorReady)
   const [mobileEditor, setMobileEditor] = useState<TiptapEditorType | null>(null);
@@ -227,8 +229,8 @@ export default function PostForm({ post }: { post?: PostData }) {
       }}>
 
         {/* Backdrop for dropdowns */}
-        {(styleOpen || catPickerOpen) && (
-          <div onClick={() => { setStyleOpen(false); setCatPickerOpen(false); }}
+        {(styleOpen || alignOpen || catPickerOpen) && (
+          <div onClick={() => { setStyleOpen(false); setAlignOpen(false); setCatPickerOpen(false); }}
             style={{ position: "fixed", inset: 0, zIndex: 310 }} />
         )}
 
@@ -375,10 +377,54 @@ export default function PostForm({ post }: { post?: PostData }) {
             <TSep />
 
             {/* Inline formatting */}
-            {TB("B",   () => mobileEditor?.chain().focus().toggleBold().run(),      mobileEditor?.isActive("bold"),      { fontWeight: 700 })}
-            {TB("I",   () => mobileEditor?.chain().focus().toggleItalic().run(),    mobileEditor?.isActive("italic"),    { fontStyle: "italic" })}
-            {TB("S",   () => mobileEditor?.chain().focus().toggleStrike().run(),    mobileEditor?.isActive("strike"),    { textDecoration: "line-through" })}
-            {TB("</>", () => mobileEditor?.chain().focus().toggleCode().run(),      mobileEditor?.isActive("code"),      { fontFamily: "monospace", fontSize: "0.75rem" })}
+            {TB("B",    () => mobileEditor?.chain().focus().toggleBold().run(),       mobileEditor?.isActive("bold"),      { fontWeight: 700 })}
+            {TB("I",    () => mobileEditor?.chain().focus().toggleItalic().run(),     mobileEditor?.isActive("italic"),    { fontStyle: "italic" })}
+            {TB("U",    () => mobileEditor?.chain().focus().toggleUnderline().run(),  mobileEditor?.isActive("underline"), { textDecoration: "underline" })}
+            {TB("S",    () => mobileEditor?.chain().focus().toggleStrike().run(),     mobileEditor?.isActive("strike"),    { textDecoration: "line-through" })}
+            {TB("Mark", () => mobileEditor?.chain().focus().toggleHighlight().run(),  mobileEditor?.isActive("highlight"))}
+            {TB("</>",  () => mobileEditor?.chain().focus().toggleCode().run(),       mobileEditor?.isActive("code"),      { fontFamily: "monospace", fontSize: "0.75rem" })}
+            <TSep />
+
+            {/* Alignment dropdown */}
+            <div style={{ position: "relative", zIndex: 320, flexShrink: 0 }}>
+              <button
+                onPointerDown={e => { e.preventDefault(); setAlignOpen(s => !s); setStyleOpen(false); setCatPickerOpen(false); }}
+                style={{
+                  height: 38, padding: "0 9px",
+                  background: alignOpen ? "rgba(13,31,60,0.08)" : "transparent",
+                  color: "#1a1a1a", border: "none", borderRadius: 4, cursor: "pointer",
+                  fontSize: "0.82rem", fontFamily: "system-ui, sans-serif",
+                  display: "flex", alignItems: "center", gap: 4,
+                  touchAction: "manipulation", WebkitTapHighlightColor: "transparent", flexShrink: 0,
+                }}
+              >Align <span style={{ fontSize: "0.6rem" }}>▾</span></button>
+              {alignOpen && (
+                <div style={{
+                  position: "absolute", top: "100%", left: 0,
+                  background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
+                  borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                  minWidth: 130, zIndex: 320, overflow: "hidden",
+                }}>
+                  {[
+                    { label: "⬅ Left",   action: () => mobileEditor?.chain().focus().setTextAlign("left").run()   },
+                    { label: "↔ Center", action: () => mobileEditor?.chain().focus().setTextAlign("center").run() },
+                    { label: "➡ Right",  action: () => mobileEditor?.chain().focus().setTextAlign("right").run()  },
+                  ].map(item => (
+                    <button
+                      key={item.label}
+                      onPointerDown={e => { e.preventDefault(); item.action(); setAlignOpen(false); }}
+                      style={{
+                        display: "block", width: "100%", padding: "10px 16px",
+                        background: "none", border: "none", textAlign: "left",
+                        cursor: "pointer", fontFamily: "system-ui, sans-serif",
+                        fontSize: "0.88rem", color: "#1a1a1a",
+                        borderBottom: "1px solid rgba(0,0,0,0.05)",
+                      }}
+                    >{item.label}</button>
+                  ))}
+                </div>
+              )}
+            </div>
             <TSep />
 
             {/* Link */}
@@ -393,6 +439,9 @@ export default function PostForm({ post }: { post?: PostData }) {
               onPointerDown={e => { e.preventDefault(); bodyImgRef.current?.click(); }}
               style={{ height: 38, padding: "0 9px", background: "transparent", color: "#1a1a1a", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.9rem", flexShrink: 0, display: "flex", alignItems: "center", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >📷</button>
+
+            {/* Image by URL */}
+            {TB("Img", () => { setMobileUrlValue(""); setMobileUrlMode("image"); }, mobileUrlMode === "image")}
             <TSep />
 
             {/* Lists + blocks */}
@@ -664,6 +713,20 @@ export default function PostForm({ post }: { post?: PostData }) {
                 {isEdit && published && (
                   <button onClick={() => save(false)} disabled={saving} style={{ background: "transparent", color: "#c04040", border: "1px solid rgba(192,64,64,0.25)", borderRadius: 12, padding: "0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer" }}>
                     Unpublish
+                  </button>
+                )}
+                {isEdit && (
+                  <button
+                    onClick={async () => {
+                      if (!confirm("Delete this post? This cannot be undone.")) return;
+                      setDeleting(true);
+                      await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+                      router.push("/inkwell/posts");
+                    }}
+                    disabled={deleting}
+                    style={{ background: "transparent", color: "#c04040", border: "none", borderRadius: 12, padding: "0.625rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", opacity: deleting ? 0.6 : 1 }}
+                  >
+                    {deleting ? "Deleting…" : "🗑 Delete Post"}
                   </button>
                 )}
               </div>
