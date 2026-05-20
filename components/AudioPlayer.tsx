@@ -1,29 +1,61 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const SPEEDS = [1, 1.25, 1.5, 2, 0.75];
 
-function formatTime(s: number): string {
-  if (!isFinite(s) || isNaN(s) || s <= 0) return "0:00";
-  const m = Math.floor(s / 60);
-  return `${m}:${Math.floor(s % 60).toString().padStart(2, "0")}`;
+function fmt(s: number) {
+  if (!isFinite(s) || s <= 0) return "0:00";
+  return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, "0")}`;
 }
 
-export default function AudioPlayer({ text }: { text: string }) {
+export default function AudioPlayer({ slug, text }: { slug: string; text: string }) {
+  const audioRef    = useRef<HTMLAudioElement>(null);
+  const charRef     = useRef(0);
+  const [mode,      setMode]      = useState<"deepgram" | "speech">("deepgram");
   const [playing,   setPlaying]   = useState(false);
   const [progress,  setProgress]  = useState(0);
+  const [duration,  setDuration]  = useState(0);
   const [speedIdx,  setSpeedIdx]  = useState(0);
-  const charRef  = useRef(0);
+  const speed   = SPEEDS[speedIdx];
   const totalLen = text.length;
-  const speed    = SPEEDS[speedIdx];
   const estSecs  = Math.max(30, (totalLen / 750) * 60);
 
-  const speak = (fromChar: number, rate: number) => {
+  /* ── Deepgram: wire up audio element events ── */
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onMeta  = () => setDuration(a.duration);
+    const onTime  = () => setProgress((a.currentTime / a.duration) * 100);
+    const onEnded = () => { setPlaying(false); setProgress(100); };
+    const onErr   = () => {
+      console.warn("Deepgram TTS failed — falling back to Web Speech");
+      setMode("speech");
+    };
+    a.addEventListener("loadedmetadata", onMeta);
+    a.addEventListener("timeupdate",     onTime);
+    a.addEventListener("ended",          onEnded);
+    a.addEventListener("error",          onErr);
+    if (a.readyState >= 1) onMeta();
+    if (a.error)           onErr();
+    return () => {
+      a.removeEventListener("loadedmetadata", onMeta);
+      a.removeEventListener("timeupdate",     onTime);
+      a.removeEventListener("ended",          onEnded);
+      a.removeEventListener("error",          onErr);
+    };
+  }, []);
+
+  /* ── Deepgram: apply speed to audio element ── */
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = speed;
+  }, [speed]);
+
+  /* ── Web Speech: speak from position ── */
+  const speechSpeak = (fromChar: number, rate: number) => {
     const synth = window.speechSynthesis;
     synth.cancel();
     const utter = new SpeechSynthesisUtterance(text.slice(fromChar));
     utter.rate  = rate;
-    // Don't force a specific voice — let browser pick its best default
     utter.onboundary = (e) => {
       const abs = fromChar + (e.charIndex || 0);
       charRef.current = abs;
@@ -35,90 +67,95 @@ export default function AudioPlayer({ text }: { text: string }) {
     setPlaying(true);
   };
 
+  /* ── Unified play / pause ── */
   const togglePlay = () => {
-    if (!("speechSynthesis" in window)) return;
-    const synth = window.speechSynthesis;
-    if (playing) {
-      synth.pause();
-      setPlaying(false);
-    } else if (synth.paused) {
-      synth.resume();
-      setPlaying(true);
+    if (mode === "deepgram") {
+      const a = audioRef.current;
+      if (!a) return;
+      if (playing) { a.pause(); setPlaying(false); }
+      else { a.play().catch(() => {}); setPlaying(true); }
     } else {
-      speak(progress >= 100 ? 0 : charRef.current, speed);
+      if (!("speechSynthesis" in window)) return;
+      const synth = window.speechSynthesis;
+      if (playing) { synth.pause(); setPlaying(false); }
+      else if (synth.paused) { synth.resume(); setPlaying(true); }
+      else { speechSpeak(progress >= 100 ? 0 : charRef.current, speed); }
     }
   };
 
   const cycleSpeed = () => {
     const next = (speedIdx + 1) % SPEEDS.length;
     setSpeedIdx(next);
-    if (playing) speak(charRef.current, SPEEDS[next]);
+    if (playing && mode === "speech") speechSpeak(charRef.current, SPEEDS[next]);
   };
 
-  const pct     = Math.min(100, progress);
-  const elapsed = (pct / 100) * (estSecs / speed);
-  const remain  = estSecs / speed;
+  const pct = Math.min(100, progress);
+
+  const elapsed = mode === "deepgram"
+    ? (audioRef.current?.currentTime ?? 0)
+    : (pct / 100) * (estSecs / speed);
+
+  const total = mode === "deepgram"
+    ? (duration ? duration / speed : 0)
+    : estSecs / speed;
 
   return (
-    <div style={{
-      background: "#fffef9",
-      border: "1px solid rgba(13,31,60,0.12)",
-      borderRadius: 10,
-      padding: "0.875rem 1rem",
-      margin: "0 0 2rem",
-      fontFamily: "Inter, sans-serif",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+    <>
+      {/* Hidden audio element always mounted — Deepgram streams into it */}
+      <audio
+        ref={audioRef}
+        src={`/api/tts?slug=${encodeURIComponent(slug)}`}
+        preload="auto"
+        style={{ display: "none" }}
+      />
 
-        {/* Play / Pause */}
-        <button
-          onClick={togglePlay}
-          aria-label={playing ? "Pause" : "Play"}
-          style={{
+      <div style={{
+        background: "#fffef9", border: "1px solid rgba(13,31,60,0.12)",
+        borderRadius: 10, padding: "0.875rem 1rem",
+        margin: "0 0 2rem", fontFamily: "Inter, sans-serif",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+
+          <button onClick={togglePlay} aria-label={playing ? "Pause" : "Play"} style={{
             width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
             background: "#0d1f3c", border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          {playing ? (
-            <svg width="12" height="14" viewBox="0 0 12 14" fill="#c8a97e">
-              <rect x="0" y="0" width="4" height="14" rx="1"/>
-              <rect x="8" y="0" width="4" height="14" rx="1"/>
-            </svg>
-          ) : (
-            <svg width="12" height="14" viewBox="0 0 12 14" fill="#c8a97e" style={{ marginLeft: 2 }}>
-              <path d="M0 0 L12 7 L0 14 Z"/>
-            </svg>
-          )}
-        </button>
+          }}>
+            {playing ? (
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="#c8a97e">
+                <rect x="0" y="0" width="4" height="14" rx="1"/>
+                <rect x="8" y="0" width="4" height="14" rx="1"/>
+              </svg>
+            ) : (
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="#c8a97e" style={{ marginLeft: 2 }}>
+                <path d="M0 0 L12 7 L0 14 Z"/>
+              </svg>
+            )}
+          </button>
 
-        {/* Progress + time */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ height: 3, background: "rgba(13,31,60,0.1)", borderRadius: 2, position: "relative", overflow: "hidden", marginBottom: "0.3rem" }}>
-            <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "#c8a97e", borderRadius: 2, transition: "width 0.2s linear" }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ height: 3, background: "rgba(13,31,60,0.1)", borderRadius: 2, position: "relative", overflow: "hidden", marginBottom: "0.3rem" }}>
+              <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "#c8a97e", borderRadius: 2, transition: "width 0.2s linear" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.65rem", color: "#8fa3b1" }}>Listen to this essay</span>
+              <span style={{ fontSize: "0.65rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
+                {total > 0 ? `${fmt(elapsed)} / ${fmt(total)}` : ""}
+              </span>
+            </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "0.65rem", color: "#8fa3b1" }}>Listen to this essay</span>
-            <span style={{ fontSize: "0.65rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{formatTime(elapsed)} / {formatTime(remain)}</span>
-          </div>
+
+          <button onClick={cycleSpeed} style={{
+            flexShrink: 0, background: "#0d1f3c", color: "#c8a97e",
+            border: "none", borderRadius: 5, padding: "4px 8px",
+            fontSize: "0.65rem", fontWeight: 700, cursor: "pointer",
+            fontFamily: "Inter, sans-serif", minWidth: 36, textAlign: "center",
+          }}>
+            {speed}×
+          </button>
+
         </div>
-
-        {/* Speed — single tap-to-cycle button */}
-        <button
-          onClick={cycleSpeed}
-          style={{
-            flexShrink: 0,
-            background: "#0d1f3c", color: "#c8a97e",
-            border: "none", borderRadius: 5,
-            padding: "4px 8px", fontSize: "0.65rem", fontWeight: 700,
-            cursor: "pointer", fontFamily: "Inter, sans-serif",
-            minWidth: 36, textAlign: "center",
-          }}
-        >
-          {speed}×
-        </button>
-
       </div>
-    </div>
+    </>
   );
 }

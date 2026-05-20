@@ -101,7 +101,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
       {/* Article body */}
       <main style={{ background: "#fffef9", flex: 1 }}>
         <article style={{ maxWidth: 720, margin: "0 auto", padding: "4rem 1.5rem 5rem" }}>
-          <AudioPlayer text={`${post.title}. ${stripHtml(post.content)}`} />
+          <AudioPlayer slug={post.slug} text={`${post.title}. ${stripHtml(post.content)}`} />
           <div
             className="prose-amo"
             dangerouslySetInnerHTML={{ __html: post.content }}
