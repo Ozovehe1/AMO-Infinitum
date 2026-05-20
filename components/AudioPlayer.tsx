@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useState, useRef } from "react";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
@@ -10,31 +10,25 @@ function formatTime(s: number): string {
 }
 
 export default function AudioPlayer({ text }: { text: string }) {
-  const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
   const [progress, setProgress] = useState(0);
   const [speed,    setSpeed]    = useState(1);
-
   const charRef  = useRef(0);
   const totalLen = text.length;
   const estSecs  = Math.max(30, (totalLen / 750) * 60);
 
-  useEffect(() => {
-    setReady("speechSynthesis" in window);
-    return () => { window.speechSynthesis?.cancel(); };
-  }, []);
-
   const startAt = (fromChar: number, rate: number) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
+
     const utter = new SpeechSynthesisUtterance(text.slice(fromChar));
     utter.rate  = rate;
 
-    // Pick best English voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = ["Samantha", "Karen", "Google UK English Female", "Google US English", "Microsoft Aria"];
-    const voice = preferred.map(n => voices.find(v => v.name.includes(n))).find(Boolean)
+    const voices   = window.speechSynthesis.getVoices();
+    const priority = ["Samantha", "Karen", "Google UK English Female", "Google US English", "Microsoft Aria"];
+    const voice    = priority.map(n => voices.find(v => v.name.includes(n))).find(Boolean)
       || voices.find(v => v.lang.startsWith("en"))
-      || null;
+      || undefined;
     if (voice) utter.voice = voice;
 
     utter.onboundary = (e) => {
@@ -50,6 +44,7 @@ export default function AudioPlayer({ text }: { text: string }) {
   };
 
   const togglePlay = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     if (playing) {
       window.speechSynthesis.pause();
       setPlaying(false);
@@ -68,8 +63,6 @@ export default function AudioPlayer({ text }: { text: string }) {
 
   const pct     = Math.min(100, progress);
   const elapsed = (pct / 100) * (estSecs / speed);
-
-  if (!ready) return null;
 
   return (
     <div style={{
