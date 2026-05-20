@@ -21,13 +21,15 @@ export default function AudioPlayer({ slug }: { slug: string }) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/tts?slug=${encodeURIComponent(slug)}`)
+    const controller = new AbortController();
+    fetch(`/api/tts?slug=${encodeURIComponent(slug)}`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         if (data.url) { setAudioUrl(data.url); setStatus("ready"); }
         else setStatus("error");
       })
-      .catch(() => setStatus("error"));
+      .catch(err => { if (err.name !== "AbortError") setStatus("error"); });
+    return () => controller.abort();
   }, [slug]);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export default function AudioPlayer({ slug }: { slug: string }) {
 
   const pct = duration ? (current / duration) * 100 : 0;
 
-  if (status === "error") return null;
+  if (status !== "ready") return null;
 
   return (
     <div style={{
@@ -91,30 +93,15 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         {/* Play/Pause */}
         <button
           onClick={togglePlay}
-          disabled={status === "loading"}
           aria-label={playing ? "Pause" : "Play"}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-            background: "#0d1f3c",
-            border: "none",
-            cursor: status === "loading" ? "wait" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            width: 40, height: 40, borderRadius: "50%",
+            background: "#0d1f3c", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0,
-            opacity: status === "loading" ? 0.5 : 1,
-            transition: "opacity 0.2s",
           }}
         >
-          {status === "loading" ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#c8a97e" strokeWidth="2.5" strokeDasharray="40 20" strokeLinecap="round">
-                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" />
-              </circle>
-            </svg>
-          ) : playing ? (
+          {playing ? (
             <svg width="14" height="16" viewBox="0 0 14 16" fill="#c8a97e">
               <rect x="0" y="0" width="5" height="16" rx="1" />
               <rect x="9" y="0" width="5" height="16" rx="1" />
@@ -130,7 +117,7 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.35rem" }}>
             <span style={{ fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.02em" }}>
-              {status === "loading" ? "Generating audio…" : "Listen to this essay"}
+              Listen to this essay
             </span>
             <span style={{ fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.03em" }}>
               {formatTime(current)} / {formatTime(duration)}
