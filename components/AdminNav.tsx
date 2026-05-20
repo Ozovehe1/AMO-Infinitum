@@ -9,6 +9,7 @@ const links = [
   { href: "/inkwell/posts/new", label: "New Post", icon: "✎" },
   { href: "/inkwell/posts", label: "All Posts", icon: "≡" },
   { href: "/inkwell/categories", label: "Categories", icon: "◈" },
+  { href: "/inkwell/about", label: "About Page", icon: "✦" },
 ];
 
 export default function AdminNav() {
