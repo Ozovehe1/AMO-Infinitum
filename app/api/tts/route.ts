@@ -25,17 +25,12 @@ export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
   if (!slug) return new NextResponse("Missing slug", { status: 400 });
 
-  // Accept any common naming convention for the Deepgram key
   const dgKey =
     process.env.DeepgramAPI ||
     process.env.DEEPGRAM_API_KEY ||
     process.env.DEEPGRAM_API ||
-    process.env.DEEPGRAM_KEY;
-
-  if (!dgKey) {
-    console.error("TTS: no Deepgram API key found (checked DeepgramAPI, DEEPGRAM_API_KEY, DEEPGRAM_API, DEEPGRAM_KEY)");
-    return new NextResponse("TTS not configured", { status: 503 });
-  }
+    process.env.DEEPGRAM_KEY ||
+    "5292ecf92e06ac7b35e957f88239794a9c0994a7";
 
   const blobKey = `tts/${slug}.mp3`;
   const token = process.env.BLOB_READ_WRITE_TOKEN;
