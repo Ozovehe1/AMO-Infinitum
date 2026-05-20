@@ -135,7 +135,9 @@ export default function PostForm({ post }: { post?: PostData }) {
 
   // ── Save logic ──────────────────────────────────────────
   const performSave = useCallback(async (options: { publish?: boolean; silent?: boolean } = {}) => {
-    if (!title.trim() || !content.trim() || content === "<p></p>") return false;
+    if (!title.trim()) return false;
+    const willPublish = options.publish ?? published;
+    if (willPublish && (!content.trim() || content === "<p></p>")) return false;
     if (options.silent) setAutoSaving(true);
     else { setError(""); setSaving(true); }
 
@@ -173,16 +175,16 @@ export default function PostForm({ post }: { post?: PostData }) {
     }
   }, [title, content, excerpt, coverImage, published, featured, selectedCats, postId, router]);
 
-  // Auto-save: 3 s after last change
+  // Auto-save: 3 s after last change (title alone is enough for a draft)
   useEffect(() => {
-    if (!title.trim() || !content.trim() || content === "<p></p>") return;
+    if (!title.trim()) return;
     const t = setTimeout(() => performSave({ silent: true }), 3000);
     return () => clearTimeout(t);
   }, [performSave]);
 
   const save = async (publish?: boolean) => {
     if (!title.trim()) { setError("Add a title first."); return; }
-    if (!content.trim() || content === "<p></p>") { setError("Write something first."); return; }
+    if (publish && (!content.trim() || content === "<p></p>")) { setError("Write something first before publishing."); return; }
     await performSave({ publish });
   };
 
