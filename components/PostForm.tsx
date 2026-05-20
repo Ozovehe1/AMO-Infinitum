@@ -1312,6 +1312,23 @@ function mdToHtml(md: string): string {
 
 function AiMessage({ role, content }: { role: "user" | "assistant"; content: string }) {
   const isUser = role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const copyText = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = content;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const bubble: React.CSSProperties = {
     maxWidth: "84%",
     background: isUser ? "#c8a97e" : "rgba(255,254,249,0.07)",
@@ -1322,13 +1339,29 @@ function AiMessage({ role, content }: { role: "user" | "assistant"; content: str
     wordBreak: "break-word",
   };
   return (
-    <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start" }}>
       {isUser ? (
         <div style={{ ...bubble, whiteSpace: "pre-wrap" }}>
           {content || <span style={{ opacity: 0.45 }}>…</span>}
         </div>
       ) : (
         <div style={bubble} className="ai-prose" dangerouslySetInnerHTML={{ __html: mdToHtml(content) }} />
+      )}
+      {content && (
+        <button
+          onClick={copyText}
+          style={{
+            marginTop: "0.2rem",
+            background: "none", border: "none",
+            color: copied ? "#4a9e7a" : "rgba(200,169,126,0.45)",
+            fontSize: "0.65rem", fontFamily: "Inter, sans-serif",
+            cursor: "pointer", padding: "0.1rem 0.3rem",
+            display: "flex", alignItems: "center", gap: "0.25rem",
+            transition: "color 0.2s",
+          }}
+        >
+          {copied ? "✓ Copied" : "Copy"}
+        </button>
       )}
     </div>
   );
