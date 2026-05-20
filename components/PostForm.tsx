@@ -272,17 +272,16 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (res.ok) {
         const data = await res.json();
         if (data.slug) setPostSlug(data.slug);
-        const isFirstPublish = options.publish === true && !published && data.slug;
+        const willShowOverlay = options.publish === true && !!data.slug;
         if (!postId) {
           setPostId(data.id);
-          // Don't navigate yet if we're about to show the publish overlay —
-          // router.push would unmount the component before the overlay renders.
-          if (!isFirstPublish) {
+          if (willShowOverlay) {
+            // Update URL without navigating — router.push would unmount the
+            // component before the overlay can render
+            window.history.replaceState({}, "", `/inkwell/posts/${data.id}`);
+          } else {
             if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
             else router.push(`/inkwell/posts/${data.id}`);
-          } else {
-            // Update URL silently so back-button works, without unmounting
-            window.history.replaceState({}, "", `/inkwell/posts/${data.id}`);
           }
         }
         if (options.publish !== undefined) setPublished(options.publish);
@@ -290,7 +289,7 @@ export default function PostForm({ post }: { post?: PostData }) {
         if (!options.silent) {
           setSaved(true); setSheetOpen(false);
           setTimeout(() => setSaved(false), 3000);
-          if (isFirstPublish) setPublishedSlug(data.slug);
+          if (willShowOverlay) setPublishedSlug(data.slug);
         }
         return true;
       } else {
@@ -428,86 +427,16 @@ export default function PostForm({ post }: { post?: PostData }) {
   return (
     <>
       {/* ── Publish success overlay ── */}
-      {publishedSlug && (() => {
-        const postUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/blog/${publishedSlug}`;
-        const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(postUrl)}`;
-        const whatsappHref = `https://wa.me/?text=${encodeURIComponent(title + " " + postUrl)}`;
-        const emailHref = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent("I thought you might enjoy this: " + postUrl)}`;
-        return (
-          <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-            onClick={() => setPublishedSlug(null)}>
-            <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", padding: "2rem 1.5rem 2.5rem", width: "100%", maxWidth: 480 }}>
-              <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto 1.75rem" }} />
-
-              {/* Header */}
-              <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-                <div style={{ fontSize: "2.25rem", marginBottom: "0.5rem" }}>🎉</div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#0d1f3c", margin: "0 0 0.25rem", fontWeight: 600 }}>Your post is live!</h2>
-              </div>
-
-              {/* Link preview card — OG branding */}
-              <a href={`/blog/${publishedSlug}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none", display: "block", marginBottom: "1.25rem" }}>
-                <div style={{ border: "1px solid rgba(13,31,60,0.12)", borderRadius: 10, overflow: "hidden", background: "#f5f0e8" }}>
-                  {coverImage && (
-                    <div style={{ height: 140, overflow: "hidden", background: "#0d1f3c" }}>
-                      <img src={coverImage} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9 }} />
-                    </div>
-                  )}
-                  <div style={{ padding: "0.875rem 1rem" }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.65rem", color: "#8fa3b1", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 0.35rem" }}>
-                      amo-infinitum.vercel.app
-                    </p>
-                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", fontWeight: 600, margin: "0 0 0.25rem", lineHeight: 1.3 }}>{title}</p>
-                    {(() => {
-                      const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
-                      return preview ? <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", margin: 0, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{preview}</p> : null;
-                    })()}
-                  </div>
-                </div>
-              </a>
-
-              {/* Share section */}
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8fa3b1", margin: "0 0 0.75rem" }}>Share this post</p>
-
-              {/* Native share — mobile only */}
-              {typeof navigator !== "undefined" && !!navigator.share && (
-                <button onClick={async () => { try { await navigator.share({ title, url: postUrl }); } catch { /* cancelled */ } }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.8rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600, cursor: "pointer", marginBottom: "0.75rem" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                  Share this post
-                </button>
-              )}
-
-              {/* Link + copy */}
-              <CopyLinkRow url={postUrl} />
-
-              {/* Platform buttons */}
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
-                <a href={twitterHref} target="_blank" rel="noreferrer"
-                  style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#000", color: "#fff", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.727-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  Share on X
-                </a>
-                <a href={whatsappHref} target="_blank" rel="noreferrer"
-                  style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#25D366", color: "#fff", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                  WhatsApp
-                </a>
-                <a href={emailHref}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "transparent", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-                  Email
-                </a>
-              </div>
-
-              <button onClick={() => { setPublishedSlug(null); }}
-                style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", width: "100%" }}>
-                Continue editing
-              </button>
-            </div>
-          </div>
-        );
-      })()}
+      {publishedSlug && (
+        <PublishSuccessOverlay
+          slug={publishedSlug}
+          title={title}
+          excerpt={excerpt}
+          coverImage={coverImage}
+          content={content}
+          onDismiss={() => setPublishedSlug(null)}
+        />
+      )}
 
       {/* ════════════════════════════════════
           MOBILE — Substack-style full canvas
@@ -1370,6 +1299,82 @@ function ShareRow({ slug }: { slug: string }) {
         <a href={link} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", color: "#2d7d9a", border: "1px solid rgba(45,125,154,0.3)", borderRadius: 8, padding: "0.6rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none", textAlign: "center" }}>
           View Live ↗
         </a>
+      </div>
+    </div>
+  );
+}
+
+function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss }: {
+  slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void;
+}) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
+  const postUrl = `${origin}/blog/${slug}`;
+  const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(postUrl)}`;
+  const whatsappHref = `https://wa.me/?text=${encodeURIComponent(title + " " + postUrl)}`;
+  const emailHref = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent("I thought you might enjoy this: " + postUrl)}`;
+  const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={onDismiss}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", padding: "2rem 1.5rem 2.5rem", width: "100%", maxWidth: 480 }}>
+        <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto 1.5rem" }} />
+
+        <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
+          <div style={{ fontSize: "2.25rem", marginBottom: "0.4rem" }}>🎉</div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Your post is live!</h2>
+        </div>
+
+        {/* Link preview card */}
+        <a href={postUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none", display: "block", marginBottom: "1.25rem" }}>
+          <div style={{ border: "1px solid rgba(13,31,60,0.12)", borderRadius: 10, overflow: "hidden", background: "#f5f0e8" }}>
+            {coverImage && (
+              <div style={{ height: 130, overflow: "hidden", background: "#0d1f3c" }}>
+                <img src={coverImage} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9 }} />
+              </div>
+            )}
+            <div style={{ padding: "0.75rem 1rem" }}>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.62rem", color: "#8fa3b1", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 0.3rem" }}>amo-infinitum.vercel.app</p>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", fontWeight: 600, margin: preview ? "0 0 0.2rem" : "0", lineHeight: 1.3 }}>{title}</p>
+              {preview && <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#3a5068", margin: 0, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{preview}</p>}
+            </div>
+          </div>
+        </a>
+
+        <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8fa3b1", margin: "0 0 0.75rem" }}>Share this post</p>
+
+        {typeof navigator !== "undefined" && !!navigator.share && (
+          <button onClick={async () => { try { await navigator.share({ title, url: postUrl }); } catch { /* cancelled */ } }}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.8rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600, cursor: "pointer", marginBottom: "0.75rem" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share this post
+          </button>
+        )}
+
+        <CopyLinkRow url={postUrl} />
+
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+          <a href={twitterHref} target="_blank" rel="noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#000", color: "#fff", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.727-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share on X
+          </a>
+          <a href={whatsappHref} target="_blank" rel="noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#25D366", color: "#fff", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+          </a>
+          <a href={emailHref}
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "transparent", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+            Email
+          </a>
+        </div>
+
+        <button onClick={onDismiss}
+          style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", width: "100%" }}>
+          Continue editing
+        </button>
       </div>
     </div>
   );
