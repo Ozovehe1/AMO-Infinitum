@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ShareButtonsProps {
   title: string;
@@ -8,12 +8,17 @@ interface ShareButtonsProps {
 
 export default function ShareButtons({ title, slug }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [canNativeShare, setCanNativeShare] = useState(false);
 
   const siteUrl =
     typeof window !== "undefined"
       ? window.location.origin
       : "https://amo-infinitum.vercel.app";
   const url = `${siteUrl}/blog/${slug}`;
+
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share);
+  }, []);
 
   const copy = async () => {
     try {
@@ -28,6 +33,12 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const nativeShare = async () => {
+    try {
+      await navigator.share({ title, url });
+    } catch { /* user cancelled */ }
   };
 
   const twitterHref =
@@ -45,6 +56,28 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
       }}>
         Share this post
       </p>
+
+      {/* Native share — shown on mobile/devices that support Web Share API */}
+      {canNativeShare && (
+        <button
+          onClick={nativeShare}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
+            background: "#0d1f3c", color: "#c8a97e",
+            border: "none", borderRadius: 8,
+            padding: "0.875rem 1rem",
+            fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600,
+            cursor: "pointer", marginBottom: "1rem",
+            letterSpacing: "0.02em",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Share this post
+        </button>
+      )}
 
       {/* Link preview box */}
       <div style={{
@@ -78,7 +111,7 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
         </button>
       </div>
 
-      {/* Social buttons */}
+      {/* Platform buttons — always visible as alternatives */}
       <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
         <a
           href={twitterHref}
