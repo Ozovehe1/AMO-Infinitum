@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { formatDate } from "@/lib/utils";
+import { formatDate, truncate } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
 
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const ogImageUrl =
     `${siteUrl}/api/og` +
     `?title=${encodeURIComponent(post.title)}` +
-    `&excerpt=${encodeURIComponent(post.excerpt || "")}` +
+    `&excerpt=${encodeURIComponent(post.excerpt || truncate(post.content, 130))}` +
     `&cover=${encodeURIComponent(post.coverImage || "")}`;
 
   const ogImage = { url: ogImageUrl, width: 1200, height: 630, alt: post.title };
