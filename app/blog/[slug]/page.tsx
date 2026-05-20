@@ -55,6 +55,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   const post = await prisma.post.findUnique({
     where: { slug, published: true },
     include: { categories: { include: { category: true } } },
+    // showUpdatedNotice and updatedAt are top-level fields, included automatically
   });
 
   if (!post) notFound();
@@ -180,7 +181,17 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   );
 }
 
-function PostMeta({ post, date, onDark }: { post: { title: string; readingTime: number; categories: { categoryId: number; category: { name: string; slug: string; color: string } }[] }; date: string; onDark?: boolean }) {
+function PostMeta({ post, date, onDark }: {
+  post: {
+    title: string;
+    readingTime: number;
+    updatedAt: Date | string;
+    showUpdatedNotice: boolean;
+    categories: { categoryId: number; category: { name: string; slug: string; color: string } }[];
+  };
+  date: string;
+  onDark?: boolean;
+}) {
   const textColor = onDark ? "#fffef9" : "#0d1f3c";
   const subColor = onDark ? "#8fa3b1" : "#3a5068";
 
@@ -198,10 +209,18 @@ function PostMeta({ post, date, onDark }: { post: { title: string; readingTime: 
       <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, color: textColor, lineHeight: 1.2, margin: "0 0 1.25rem" }}>
         {post.title}
       </h1>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: subColor, fontSize: "0.8rem", fontFamily: "Inter, sans-serif" }}>
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", color: subColor, fontSize: "0.8rem", fontFamily: "Inter, sans-serif" }}>
         <span>{date}</span>
         <span>·</span>
         <span>{post.readingTime} min read</span>
+        {post.showUpdatedNotice && (
+          <>
+            <span>·</span>
+            <span style={{ color: "#c8a97e", fontStyle: "italic" }}>
+              Updated {formatDate(post.updatedAt)}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

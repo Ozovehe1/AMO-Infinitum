@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const body = await req.json();
-  const { title, content, excerpt, coverImage, published, featured, categoryIds } = body;
+  const { title, content, excerpt, coverImage, published, featured, categoryIds, showUpdatedNotice } = body;
 
   const existing = await prisma.post.findUnique({ where: { id: postId } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -65,6 +65,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       published,
       featured,
       readingTime,
+      showUpdatedNotice: showUpdatedNotice ?? existing.showUpdatedNotice,
       publishedAt: wasPublished ? new Date() : existing.publishedAt,
       categories: {
         deleteMany: {},
