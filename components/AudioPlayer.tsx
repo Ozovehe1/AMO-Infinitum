@@ -100,28 +100,6 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         </div>
       )}
 
-      {/* Error — retry pill */}
-      {status === "error" && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 0 1.5rem" }}>
-          <button
-            onClick={() => {
-              setStatus("loading");
-              const a = audioRef.current;
-              if (a) { a.load(); }
-            }}
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "0.4rem",
-              background: "transparent", border: "1px solid rgba(13,31,60,0.15)",
-              borderRadius: 20, padding: "0.35rem 0.9rem",
-              fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1",
-              cursor: "pointer",
-            }}
-          >
-            ↺ Retry audio
-          </button>
-        </div>
-      )}
-
       {/* Player — visible once audio metadata is loaded */}
       {status === "ready" && (
         <div style={{
