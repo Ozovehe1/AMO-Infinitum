@@ -206,10 +206,19 @@ export default function PostForm({ post }: { post?: PostData }) {
     }
   }, [title, content, excerpt, coverImage, published, featured, selectedCats, postId, router]);
 
-  // Auto-save: 3 s after last change (title alone is enough for a draft)
+  // Always keep a ref to the latest performSave so the unmount cleanup can use it
+  const performSaveRef = useRef(performSave);
+  useEffect(() => { performSaveRef.current = performSave; }, [performSave]);
+
+  // Save immediately when navigating away (covers pressing Back before the debounce fires)
+  useEffect(() => {
+    return () => { performSaveRef.current({ silent: true }); };
+  }, []);
+
+  // Auto-save: 1.5 s after last change (title alone is enough for a draft)
   useEffect(() => {
     if (!title.trim()) return;
-    const t = setTimeout(() => performSave({ silent: true }), 3000);
+    const t = setTimeout(() => performSave({ silent: true }), 1500);
     return () => clearTimeout(t);
   }, [performSave]);
 
