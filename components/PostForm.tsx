@@ -31,8 +31,9 @@ interface PostData {
 
 export default function PostForm({ post }: { post?: PostData }) {
   const router = useRouter();
-  const coverImgRef = useRef<HTMLInputElement>(null);
-  const bodyImgRef  = useRef<HTMLInputElement>(null);
+  const coverImgRef    = useRef<HTMLInputElement>(null);
+  const bodyImgRef     = useRef<HTMLInputElement>(null);
+  const mobileTitleRef = useRef<HTMLTextAreaElement>(null);
 
   // Core post state
   const [postId,      setPostId]      = useState<number | undefined>(post?.id);
@@ -87,6 +88,13 @@ export default function PostForm({ post }: { post?: PostData }) {
 
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
+  }, []);
+
+  // Auto-size title textarea on mount (so existing drafts aren't clipped)
+  useEffect(() => {
+    const el = mobileTitleRef.current;
+    if (el && title) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Subscribe to editor transactions so toolbar active-states stay in sync
@@ -622,6 +630,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
           {/* Title */}
           <textarea
+            ref={mobileTitleRef}
             value={title}
             onChange={e => {
               setTitle(e.target.value);

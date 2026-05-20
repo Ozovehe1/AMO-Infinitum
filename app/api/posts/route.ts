@@ -42,8 +42,11 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { title, content, excerpt, coverImage, published, featured, categoryIds } = body;
 
-  if (!title || !content) {
-    return NextResponse.json({ error: "Title and content required" }, { status: 400 });
+  if (!title) {
+    return NextResponse.json({ error: "Title required" }, { status: 400 });
+  }
+  if (published && (!content || content === "<p></p>")) {
+    return NextResponse.json({ error: "Content required to publish" }, { status: 400 });
   }
 
   const baseSlug = slugify(title);
