@@ -334,7 +334,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Style trigger — panel is a sibling of this scroll div, not a child */}
               <button
-                onPointerDown={e => { e.preventDefault(); setStyleOpen(s => !s); setAlignOpen(false); setCatPickerOpen(false); }}
+                onClick={() => { setStyleOpen(s => !s); setAlignOpen(false); setCatPickerOpen(false); }}
                 style={{
                   height: 38, padding: "0 9px",
                   background: styleOpen ? "rgba(13,31,60,0.08)" : "transparent", color: "#1a1a1a",
@@ -358,7 +358,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Align trigger — panel is a sibling of this scroll div, not a child */}
               <button
-                onPointerDown={e => { e.preventDefault(); setAlignOpen(s => !s); setStyleOpen(false); setCatPickerOpen(false); }}
+                onClick={() => { setAlignOpen(s => !s); setStyleOpen(false); setCatPickerOpen(false); }}
                 style={{
                   height: 38, padding: "0 9px",
                   background: alignOpen ? "rgba(13,31,60,0.08)" : "transparent",
@@ -464,6 +464,7 @@ export default function PostForm({ post }: { post?: PostData }) {
             value={title}
             onChange={e => {
               setTitle(e.target.value);
+              if (error) setError("");
               const t = e.target; t.style.height = "auto"; t.style.height = t.scrollHeight + "px";
             }}
             placeholder="Title"
@@ -620,7 +621,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
           {/* Editor column */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Post Title"
+            <input value={title} onChange={e => { setTitle(e.target.value); if (error) setError(""); }} placeholder="Post Title"
               style={{ ...inputStyle, fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 700, padding: "1rem 1.25rem", border: "none", borderBottom: "2px solid rgba(13,31,60,0.1)", borderRadius: 0, background: "transparent" }}
             />
             <div>
