@@ -18,10 +18,8 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
   const url       = `${siteUrl}/blog/${slug}`;
   const shareText = excerpt || title;
 
-  const absCover = coverImage
-    ? (coverImage.startsWith("/") ? siteUrl + coverImage : coverImage)
-    : "";
-  const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(excerpt || "")}&cover=${encodeURIComponent(absCover)}`;
+  // OG image for download — no cover param (private blob URLs hang the edge function)
+  const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(excerpt || "")}`;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -61,12 +59,14 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
     setDownloading(true);
     try {
       const res  = await fetch(ogUrl);
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("OG failed");
       const blob = await res.blob();
       const a    = document.createElement("a");
       a.href     = URL.createObjectURL(blob);
       a.download = `${slug}-preview.png`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
     } catch { /* silent */ }
     setDownloading(false);
@@ -84,10 +84,9 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
           onClick={() => setOpen(true)}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
-            background: "#0d1f3c", color: "#c8a97e",
-            border: "none", borderRadius: 10, padding: "0.9rem 1rem",
-            fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600,
-            cursor: "pointer", letterSpacing: "0.02em",
+            background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 10,
+            padding: "0.9rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem",
+            fontWeight: 600, cursor: "pointer", letterSpacing: "0.02em",
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -100,13 +99,11 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
 
       {open && (
         <>
-          {/* Backdrop */}
           <div onClick={() => setOpen(false)} style={{
             position: "fixed", inset: 0, zIndex: 2000,
             background: "rgba(13,31,60,0.6)", backdropFilter: "blur(2px)",
           }} />
 
-          {/* Sheet */}
           <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 2001, display: "flex", justifyContent: "center" }}>
             <div style={{
               background: "#fffef9", borderRadius: "20px 20px 0 0", overflow: "hidden",
@@ -119,15 +116,43 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                   <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
                 </div>
 
-                {/* OG preview — edge-to-edge */}
-                <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem" }}>
-                  <div style={{ aspectRatio: "1200/630", background: "#0d1f3c", width: "100%", overflow: "hidden" }}>
-                    <img
-                      src={ogUrl}
-                      alt={title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                      onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
+                {/* Preview card — CSS-rendered, no external requests */}
+                <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
+                  <div style={{ position: "relative", aspectRatio: "1200/630", background: "#0d1f3c", width: "100%", overflow: "hidden" }}>
+                    {coverImage && (
+                      <img src={coverImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
+                    )}
+                    {!coverImage && (
+                      <div style={{
+                        position: "absolute", inset: 0,
+                        background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.35) 0%, transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(200,169,126,0.2) 0%, transparent 50%)",
+                      }} />
+                    )}
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: "linear-gradient(135deg, rgba(13,31,60,0.1) 0%, rgba(13,31,60,0.5) 40%, rgba(13,31,60,0.95) 100%)",
+                    }} />
+                    <div style={{ position: "absolute", top: 16, left: 20, display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 3, height: 22, background: "#c8a97e", borderRadius: 2 }} />
+                      <span style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "#c8a97e", letterSpacing: "0.06em" }}>
+                        AMO <em style={{ fontStyle: "italic", color: "#fffef9" }}>Infinitum</em>
+                      </span>
+                    </div>
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 18px" }}>
+                      <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 2, marginBottom: 8 }} />
+                      <p style={{
+                        fontFamily: "'Playfair Display', Georgia, serif",
+                        fontSize: "clamp(12px, 3.5vw, 17px)", fontWeight: 700,
+                        color: "#fffef9", margin: "0 0 5px", lineHeight: 1.2,
+                      }}>{title}</p>
+                      {excerpt && (
+                        <p style={{
+                          fontFamily: "system-ui, sans-serif", fontSize: "clamp(9px, 2.2vw, 11px)",
+                          color: "rgba(245,240,232,0.75)", margin: 0, lineHeight: 1.4,
+                          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                        }}>{excerpt}</p>
+                      )}
+                    </div>
                   </div>
                 </a>
 
@@ -135,26 +160,19 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
 
                   {/* Header */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
-                    <div>
-                      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Share this post</p>
-                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", margin: "0.15rem 0 0" }}>Preview image + link sent together</p>
-                    </div>
+                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Share this post</p>
                     <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 
-                  {/* Share — image + link */}
+                  {/* Share */}
                   {typeof navigator !== "undefined" && !!navigator.share && (
-                    <button
-                      onClick={nativeShare}
-                      disabled={sharing}
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
-                        background: "#0d1f3c", color: "#c8a97e",
-                        border: "none", borderRadius: 10, padding: "1rem", marginBottom: "0.625rem",
-                        fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700,
-                        cursor: sharing ? "default" : "pointer", letterSpacing: "0.02em", opacity: sharing ? 0.7 : 1,
-                      }}
-                    >
+                    <button onClick={nativeShare} disabled={sharing} style={{
+                      width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
+                      background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 10,
+                      padding: "1rem", marginBottom: "0.625rem",
+                      fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700,
+                      cursor: sharing ? "default" : "pointer", letterSpacing: "0.02em", opacity: sharing ? 0.7 : 1,
+                    }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
@@ -164,18 +182,14 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                   )}
 
                   {/* Download */}
-                  <button
-                    onClick={download}
-                    disabled={downloading}
-                    style={{
-                      width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                      background: "#f5f0e8", color: "#0d1f3c",
-                      border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8,
-                      padding: "0.75rem 1rem", marginBottom: "0.875rem",
-                      fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600,
-                      cursor: downloading ? "default" : "pointer", opacity: downloading ? 0.7 : 1,
-                    }}
-                  >
+                  <button onClick={download} disabled={downloading} style={{
+                    width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                    background: "#f5f0e8", color: "#0d1f3c",
+                    border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8,
+                    padding: "0.75rem 1rem", marginBottom: "0.875rem",
+                    fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600,
+                    cursor: downloading ? "default" : "pointer", opacity: downloading ? 0.7 : 1,
+                  }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
@@ -189,17 +203,13 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     display: "flex", alignItems: "center", gap: "0.75rem",
                   }}>
                     <span style={{ flex: 1, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", wordBreak: "break-all", lineHeight: 1.5 }}>{url}</span>
-                    <button
-                      onClick={copy}
-                      style={{
-                        flexShrink: 0,
-                        background: copied ? "#4a9e7a" : "#0d1f3c",
-                        color: copied ? "#fff" : "#c8a97e",
-                        border: "none", borderRadius: 6, padding: "0.45rem 0.875rem",
-                        fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 600,
-                        cursor: "pointer", transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap",
-                      }}
-                    >
+                    <button onClick={copy} style={{
+                      flexShrink: 0, background: copied ? "#4a9e7a" : "#0d1f3c",
+                      color: copied ? "#fff" : "#c8a97e", border: "none", borderRadius: 6,
+                      padding: "0.45rem 0.875rem", fontFamily: "Inter, sans-serif",
+                      fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
+                      transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap",
+                    }}>
                       {copied ? "✓ Copied!" : "Copy Link"}
                     </button>
                   </div>
