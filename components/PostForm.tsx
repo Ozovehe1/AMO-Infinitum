@@ -458,7 +458,10 @@ export default function PostForm({ post }: { post?: PostData }) {
                       amo-infinitum.vercel.app
                     </p>
                     <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", fontWeight: 600, margin: "0 0 0.25rem", lineHeight: 1.3 }}>{title}</p>
-                    {excerpt && <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", margin: 0, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{excerpt}</p>}
+                    {(() => {
+                      const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+                      return preview ? <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", margin: 0, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{preview}</p> : null;
+                    })()}
                   </div>
                 </div>
               </a>
