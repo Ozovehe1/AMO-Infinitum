@@ -109,7 +109,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         </article>
 
         {/* Share buttons */}
-        <ShareButtons title={post.title} slug={post.slug} />
+        <ShareButtons title={post.title} slug={post.slug} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} />
 
         {/* Category tags */}
         {post.categories.length > 0 && (

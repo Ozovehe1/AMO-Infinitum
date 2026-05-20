@@ -4,17 +4,28 @@ import { useState, useEffect } from "react";
 interface ShareButtonsProps {
   title: string;
   slug: string;
+  excerpt?: string;
+  coverImage?: string;
 }
 
-export default function ShareButtons({ title, slug }: ShareButtonsProps) {
+export default function ShareButtons({ title, slug, excerpt, coverImage }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const siteUrl =
     typeof window !== "undefined"
       ? window.location.origin
       : "https://amo-infinitum.vercel.app";
   const url = `${siteUrl}/blog/${slug}`;
+
+  // Share text is the subtitle/excerpt — title already shows in link preview
+  const shareText = excerpt || title;
+
+  const absCover = coverImage
+    ? (coverImage.startsWith("/") ? siteUrl + coverImage : coverImage)
+    : "";
+  const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(excerpt || "")}&cover=${encodeURIComponent(absCover)}`;
 
   useEffect(() => {
     setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share);
@@ -35,17 +46,33 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const nativeShare = async () => {
+  const fetchOgBlob = async (): Promise<File | null> => {
     try {
-      await navigator.share({ title, url });
+      const res = await fetch(ogUrl);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return new File([blob], `${slug}-preview.png`, { type: "image/png" });
+    } catch { return null; }
+  };
+
+  const nativeShare = async () => {
+    setSharing(true);
+    try {
+      const file = await fetchOgBlob();
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: shareText, url });
+      } else {
+        await navigator.share({ title: shareText, url });
+      }
     } catch { /* user cancelled */ }
+    setSharing(false);
   };
 
   const twitterHref =
-    `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`;
 
   const whatsappHref =
-    `https://wa.me/?text=${encodeURIComponent(title + " " + url)}`;
+    `https://wa.me/?text=${encodeURIComponent(shareText + "\n" + url)}`;
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "2rem 1.5rem" }}>
@@ -57,10 +84,11 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
         Share this post
       </p>
 
-      {/* Native share — shown on mobile/devices that support Web Share API */}
+      {/* Native share with image — mobile */}
       {canNativeShare && (
         <button
           onClick={nativeShare}
+          disabled={sharing}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
             background: "#0d1f3c", color: "#c8a97e",
@@ -69,17 +97,18 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
             fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600,
             cursor: "pointer", marginBottom: "1rem",
             letterSpacing: "0.02em",
+            opacity: sharing ? 0.7 : 1,
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
-          Share this post
+          {sharing ? "Preparing…" : "Share this post"}
         </button>
       )}
 
-      {/* Link preview box */}
+      {/* Link preview + copy */}
       <div style={{
         background: "#f5f0e8",
         border: "1px solid rgba(13,31,60,0.1)",
@@ -111,7 +140,7 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
         </button>
       </div>
 
-      {/* Platform buttons — always visible as alternatives */}
+      {/* Platform buttons */}
       <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
         <a
           href={twitterHref}
@@ -152,7 +181,7 @@ export default function ShareButtons({ title, slug }: ShareButtonsProps) {
         </a>
 
         <a
-          href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent("I thought you might enjoy this: " + url)}`}
+          href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent((excerpt ? excerpt + "\n\n" : "") + url)}`}
           style={{
             display: "inline-flex", alignItems: "center", gap: "0.4rem",
             background: "transparent", color: "#0d1f3c",

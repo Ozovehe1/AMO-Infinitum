@@ -2,30 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { put, list } from "@vercel/blob";
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 3900); // Deepgram TTS limit ~4000 chars
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ").trim().slice(0, 3900);
+}
+
+async function callDeeepgram(text: string, model: string): Promise<Response> {
+  return fetch(`https://api.deepgram.com/v1/speak?model=${model}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Token ${process.env.DeepgramAPI}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text }),
+  });
 }
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
   if (!slug) return NextResponse.json({ error: "Missing slug" }, { status: 400 });
 
+  if (!process.env.DeepgramAPI) {
+    return NextResponse.json({ error: "TTS not configured" }, { status: 503 });
+  }
+
   const blobKey = `tts/${slug}.mp3`;
 
-  // Check cache in Vercel Blob
-  const { blobs } = await list({ prefix: blobKey });
-  if (blobs.length > 0) {
-    return NextResponse.json({ url: blobs[0].url });
+  // Check Vercel Blob cache
+  try {
+    const { blobs } = await list({ prefix: blobKey });
+    if (blobs.length > 0) {
+      const proxyUrl = `/api/img?src=${encodeURIComponent(blobs[0].url)}`;
+      return NextResponse.json({ url: proxyUrl });
+    }
+  } catch (e) {
+    console.error("Blob list error:", e);
   }
 
   // Fetch post content
@@ -37,48 +53,30 @@ export async function GET(req: NextRequest) {
 
   const text = `${post.title}. ${stripHtml(post.content)}`;
 
-  if (!process.env.DeepgramAPI) {
-    return NextResponse.json({ error: "TTS not configured" }, { status: 503 });
-  }
-
-  // Call Deepgram TTS
-  const dgRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-asteria-en", {
-    method: "POST",
-    headers: {
-      Authorization: `Token ${process.env.DeepgramAPI}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text }),
-  });
-
+  // Try best model first, fall back to standard
+  let dgRes = await callDeeepgram(text, "aura-asteria-en");
   if (!dgRes.ok) {
-    const errText = await dgRes.text();
-    console.error("Deepgram TTS error:", dgRes.status, errText);
-    // Fallback to aura-asteria-en if aura-2 not available
-    const fallback = await fetch("https://api.deepgram.com/v1/speak?model=aura-asteria-en", {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${process.env.DeepgramAPI}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
-    if (!fallback.ok) {
+    const err = await dgRes.text();
+    console.error("Deepgram aura-asteria-en error:", dgRes.status, err);
+    dgRes = await callDeeepgram(text, "aura-2-asteria-en");
+    if (!dgRes.ok) {
+      const err2 = await dgRes.text();
+      console.error("Deepgram aura-2 error:", dgRes.status, err2);
       return NextResponse.json({ error: "TTS generation failed" }, { status: 502 });
     }
-    const audioBlob = await fallback.blob();
-    const blob = await put(blobKey, audioBlob, {
-      access: "public",
-      contentType: "audio/mpeg",
-    });
-    return NextResponse.json({ url: blob.url });
   }
 
   const audioBlob = await dgRes.blob();
-  const blob = await put(blobKey, audioBlob, {
-    access: "public",
-    contentType: "audio/mpeg",
-  });
 
-  return NextResponse.json({ url: blob.url });
+  try {
+    const blob = await put(blobKey, audioBlob, {
+      access: "private",
+      contentType: "audio/mpeg",
+    });
+    const proxyUrl = `${SITE}/api/img?src=${encodeURIComponent(blob.url)}`;
+    return NextResponse.json({ url: proxyUrl });
+  } catch (e) {
+    console.error("Blob put error:", e);
+    return NextResponse.json({ error: "Failed to cache audio" }, { status: 500 });
+  }
 }
