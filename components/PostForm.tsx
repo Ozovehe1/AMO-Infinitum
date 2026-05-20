@@ -319,11 +319,35 @@ export default function PostForm({ post }: { post?: PostData }) {
   };
 
   // ── Image upload ─────────────────────────────────────────
+  // Compress image client-side so phone photos (often 5-15 MB) fit within
+  // Vercel's 4.5 MB serverless body limit before hitting the upload route.
+  const compressImage = (file: File): Promise<File> =>
+    new Promise((resolve) => {
+      const MAX = 3.5 * 1024 * 1024; // 3.5 MB target
+      if (file.size <= MAX) { resolve(file); return; }
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const ratio = Math.sqrt(MAX / file.size);
+        const canvas = document.createElement("canvas");
+        canvas.width  = Math.floor(img.width  * ratio);
+        canvas.height = Math.floor(img.height * ratio);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], file.name, { type: "image/jpeg" })),
+          "image/jpeg", 0.85
+        );
+      };
+      img.src = url;
+    });
+
   const uploadCover = async (file: File) => {
     setUploading(true); setError("");
     let res: Response | undefined;
     try {
-      const fd = new FormData(); fd.append("file", file);
+      const compressed = await compressImage(file);
+      const fd = new FormData(); fd.append("file", compressed);
       res = await fetch("/api/upload", { method: "POST", body: fd });
     } catch {
       setUploading(false);
@@ -335,7 +359,7 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (res.ok) setCoverImage(data.url);
       else setError(data.error || `Upload failed (${res.status}).`);
     } catch {
-      setError(`Upload failed (HTTP ${res.status}) — please try again.`);
+      setError(`Server error (HTTP ${res.status}) — please try again.`);
     }
     setUploading(false);
   };
