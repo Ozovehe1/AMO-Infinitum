@@ -136,10 +136,10 @@ export default async function Home({
                       </span>
                     ))}
                   </div>
-                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.2, margin: "0 0 1.1rem" }}>
+                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.2, margin: "0 0 1.1rem", wordBreak: "break-word" }}>
                     {featured.title}
                   </h2>
-                  <p style={{ color: "#8fa3b1", fontFamily: "'Source Serif 4', serif", fontSize: "1.05rem", lineHeight: 1.7, margin: "0 0 1.75rem" }}>
+                  <p style={{ color: "#8fa3b1", fontFamily: "'Source Serif 4', serif", fontSize: "1.05rem", lineHeight: 1.7, margin: "0 0 1.75rem", wordBreak: "break-word", overflowWrap: "break-word" }}>
                     {featuredExcerpt}
                   </p>
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: "#8fa3b1", fontSize: "0.78rem", fontFamily: "Inter, sans-serif" }}>

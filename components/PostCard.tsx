@@ -59,7 +59,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.25, margin: "0 0 0.75rem" }}>
               {post.title}
             </h2>
-            <p style={{ color: "#3a5068", fontSize: "1rem", lineHeight: 1.65, margin: "0 0 1.25rem", fontFamily: "'Source Serif 4', serif" }}>
+            <p style={{ color: "#3a5068", fontSize: "1rem", lineHeight: 1.65, margin: "0 0 1.25rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
               {excerpt}
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: "#8fa3b1", fontSize: "0.78rem", fontFamily: "Inter, sans-serif" }}>
@@ -95,10 +95,10 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
                 ))}
               </div>
             )}
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.3, margin: "0 0 0.4rem" }}>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.3, margin: "0 0 0.4rem", wordBreak: "break-word" }}>
               {post.title}
             </h3>
-            <p style={{ color: "#3a5068", fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 0.75rem", fontFamily: "'Source Serif 4', serif" }}>
+            <p style={{ color: "#3a5068", fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 0.75rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
               {excerpt}
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#8fa3b1", fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
