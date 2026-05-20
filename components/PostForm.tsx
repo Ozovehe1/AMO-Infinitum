@@ -93,6 +93,23 @@ export default function PostForm({ post }: { post?: PostData }) {
     return () => { mobileEditor.off("transaction", handler); };
   }, [mobileEditor]);
 
+  // Load AI chat history from sessionStorage on mount
+  useEffect(() => {
+    const key = `ai-chat-${postId ?? "new"}`;
+    try {
+      const saved = sessionStorage.getItem(key);
+      if (saved) setAiMessages(JSON.parse(saved));
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save AI chat history to sessionStorage whenever messages change
+  useEffect(() => {
+    const key = `ai-chat-${postId ?? "new"}`;
+    if (aiMessages.length > 0) sessionStorage.setItem(key, JSON.stringify(aiMessages));
+    else sessionStorage.removeItem(key);
+  }, [aiMessages, postId]);
+
   // Auto-scroll AI chat to latest message
   useEffect(() => {
     aiEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -750,7 +767,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   {aiMessages.length > 0 && (
-                    <button onClick={() => setAiMessages([])} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                    <button onClick={() => { setAiMessages([]); sessionStorage.removeItem(`ai-chat-${postId ?? "new"}`); }} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
                       New chat
                     </button>
                   )}
@@ -841,7 +858,7 @@ export default function PostForm({ post }: { post?: PostData }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
               {aiMessages.length > 0 && (
-                <button onClick={() => setAiMessages([])} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                <button onClick={() => { setAiMessages([]); sessionStorage.removeItem(`ai-chat-${postId ?? "new"}`); }} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
                   New chat
                 </button>
               )}
