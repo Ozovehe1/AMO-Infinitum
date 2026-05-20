@@ -129,25 +129,25 @@ export default function PostForm({ post }: { post?: PostData }) {
     return () => { mobileEditor.off("transaction", handler); };
   }, [mobileEditor]);
 
-  // Load AI chat + session history from sessionStorage on mount
+  // Load AI chat + session history from localStorage on mount
   useEffect(() => {
     const pid = postId ?? "new";
     try {
-      const chat = sessionStorage.getItem(`ai-chat-${pid}`);
+      const chat = localStorage.getItem(`ai-chat-${pid}`);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (chat) setAiMessages(JSON.parse(chat));
-      const hist = sessionStorage.getItem(`ai-sessions-${pid}`);
+      const hist = localStorage.getItem(`ai-sessions-${pid}`);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (hist) setAiSessions(JSON.parse(hist));
     } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist current chat to sessionStorage
+  // Persist current chat to localStorage
   useEffect(() => {
     const key = `ai-chat-${postId ?? "new"}`;
-    if (aiMessages.length > 0) sessionStorage.setItem(key, JSON.stringify(aiMessages));
-    else sessionStorage.removeItem(key);
+    if (aiMessages.length > 0) localStorage.setItem(key, JSON.stringify(aiMessages));
+    else localStorage.removeItem(key);
   }, [aiMessages, postId]);
 
   // ── Session management ────────────────────────────────────
@@ -156,7 +156,7 @@ export default function PostForm({ post }: { post?: PostData }) {
     const preview = msgs.find(m => m.role === "user")?.content.slice(0, 90) ?? "Conversation";
     const session: ChatSession = { id: Date.now().toString(), createdAt: Date.now(), preview, messages: msgs };
     const updated = [session, ...sessions].slice(0, 30);
-    try { sessionStorage.setItem(`ai-sessions-${pid ?? "new"}`, JSON.stringify(updated)); } catch { /* storage full */ }
+    try { localStorage.setItem(`ai-sessions-${pid ?? "new"}`, JSON.stringify(updated)); } catch { /* storage full */ }
     return updated;
   };
 
@@ -177,7 +177,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const deleteSession = (id: string) => {
     const updated = aiSessions.filter(s => s.id !== id);
     setAiSessions(updated);
-    try { sessionStorage.setItem(`ai-sessions-${postId ?? "new"}`, JSON.stringify(updated)); } catch { }
+    try { localStorage.setItem(`ai-sessions-${postId ?? "new"}`, JSON.stringify(updated)); } catch { }
   };
 
   // Auto-scroll AI chat to latest message
