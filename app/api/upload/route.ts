@@ -38,6 +38,12 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("Blob upload error:", msg);
+    if (msg.includes("private store") || msg.includes("private access")) {
+      return NextResponse.json(
+        { error: "Your Vercel Blob store is set to Private. Go to Vercel → Storage → your Blob store and change access to Public." },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ error: `Upload error: ${msg}` }, { status: 500 });
   }
 }
