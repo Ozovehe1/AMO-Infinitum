@@ -109,7 +109,8 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (!aiDragRef.current.isDragging) return;
       e.preventDefault();
       const dy = aiDragRef.current.startY - e.touches[0].clientY;
-      const newH = Math.min(85, Math.max(25, aiDragRef.current.startH + (dy / window.innerHeight) * 100));
+      const viewportH = window.visualViewport?.height || window.innerHeight;
+      const newH = Math.min(85, Math.max(25, aiDragRef.current.startH + (dy / viewportH) * 100));
       setDrawerHeight(newH);
     };
     const onEnd = () => { aiDragRef.current.isDragging = false; };
@@ -721,7 +722,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 411,
               background: "#0d1f3c", borderRadius: "18px 18px 0 0",
               boxShadow: "0 -8px 40px rgba(13,31,60,0.4)",
-              height: `${drawerHeight}vh`, display: "flex", flexDirection: "column",
+              height: `${drawerHeight}dvh`, display: "flex", flexDirection: "column",
               paddingBottom: "env(safe-area-inset-bottom)",
             }}>
               {/* Drag handle — touch here to resize */}
