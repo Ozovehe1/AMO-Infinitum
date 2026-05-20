@@ -57,7 +57,8 @@ export default function PostForm({ post }: { post?: PostData }) {
   const router = useRouter();
   const coverImgRef    = useRef<HTMLInputElement>(null);
   const bodyImgRef     = useRef<HTMLInputElement>(null);
-  const mobileTitleRef = useRef<HTMLTextAreaElement>(null);
+  const mobileTitleRef    = useRef<HTMLTextAreaElement>(null);
+  const mobileExcerptRef  = useRef<HTMLTextAreaElement>(null);
 
   // Core post state
   const [postId,      setPostId]      = useState<number | undefined>(post?.id);
@@ -114,10 +115,12 @@ export default function PostForm({ post }: { post?: PostData }) {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
 
-  // Auto-size title textarea on mount (so existing drafts aren't clipped)
+  // Auto-size title + subtitle textareas on mount so existing drafts aren't clipped
   useEffect(() => {
-    const el = mobileTitleRef.current;
-    if (el && title) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+    const title = mobileTitleRef.current;
+    if (title && title.value) { title.style.height = "auto"; title.style.height = title.scrollHeight + "px"; }
+    const excerpt = mobileExcerptRef.current;
+    if (excerpt && excerpt.value) { excerpt.style.height = "auto"; excerpt.style.height = excerpt.scrollHeight + "px"; }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -655,6 +658,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
           {/* Subtitle / Excerpt */}
           <textarea
+            ref={mobileExcerptRef}
             value={excerpt}
             onChange={e => {
               setExcerpt(e.target.value);
