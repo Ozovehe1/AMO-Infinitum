@@ -13,14 +13,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const formData = await req.formData();
-  const file = formData.get("file") as File;
-  if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+  let file: File | null = null;
+  try {
+    const formData = await req.formData();
+    file = formData.get("file") as File;
+  } catch {
+    return NextResponse.json({ error: "Could not read upload data." }, { status: 400 });
+  }
 
-  const blob = await put(`covers/${Date.now()}-${file.name}`, file, {
-    access: "public",
-    contentType: file.type,
-  });
+  if (!file || !file.size) {
+    return NextResponse.json({ error: "No file provided." }, { status: 400 });
+  }
 
-  return NextResponse.json({ url: blob.url });
+  // Sanitize filename — strip special chars so Vercel Blob accepts it
+  const ext = file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : "jpg";
+  const safeName = `covers/${Date.now()}.${ext}`;
+
+  try {
+    const blob = await put(safeName, file, {
+      access: "public",
+      contentType: file.type || "image/jpeg",
+    });
+    return NextResponse.json({ url: blob.url });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Blob upload error:", msg);
+    return NextResponse.json({ error: `Upload error: ${msg}` }, { status: 500 });
+  }
 }
