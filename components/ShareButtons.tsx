@@ -9,13 +9,12 @@ interface ShareButtonsProps {
 }
 
 export default function ShareButtons({ title, slug, excerpt, coverImage }: ShareButtonsProps) {
-  const [open,    setOpen]    = useState(false);
-  const [copied,  setCopied]  = useState(false);
-  const [sharing, setSharing] = useState(false);
+  const [open,        setOpen]        = useState(false);
+  const [copied,      setCopied]      = useState(false);
+  const [sharing,     setSharing]     = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
-  const siteUrl = typeof window !== "undefined"
-    ? window.location.origin
-    : "https://amo-infinitum.vercel.app";
+  const siteUrl   = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const url       = `${siteUrl}/blog/${slug}`;
   const shareText = excerpt || title;
 
@@ -24,13 +23,8 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
     : "";
   const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(excerpt || "")}&cover=${encodeURIComponent(absCover)}`;
 
-  // Lock body scroll when sheet is open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
@@ -63,21 +57,35 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
     setSharing(false);
   };
 
+  const download = async () => {
+    setDownloading(true);
+    try {
+      const res  = await fetch(ogUrl);
+      if (!res.ok) throw new Error("Failed");
+      const blob = await res.blob();
+      const a    = document.createElement("a");
+      a.href     = URL.createObjectURL(blob);
+      a.download = `${slug}-preview.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch { /* silent */ }
+    setDownloading(false);
+  };
+
   const twitterHref  = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`;
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText + "\n" + url)}`;
   const emailHref    = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent((excerpt ? excerpt + "\n\n" : "") + url)}`;
 
   return (
     <>
-      {/* ── Trigger button ── */}
+      {/* Trigger */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "2rem 1.5rem 1rem" }}>
         <button
           onClick={() => setOpen(true)}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
             background: "#0d1f3c", color: "#c8a97e",
-            border: "none", borderRadius: 10,
-            padding: "0.9rem 1rem",
+            border: "none", borderRadius: 10, padding: "0.9rem 1rem",
             fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600,
             cursor: "pointer", letterSpacing: "0.02em",
           }}
@@ -90,48 +98,39 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
         </button>
       </div>
 
-      {/* ── Bottom sheet overlay ── */}
       {open && (
         <>
           {/* Backdrop */}
-          <div
-            onClick={() => setOpen(false)}
-            style={{
-              position: "fixed", inset: 0, zIndex: 2000,
-              background: "rgba(13,31,60,0.6)",
-              backdropFilter: "blur(2px)",
-            }}
-          />
+          <div onClick={() => setOpen(false)} style={{
+            position: "fixed", inset: 0, zIndex: 2000,
+            background: "rgba(13,31,60,0.6)", backdropFilter: "blur(2px)",
+          }} />
 
           {/* Sheet */}
-          <div style={{
-            position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 2001,
-            display: "flex", justifyContent: "center",
-          }}>
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 2001, display: "flex", justifyContent: "center" }}>
             <div style={{
-              background: "#fffef9",
-              borderRadius: "20px 20px 0 0",
-              overflow: "hidden",
-              width: "100%", maxWidth: 480,
-              maxHeight: "92vh",
-              display: "flex", flexDirection: "column",
+              background: "#fffef9", borderRadius: "20px 20px 0 0", overflow: "hidden",
+              width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column",
             }}>
-              {/* Scrollable content */}
               <div style={{ overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
 
-                {/* Drag handle */}
+                {/* Handle */}
                 <div style={{ padding: "0.875rem 1.5rem 0" }}>
                   <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
                 </div>
 
                 {/* OG preview — edge-to-edge */}
                 <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem" }}>
-                  <div style={{ aspectRatio: "1200/630", background: "#0d1f3c", width: "100%" }}>
-                    <img src={ogUrl} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <div style={{ aspectRatio: "1200/630", background: "#0d1f3c", width: "100%", overflow: "hidden" }}>
+                    <img
+                      src={ogUrl}
+                      alt={title}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
                   </div>
                 </a>
 
-                {/* Controls */}
                 <div style={{ padding: "0.875rem 1.5rem 2.5rem" }}>
 
                   {/* Header */}
@@ -143,7 +142,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 
-                  {/* PRIMARY: Share image + link together */}
+                  {/* Share — image + link */}
                   {typeof navigator !== "undefined" && !!navigator.share && (
                     <button
                       onClick={nativeShare}
@@ -151,12 +150,9 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
                         background: "#0d1f3c", color: "#c8a97e",
-                        border: "none", borderRadius: 10,
-                        padding: "1rem", marginBottom: "0.625rem",
+                        border: "none", borderRadius: 10, padding: "1rem", marginBottom: "0.625rem",
                         fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700,
-                        cursor: sharing ? "default" : "pointer",
-                        letterSpacing: "0.02em",
-                        opacity: sharing ? 0.7 : 1,
+                        cursor: sharing ? "default" : "pointer", letterSpacing: "0.02em", opacity: sharing ? 0.7 : 1,
                       }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -167,22 +163,23 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     </button>
                   )}
 
-                  {/* Download branded preview */}
+                  {/* Download */}
                   <button
-                    onClick={() => window.open(ogUrl + "&download=1", "_blank")}
+                    onClick={download}
+                    disabled={downloading}
                     style={{
                       width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
                       background: "#f5f0e8", color: "#0d1f3c",
                       border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8,
                       padding: "0.75rem 1rem", marginBottom: "0.875rem",
                       fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600,
-                      cursor: "pointer",
+                      cursor: downloading ? "default" : "pointer", opacity: downloading ? 0.7 : 1,
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
-                    Download branded preview
+                    {downloading ? "Downloading…" : "Download"}
                   </button>
 
                   {/* Copy link */}
@@ -198,18 +195,16 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                         flexShrink: 0,
                         background: copied ? "#4a9e7a" : "#0d1f3c",
                         color: copied ? "#fff" : "#c8a97e",
-                        border: "none", borderRadius: 6,
-                        padding: "0.45rem 0.875rem",
+                        border: "none", borderRadius: 6, padding: "0.45rem 0.875rem",
                         fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 600,
-                        cursor: "pointer", transition: "background 0.2s, color 0.2s",
-                        whiteSpace: "nowrap",
+                        cursor: "pointer", transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap",
                       }}
                     >
                       {copied ? "✓ Copied!" : "Copy Link"}
                     </button>
                   </div>
 
-                  {/* Platform buttons */}
+                  {/* Platform links */}
                   <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8fa3b1", margin: "0 0 0.6rem" }}>Also share on</p>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <a href={twitterHref} target="_blank" rel="noreferrer"

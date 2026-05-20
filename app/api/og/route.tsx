@@ -10,11 +10,10 @@ export async function GET(req: NextRequest) {
   const cover    = searchParams.get("cover")    || "";
   const download = searchParams.get("download") === "1";
 
-  // Load Playfair Display Bold from Google Fonts
   const fontRes = await fetch(
     "https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTnCjmHKM4nYO7KN_pqRbtA.woff"
   ).catch(() => null);
-  const fontData = fontRes ? await fontRes.arrayBuffer() : null;
+  const fontData = (fontRes && fontRes.ok) ? await fontRes.arrayBuffer() : null;
 
   const shortExcerpt = excerpt.length > 160
     ? excerpt.slice(0, 160).trimEnd() + "…"
