@@ -6,7 +6,6 @@ import Link from "next/link";
 import { formatDate, truncate } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
-import AudioPlayer from "@/components/AudioPlayer";
 
 export const revalidate = 60;
 
@@ -100,10 +99,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
 
       {/* Article body */}
       <main style={{ background: "#fffef9", flex: 1 }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "2.5rem 1.5rem 0" }}>
-          <AudioPlayer slug={post.slug} />
-        </div>
-        <article style={{ maxWidth: 720, margin: "0 auto", padding: "1.5rem 1.5rem 5rem" }}>
+        <article style={{ maxWidth: 720, margin: "0 auto", padding: "4rem 1.5rem 5rem" }}>
           <div
             className="prose-amo"
             dangerouslySetInnerHTML={{ __html: post.content }}
