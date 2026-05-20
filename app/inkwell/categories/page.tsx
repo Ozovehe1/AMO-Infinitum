@@ -26,6 +26,7 @@ export default function CategoriesPage() {
     setLoading(true);
     fetch("/api/categories").then(r => r.json()).then(data => { setCategories(data); setLoading(false); });
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, []);
 
   const openCreate = () => { setForm({ name: "", description: "", color: "#2d7d9a" }); setEditing(null); setCreating(true); setError(""); };

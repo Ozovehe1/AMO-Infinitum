@@ -29,6 +29,30 @@ interface PostData {
   categories?: { category: Category }[];
 }
 
+// ── Toolbar helpers (defined outside component to avoid re-creation on render) ──
+function TB(label: string, action: () => void, active?: boolean, extraStyle?: React.CSSProperties) {
+  return (
+    <button
+      key={label}
+      onPointerDown={e => { e.preventDefault(); action(); }}
+      style={{
+        height: 38, padding: "0 9px",
+        background: active ? "rgba(13,31,60,0.08)" : "transparent",
+        color: "#1a1a1a", border: "none", borderRadius: 4,
+        cursor: "pointer", fontSize: "0.82rem",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        flexShrink: 0, display: "flex", alignItems: "center",
+        touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
+        ...extraStyle,
+      }}
+    >{label}</button>
+  );
+}
+
+function TSep() {
+  return <div style={{ width: 1, background: "rgba(0,0,0,0.12)", height: 18, margin: "0 3px", alignSelf: "center", flexShrink: 0 }} />;
+}
+
 export default function PostForm({ post }: { post?: PostData }) {
   const router = useRouter();
   const coverImgRef    = useRef<HTMLInputElement>(null);
@@ -76,7 +100,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [aiLoading,    setAiLoading]    = useState(false);
   const [drawerHeight, setDrawerHeight] = useState(60); // vh, user-resizable
   const drawerHeightRef = useRef(60);
-  drawerHeightRef.current = drawerHeight;
+  useEffect(() => { drawerHeightRef.current = drawerHeight; }, [drawerHeight]);
   const aiEndRef    = useRef<HTMLDivElement>(null);
   const aiHandleRef = useRef<HTMLDivElement>(null);
   const aiDragRef   = useRef({ isDragging: false, startY: 0, startH: 60 });
@@ -110,8 +134,10 @@ export default function PostForm({ post }: { post?: PostData }) {
     const pid = postId ?? "new";
     try {
       const chat = sessionStorage.getItem(`ai-chat-${pid}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (chat) setAiMessages(JSON.parse(chat));
       const hist = sessionStorage.getItem(`ai-sessions-${pid}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (hist) setAiSessions(JSON.parse(hist));
     } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -331,28 +357,6 @@ export default function PostForm({ post }: { post?: PostData }) {
     setSelectedCats(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   const isEdit = !!postId;
-
-  // ── Toolbar button builder ────────────────────────────────
-  const TB = (label: string, action: () => void, active?: boolean, extraStyle?: React.CSSProperties) => (
-    <button
-      key={label}
-      onPointerDown={e => { e.preventDefault(); action(); }}
-      style={{
-        height: 38, padding: "0 9px",
-        background: active ? "rgba(13,31,60,0.08)" : "transparent",
-        color: "#1a1a1a", border: "none", borderRadius: 4,
-        cursor: "pointer", fontSize: "0.82rem",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        flexShrink: 0, display: "flex", alignItems: "center",
-        touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
-        ...extraStyle,
-      }}
-    >{label}</button>
-  );
-
-  const TSep = () => (
-    <div style={{ width: 1, background: "rgba(0,0,0,0.12)", height: 18, margin: "0 3px", alignSelf: "center", flexShrink: 0 }} />
-  );
 
   // ── Sidebar styles (desktop) ──────────────────────────────
   const inputStyle: React.CSSProperties = {
@@ -1024,7 +1028,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
                   <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 18, height: 18, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
                   <div>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Show "Updated" notice to readers</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice to readers</span>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Displays the edit date on the post so readers know it was revised</span>
                   </div>
                 </label>
@@ -1156,7 +1160,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", cursor: "pointer" }}>
             <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
             <div>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Show "Updated" notice</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Show readers the edit date</span>
             </div>
           </label>
@@ -1248,7 +1252,7 @@ function AiHistoryView({ sessions, onResume, onDelete }: {
     return (
       <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
         <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
-          No archived conversations yet.<br />Click "New chat" to archive the current one.
+          No archived conversations yet.<br />Click &quot;New chat&quot; to archive the current one.
         </p>
       </div>
     );

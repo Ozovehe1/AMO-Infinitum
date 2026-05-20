@@ -41,6 +41,7 @@ export default function AllPosts() {
       .then(data => { setPosts(data.posts || []); setTotal(data.total || 0); setLoading(false); });
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
