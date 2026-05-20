@@ -10,11 +10,11 @@ function stripHtml(html: string): string {
     .replace(/\s+/g, " ").trim().slice(0, 3900);
 }
 
-async function callDeepgram(text: string, model: string): Promise<Response> {
+async function callDeepgramWithKey(key: string, text: string, model: string): Promise<Response> {
   return fetch(`https://api.deepgram.com/v1/speak?model=${model}`, {
     method: "POST",
     headers: {
-      Authorization: `Token ${process.env.DeepgramAPI}`,
+      Authorization: `Token ${key}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ text }),
@@ -25,7 +25,15 @@ export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
   if (!slug) return new NextResponse("Missing slug", { status: 400 });
 
-  if (!process.env.DeepgramAPI) {
+  // Accept any common naming convention for the Deepgram key
+  const dgKey =
+    process.env.DeepgramAPI ||
+    process.env.DEEPGRAM_API_KEY ||
+    process.env.DEEPGRAM_API ||
+    process.env.DEEPGRAM_KEY;
+
+  if (!dgKey) {
+    console.error("TTS: no Deepgram API key found (checked DeepgramAPI, DEEPGRAM_API_KEY, DEEPGRAM_API, DEEPGRAM_KEY)");
     return new NextResponse("TTS not configured", { status: 503 });
   }
 
@@ -63,13 +71,13 @@ export async function GET(req: NextRequest) {
 
   const text = `${post.title}. ${stripHtml(post.content)}`;
 
-  // Try preferred model, fall back to Aura 2
-  let dgRes = await callDeepgram(text, "aura-asteria-en");
+  // Try Aura-2 first (current primary), fall back to Aura-1
+  let dgRes = await callDeepgramWithKey(dgKey, text, "aura-2-asteria-en");
   if (!dgRes.ok) {
-    console.error("Deepgram aura-asteria-en:", dgRes.status, await dgRes.text());
-    dgRes = await callDeepgram(text, "aura-2-asteria-en");
+    console.error("Deepgram aura-2-asteria-en:", dgRes.status, await dgRes.text());
+    dgRes = await callDeepgramWithKey(dgKey, text, "aura-asteria-en");
     if (!dgRes.ok) {
-      console.error("Deepgram aura-2-asteria-en:", dgRes.status, await dgRes.text());
+      console.error("Deepgram aura-asteria-en:", dgRes.status, await dgRes.text());
       return new NextResponse("TTS generation failed", { status: 502 });
     }
   }
