@@ -1307,57 +1307,98 @@ function ShareRow({ slug }: { slug: string }) {
 function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss }: {
   slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void;
 }) {
+  const [sharing, setSharing] = useState(false);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const postUrl = `${origin}/blog/${slug}`;
+  const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+
+  // Absolute cover URL for the OG endpoint
+  const absCover = coverImage ? (coverImage.startsWith("/") ? origin + coverImage : coverImage) : "";
+  const ogUrl = `${origin}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(preview)}&cover=${encodeURIComponent(absCover)}`;
+
   const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(postUrl)}`;
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(title + " " + postUrl)}`;
   const emailHref = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent("I thought you might enjoy this: " + postUrl)}`;
-  const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+
+  const fetchOgBlob = async (): Promise<File | null> => {
+    try {
+      const res = await fetch(ogUrl);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return new File([blob], `${slug}-preview.png`, { type: "image/png" });
+    } catch { return null; }
+  };
+
+  const downloadPreview = async () => {
+    const file = await fetchOgBlob();
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const a = document.createElement("a");
+    a.href = url; a.download = file.name; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const shareWithPreview = async () => {
+    setSharing(true);
+    try {
+      const file = await fetchOgBlob();
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title, url: postUrl });
+      } else {
+        await navigator.share({ title, url: postUrl });
+      }
+    } catch { /* cancelled */ }
+    setSharing(false);
+  };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onDismiss}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", padding: "2rem 1.5rem 2.5rem", width: "100%", maxWidth: 480 }}>
-        <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto 1.5rem" }} />
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.5rem 2.5rem", width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto 1.25rem" }} />
 
-        <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: "2.25rem", marginBottom: "0.4rem" }}>🎉</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Your post is live!</h2>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+          <div style={{ fontSize: "2rem", marginBottom: "0.35rem" }}>🎉</div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Your post is live!</h2>
         </div>
 
-        {/* Link preview card */}
-        <a href={postUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none", display: "block", marginBottom: "1.25rem" }}>
-          <div style={{ border: "1px solid rgba(13,31,60,0.12)", borderRadius: 10, overflow: "hidden", background: "#f5f0e8" }}>
-            {coverImage && (
-              <div style={{ height: 130, overflow: "hidden", background: "#0d1f3c" }}>
-                <img src={coverImage} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9 }} />
-              </div>
-            )}
-            <div style={{ padding: "0.75rem 1rem" }}>
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.62rem", color: "#8fa3b1", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 0.3rem" }}>amo-infinitum.vercel.app</p>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", fontWeight: 600, margin: preview ? "0 0 0.2rem" : "0", lineHeight: 1.3 }}>{title}</p>
-              {preview && <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#3a5068", margin: 0, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{preview}</p>}
-            </div>
+        {/* Branded OG preview image — this IS the shareable card */}
+        <a href={postUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none", display: "block", marginBottom: "0.75rem" }}>
+          <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid rgba(13,31,60,0.1)", aspectRatio: "1200/630", background: "#0d1f3c" }}>
+            <img src={ogUrl} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", margin: "0.4rem 0 0", textAlign: "center" }}>
+            Tap to view live post ↗
+          </p>
         </a>
 
-        <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8fa3b1", margin: "0 0 0.75rem" }}>Share this post</p>
-
-        {typeof navigator !== "undefined" && !!navigator.share && (
-          <button onClick={async () => { try { await navigator.share({ title, url: postUrl }); } catch { /* cancelled */ } }}
-            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.8rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600, cursor: "pointer", marginBottom: "0.75rem" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            Share this post
+        {/* Download + share image row */}
+        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+          <button onClick={downloadPreview}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Save preview
           </button>
-        )}
+          {typeof navigator !== "undefined" && !!navigator.share && (
+            <button onClick={shareWithPreview} disabled={sharing}
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: sharing ? 0.7 : 1 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              {sharing ? "Sharing…" : "Share with image"}
+            </button>
+          )}
+        </div>
 
+        {/* Copy link */}
         <CopyLinkRow url={postUrl} />
 
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+        {/* Platform buttons */}
+        <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8fa3b1", margin: "0 0 0.6rem" }}>Also share on</p>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
           <a href={twitterHref} target="_blank" rel="noreferrer"
             style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#000", color: "#fff", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.727-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            Share on X
+            X / Twitter
           </a>
           <a href={whatsappHref} target="_blank" rel="noreferrer"
             style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#25D366", color: "#fff", borderRadius: 6, padding: "0.5rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 500, textDecoration: "none" }}>
