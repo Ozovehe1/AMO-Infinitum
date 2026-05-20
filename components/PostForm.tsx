@@ -760,25 +760,30 @@ export default function PostForm({ post }: { post?: PostData }) {
           borderTop: "1px solid rgba(0,0,0,0.07)",
           background: "#fff", flexShrink: 0,
         }}>
-          <div style={{ display: "flex", gap: 6 }}>
-            <span style={{
-              width: 30, height: 30, borderRadius: "50%",
-              border: "1px solid rgba(0,0,0,0.1)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.8rem", color: "#666",
-            }}>ⓘ</span>
-          </div>
+          {/* Word count — live feedback for the writer */}
+          <span style={{
+            fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#aaa",
+            letterSpacing: "0.02em",
+          }}>
+            {mobileEditor?.storage.characterCount.words() ?? 0} words
+          </span>
+
+          {/* Post settings — opens publish/categories/cover sheet */}
           <button
             onClick={() => setSheetOpen(true)}
-            title="Post settings"
             style={{
-              width: 30, height: 30, borderRadius: "50%",
-              border: "1px solid rgba(0,0,0,0.1)",
-              background: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.85rem", color: "#666",
+              background: "rgba(13,31,60,0.06)",
+              border: "1px solid rgba(13,31,60,0.12)",
+              borderRadius: 20,
+              padding: "5px 14px",
+              display: "flex", alignItems: "center", gap: "0.35rem",
+              fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 600,
+              color: "#0d1f3c", cursor: "pointer",
+              letterSpacing: "0.01em",
             }}
-          >⚙</button>
+          >
+            <span style={{ fontSize: "0.85rem" }}>⚙</span> Post Settings
+          </button>
         </div>
 
         {/* Body image hidden input */}
