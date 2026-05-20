@@ -723,6 +723,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               background: "#0d1f3c", borderRadius: "18px 18px 0 0",
               boxShadow: "0 -8px 40px rgba(13,31,60,0.4)",
               height: `${drawerHeight}dvh`, display: "flex", flexDirection: "column",
+              overflow: "hidden",
               paddingBottom: "env(safe-area-inset-bottom)",
             }}>
               {/* Drag handle — touch here to resize */}
@@ -748,7 +749,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 </div>
               </div>
               {/* Messages */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+              <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
                 {aiMessages.length === 0 && (
                   <div style={{ textAlign: "center", padding: "2rem 0" }}>
                     <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: "0 0 0.5rem" }}>
