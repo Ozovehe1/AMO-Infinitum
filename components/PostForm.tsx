@@ -1013,6 +1013,16 @@ export default function PostForm({ post }: { post?: PostData }) {
           .desktop-write-wrap { display: none !important; }
           .desktop-ai-panel   { display: none !important; }
         }
+        .ai-prose p  { margin: 0 0 0.5em; }
+        .ai-prose p:last-child { margin-bottom: 0; }
+        .ai-prose h1 { font-size: 1rem;  font-weight: 700; margin: 0.75em 0 0.25em; color: #c8a97e; font-family: 'Playfair Display', serif; }
+        .ai-prose h2 { font-size: 0.92rem; font-weight: 700; margin: 0.75em 0 0.25em; color: #c8a97e; font-family: 'Playfair Display', serif; }
+        .ai-prose h3 { font-size: 0.85rem; font-weight: 700; margin: 0.6em 0 0.2em; color: #c8a97e; }
+        .ai-prose strong { font-weight: 700; }
+        .ai-prose em     { font-style: italic; }
+        .ai-prose code   { background: rgba(255,255,255,0.1); padding: 0.1em 0.35em; border-radius: 3px; font-family: monospace; font-size: 0.78rem; }
+        .ai-prose ul     { margin: 0.4em 0 0.4em 1.1em; padding: 0; list-style: disc; }
+        .ai-prose li     { margin-bottom: 0.2em; }
       `}</style>
     </>
   );
@@ -1142,21 +1152,52 @@ function ShareRow({ slug }: { slug: string }) {
 
 /* ── AI chat helpers ─────────────────────────────── */
 
+function mdToHtml(md: string): string {
+  if (!md) return "";
+  let s = md
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // Headings
+  s = s
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm,  "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm,   "<h1>$1</h1>");
+  // Bold + italic
+  s = s
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g,     "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g,         "<em>$1</em>");
+  // Inline code
+  s = s.replace(/`(.+?)`/g, "<code>$1</code>");
+  // Bullet lists — collect consecutive li lines into a ul
+  s = s.replace(/^[-*] (.+)$/gm, "<li>$1</li>");
+  s = s.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+  // Numbered lists
+  s = s.replace(/^\d+\. (.+)$/gm, "<li>$1</li>");
+  // Paragraphs & line breaks
+  s = s.replace(/\n\n+/g, "</p><p>").replace(/\n/g, "<br>");
+  return `<p>${s}</p>`;
+}
+
 function AiMessage({ role, content }: { role: "user" | "assistant"; content: string }) {
   const isUser = role === "user";
+  const bubble: React.CSSProperties = {
+    maxWidth: "84%",
+    background: isUser ? "#c8a97e" : "rgba(255,254,249,0.07)",
+    color: isUser ? "#0d1f3c" : "#fffef9",
+    borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+    padding: "0.625rem 0.875rem",
+    fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6,
+    wordBreak: "break-word",
+  };
   return (
     <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
-      <div style={{
-        maxWidth: "84%",
-        background: isUser ? "#c8a97e" : "rgba(255,254,249,0.07)",
-        color: isUser ? "#0d1f3c" : "#fffef9",
-        borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-        padding: "0.625rem 0.875rem",
-        fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6,
-        whiteSpace: "pre-wrap", wordBreak: "break-word",
-      }}>
-        {content || <span style={{ opacity: 0.45 }}>…</span>}
-      </div>
+      {isUser ? (
+        <div style={{ ...bubble, whiteSpace: "pre-wrap" }}>
+          {content || <span style={{ opacity: 0.45 }}>…</span>}
+        </div>
+      ) : (
+        <div style={bubble} className="ai-prose" dangerouslySetInnerHTML={{ __html: mdToHtml(content) }} />
+      )}
     </div>
   );
 }
