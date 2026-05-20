@@ -134,18 +134,16 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                 {/* Controls */}
                 <div style={{ padding: "0.875rem 1.5rem 2.5rem" }}>
 
-                  {/* Header row */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8fa3b1", margin: 0 }}>
-                      Share this post
-                    </p>
-                    <button
-                      onClick={() => setOpen(false)}
-                      style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}
-                    >×</button>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
+                    <div>
+                      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Share this post</p>
+                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", margin: "0.15rem 0 0" }}>Preview image + link sent together</p>
+                    </div>
+                    <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 
-                  {/* Native share with image */}
+                  {/* PRIMARY: Share image + link together */}
                   {typeof navigator !== "undefined" && !!navigator.share && (
                     <button
                       onClick={nativeShare}
@@ -153,29 +151,30 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
                         background: "#0d1f3c", color: "#c8a97e",
-                        border: "none", borderRadius: 8,
-                        padding: "0.875rem 1rem", marginBottom: "0.625rem",
-                        fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600,
+                        border: "none", borderRadius: 10,
+                        padding: "1rem", marginBottom: "0.625rem",
+                        fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700,
                         cursor: sharing ? "default" : "pointer",
+                        letterSpacing: "0.02em",
                         opacity: sharing ? 0.7 : 1,
                       }}
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                       </svg>
-                      {sharing ? "Preparing…" : "Share with preview image"}
+                      {sharing ? "Preparing…" : "Share — image + link"}
                     </button>
                   )}
 
-                  {/* Download preview image */}
+                  {/* Download branded preview */}
                   <button
                     onClick={() => window.open(ogUrl + "&download=1", "_blank")}
                     style={{
                       width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
                       background: "#f5f0e8", color: "#0d1f3c",
                       border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8,
-                      padding: "0.75rem 1rem", marginBottom: "0.75rem",
+                      padding: "0.75rem 1rem", marginBottom: "0.875rem",
                       fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600,
                       cursor: "pointer",
                     }}
@@ -183,7 +182,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
-                    Download preview image
+                    Download branded preview
                   </button>
 
                   {/* Copy link */}

@@ -1,13 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
 function formatTime(s: number): string {
-  if (!isFinite(s)) return "0:00";
+  if (!isFinite(s) || isNaN(s)) return "0:00";
   const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, "0")}`;
+  return `${m}:${Math.floor(s % 60).toString().padStart(2, "0")}`;
 }
 
 export default function AudioPlayer({ slug }: { slug: string }) {
@@ -20,46 +19,24 @@ export default function AudioPlayer({ slug }: { slug: string }) {
   const [duration, setDuration] = useState(0);
   const [speed,    setSpeed]    = useState(1);
 
-  const audioSrc = `/api/tts?slug=${encodeURIComponent(slug)}`;
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const onMeta  = () => { setDuration(audio.duration); setReady(true); setErrored(false); };
-    const onTime  = () => setCurrent(audio.currentTime);
-    const onEnded = () => setPlaying(false);
-    const onError = () => { console.error("AudioPlayer: failed to load", audio.src, audio.error); setErrored(true); };
-    audio.addEventListener("loadedmetadata", onMeta);
-    audio.addEventListener("timeupdate",     onTime);
-    audio.addEventListener("ended",          onEnded);
-    audio.addEventListener("error",          onError);
-    return () => {
-      audio.removeEventListener("loadedmetadata", onMeta);
-      audio.removeEventListener("timeupdate",     onTime);
-      audio.removeEventListener("ended",          onEnded);
-      audio.removeEventListener("error",          onError);
-    };
-  }, []);
-
   const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (playing) { audio.pause(); setPlaying(false); }
-    else { audio.play(); setPlaying(true); }
+    const a = audioRef.current;
+    if (!a) return;
+    if (playing) { a.pause(); setPlaying(false); }
+    else { a.play().catch(() => {}); setPlaying(true); }
   };
 
   const seek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const audio = audioRef.current;
-    const bar   = progressRef.current;
-    if (!audio || !bar || !duration) return;
+    const a   = audioRef.current;
+    const bar = progressRef.current;
+    if (!a || !bar || !duration) return;
     const rect  = bar.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audio.currentTime = ratio * duration;
+    a.currentTime = ratio * duration;
   };
 
   const changeSpeed = (s: number) => {
-    const audio = audioRef.current;
-    if (audio) audio.playbackRate = s;
+    if (audioRef.current) audioRef.current.playbackRate = s;
     setSpeed(s);
   };
 
@@ -67,14 +44,34 @@ export default function AudioPlayer({ slug }: { slug: string }) {
 
   return (
     <>
-      {/* Always mount the audio element so the browser can start loading */}
-      <audio ref={audioRef} src={audioSrc} preload="auto" style={{ display: "none" }} />
+      {/* Audio element — React synthetic events avoid useEffect timing issues */}
+      <audio
+        ref={audioRef}
+        src={`/api/tts?slug=${encodeURIComponent(slug)}`}
+        preload="auto"
+        style={{ display: "none" }}
+        onLoadedMetadata={e => {
+          setDuration(e.currentTarget.duration);
+          setReady(true);
+          setErrored(false);
+        }}
+        onTimeUpdate={e => setCurrent(e.currentTarget.currentTime)}
+        onEnded={() => setPlaying(false)}
+        onError={e => {
+          const err = e.currentTarget.error;
+          console.error("AudioPlayer error — code:", err?.code, "message:", err?.message, "src:", e.currentTarget.src);
+          setErrored(true);
+        }}
+      />
 
-      {/* Retry pill — only visible when audio fails to load */}
+      {/* Retry pill — shown when TTS fails */}
       {errored && !ready && (
-        <div style={{ maxWidth: 720, margin: "0 auto 2rem", padding: "0 1.5rem" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 1.5rem" }}>
           <button
-            onClick={() => { setErrored(false); const a = audioRef.current; if (a) { a.load(); } }}
+            onClick={() => {
+              setErrored(false);
+              audioRef.current?.load();
+            }}
             style={{
               display: "inline-flex", alignItems: "center", gap: "0.4rem",
               background: "transparent", border: "1px solid rgba(13,31,60,0.15)",
@@ -88,7 +85,7 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         </div>
       )}
 
-      {/* Player UI — only visible once metadata has loaded */}
+      {/* Player — appears once audio is ready */}
       {ready && (
         <div style={{
           background: "#fffef9",
@@ -101,15 +98,13 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.875rem" }}>
 
-            {/* Play / Pause */}
             <button
               onClick={togglePlay}
               aria-label={playing ? "Pause" : "Play"}
               style={{
                 width: 40, height: 40, borderRadius: "50%",
                 background: "#0d1f3c", border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}
             >
               {playing ? (
@@ -124,52 +119,29 @@ export default function AudioPlayer({ slug }: { slug: string }) {
               )}
             </button>
 
-            {/* Progress + time */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.35rem" }}>
-                <span style={{ fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.02em" }}>
-                  Listen to this essay
-                </span>
-                <span style={{ fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.03em" }}>
-                  {formatTime(current)} / {formatTime(duration)}
-                </span>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
+                <span style={{ fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.02em" }}>Listen to this essay</span>
+                <span style={{ fontSize: "0.7rem", color: "#8fa3b1" }}>{formatTime(current)} / {formatTime(duration)}</span>
               </div>
               <div
                 ref={progressRef}
                 onClick={seek}
-                style={{
-                  height: 4, background: "rgba(13,31,60,0.1)",
-                  borderRadius: 2, cursor: "pointer",
-                  position: "relative", overflow: "hidden",
-                }}
+                style={{ height: 4, background: "rgba(13,31,60,0.1)", borderRadius: 2, cursor: "pointer", position: "relative", overflow: "hidden" }}
               >
-                <div style={{
-                  position: "absolute", left: 0, top: 0,
-                  height: "100%", width: `${pct}%`,
-                  background: "#c8a97e", borderRadius: 2,
-                  transition: "width 0.1s linear",
-                }} />
+                <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "#c8a97e", borderRadius: 2, transition: "width 0.1s linear" }} />
               </div>
             </div>
 
-            {/* Speed selector */}
             <div style={{ display: "flex", gap: "2px", flexShrink: 0 }}>
               {SPEEDS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => changeSpeed(s)}
-                  style={{
-                    background: speed === s ? "#0d1f3c" : "transparent",
-                    color:      speed === s ? "#c8a97e" : "#8fa3b1",
-                    border:     speed === s ? "none" : "1px solid rgba(13,31,60,0.12)",
-                    borderRadius: 4, padding: "3px 7px",
-                    fontSize: "0.65rem", cursor: "pointer",
-                    fontFamily: "Inter, sans-serif", letterSpacing: "0.02em",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {s}×
-                </button>
+                <button key={s} onClick={() => changeSpeed(s)} style={{
+                  background: speed === s ? "#0d1f3c" : "transparent",
+                  color: speed === s ? "#c8a97e" : "#8fa3b1",
+                  border: speed === s ? "none" : "1px solid rgba(13,31,60,0.12)",
+                  borderRadius: 4, padding: "3px 7px", fontSize: "0.65rem",
+                  cursor: "pointer", fontFamily: "Inter, sans-serif", transition: "all 0.15s",
+                }}>{s}×</button>
               ))}
             </div>
           </div>
