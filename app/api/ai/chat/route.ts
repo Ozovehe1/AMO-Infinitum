@@ -22,15 +22,16 @@ export async function POST(req: NextRequest) {
 
   const systemBlock = {
     type: "text" as const,
-    text: "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Your role is to help them think deeper — not to write for them. Help with: brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. Do NOT write paragraphs of their blog post, rewrite their prose, or produce ready-to-publish content. If they ask you to write something, redirect them toward thinking it through. Be intellectually engaging, direct, and curious. You may use markdown formatting — headings, bold, lists — where it aids clarity. The interface renders markdown properly.",
+    text: "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Your role is to help them think deeper — not to write for them. Help with: brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. You also have access to web search — use it proactively whenever the author asks for research, facts, data, recent events, or references. Search to ground conversations in real information, not just abstractions. Do NOT write paragraphs of their blog post, rewrite their prose, or produce ready-to-publish content. If they ask you to write something, redirect them toward thinking it through. Be intellectually engaging, direct, and curious. You may use markdown formatting — headings, bold, lists — where it aids clarity. The interface renders markdown properly.",
   };
   const contextBlock = { type: "text" as const, text: postContext };
 
   const stream = await anthropic.messages.stream({
     model: "claude-opus-4-7",
-    max_tokens: 1024,
+    max_tokens: 4096,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     system: [{ ...systemBlock, cache_control: { type: "ephemeral" } }, contextBlock] as any,
+    tools: [{ type: "web_search_20250305" as const, name: "web_search" }],
     messages: messages.map((m: { role: string; content: string }) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
