@@ -40,11 +40,12 @@ export default function EditAbout() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
       <AdminNav />
-      <main className="admin-main" style={{ flex: 1 }}>
-        <div style={{ maxWidth: 860 }}>
+      {/* minWidth:0 prevents flex child from overflowing its container */}
+      <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
+        <div style={{ maxWidth: 860, width: "100%" }}>
 
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2rem" }}>
+          {/* Header — wraps on small screens so Save button never goes off-screen */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "2rem" }}>
             <div>
               <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Site</p>
               <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Edit About Page</h1>
@@ -58,7 +59,7 @@ export default function EditAbout() {
                 border: "none", borderRadius: 6,
                 padding: "0.65rem 1.5rem",
                 fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600,
-                cursor: "pointer", transition: "background 0.2s",
+                cursor: "pointer", transition: "background 0.2s", flexShrink: 0,
               }}
             >
               {saving ? "Saving…" : saved ? "✓ Saved!" : "Save Changes"}
@@ -71,12 +72,12 @@ export default function EditAbout() {
             <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
 
               {/* Hero subtitle */}
-              <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
+              <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem", overflow: "hidden" }}>
                 <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.75rem" }}>
                   Hero Subtitle
                 </label>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1", margin: "0 0 0.75rem" }}>
-                  The line that appears below "AMO Infinitum" on the about page hero.
+                  The line that appears below &quot;AMO Infinitum&quot; on the about page hero.
                 </p>
                 <textarea
                   value={heroSubtitle}
@@ -93,18 +94,19 @@ export default function EditAbout() {
               </div>
 
               {/* Body content */}
-              <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
+              <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem", overflow: "hidden" }}>
                 <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.75rem" }}>
                   About Body
                 </label>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1", margin: "0 0 1rem" }}>
                   The main content of your about page. Supports rich text — headings, bold, italic, blockquotes, links.
                 </p>
-                <div style={{ border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, overflow: "hidden" }}>
+                <div style={{ border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, overflow: "hidden", width: "100%", boxSizing: "border-box" }}>
                   <Editor
                     content={body}
                     onChange={setBody}
                     placeholder="Write about yourself and this blog…"
+                    compact
                   />
                 </div>
               </div>
