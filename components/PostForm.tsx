@@ -1330,34 +1330,25 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
     } catch { return null; }
   };
 
-  const downloadPreview = async () => {
-    const file = await fetchOgBlob();
-    if (!file) {
-      // Fallback: open the OG image directly so user can long-press / right-click to save
-      window.open(ogUrl, "_blank");
-      return;
-    }
-    const blobUrl = URL.createObjectURL(file);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = `${slug}-preview.png`;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+  const downloadPreview = () => {
+    // Server sends Content-Disposition: attachment — triggers native download
+    // on Android Chrome, iOS Safari, desktop, and curl without any user-gesture issues
+    window.open(ogUrl + "&download=1", "_blank");
   };
 
   const shareWithPreview = async () => {
     setSharing(true);
     try {
-      const file = await fetchOgBlob();
+      // Kick off image fetch immediately; if it resolves before navigator.share
+      // is called the gesture context is still alive on Android Chrome.
+      const filePromise = fetchOgBlob();
+      const file = await filePromise;
       if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title, url: postUrl });
-      } else {
-        await navigator.share({ title, url: postUrl });
+        await navigator.share({ files: [file], title: shareText, url: postUrl });
+      } else if (navigator.share) {
+        await navigator.share({ title: shareText, url: postUrl });
       }
-    } catch { /* cancelled */ }
+    } catch { /* user cancelled or not supported */ }
     setSharing(false);
   };
 

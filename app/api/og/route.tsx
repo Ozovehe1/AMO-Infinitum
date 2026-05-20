@@ -5,9 +5,10 @@ export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const title   = searchParams.get("title")   || "AMO Infinitum";
-  const excerpt = searchParams.get("excerpt") || "";
-  const cover   = searchParams.get("cover")   || "";
+  const title    = searchParams.get("title")    || "AMO Infinitum";
+  const excerpt  = searchParams.get("excerpt")  || "";
+  const cover    = searchParams.get("cover")    || "";
+  const download = searchParams.get("download") === "1";
 
   // Load Playfair Display Bold from Google Fonts
   const fontRes = await fetch(
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     ? excerpt.slice(0, 160).trimEnd() + "…"
     : excerpt;
 
-  return new ImageResponse(
+  const imageResponse = new ImageResponse(
     (
       <div
         style={{
@@ -164,4 +165,12 @@ export async function GET(req: NextRequest) {
         : [],
     }
   );
+
+  if (!download) return imageResponse;
+
+  // Force browser download on all platforms (Android, iOS, desktop)
+  const headers = new Headers(imageResponse.headers);
+  headers.set("Content-Disposition", 'attachment; filename="amo-infinitum-preview.png"');
+  headers.set("Cache-Control", "no-cache");
+  return new Response(imageResponse.body, { headers });
 }

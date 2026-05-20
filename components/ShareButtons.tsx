@@ -58,10 +58,11 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
   const nativeShare = async () => {
     setSharing(true);
     try {
-      const file = await fetchOgBlob();
+      const filePromise = fetchOgBlob();
+      const file = await filePromise;
       if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: shareText, url });
-      } else {
+      } else if (navigator.share) {
         await navigator.share({ title: shareText, url });
       }
     } catch { /* user cancelled */ }
