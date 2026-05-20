@@ -14,6 +14,7 @@ export default function AudioPlayer({ slug }: { slug: string }) {
   const audioRef    = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [ready,    setReady]    = useState(false);
+  const [errored,  setErrored]  = useState(false);
   const [playing,  setPlaying]  = useState(false);
   const [current,  setCurrent]  = useState(0);
   const [duration, setDuration] = useState(0);
@@ -24,16 +25,19 @@ export default function AudioPlayer({ slug }: { slug: string }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const onMeta  = () => { setDuration(audio.duration); setReady(true); };
+    const onMeta  = () => { setDuration(audio.duration); setReady(true); setErrored(false); };
     const onTime  = () => setCurrent(audio.currentTime);
     const onEnded = () => setPlaying(false);
+    const onError = () => { console.error("AudioPlayer: failed to load", audio.src, audio.error); setErrored(true); };
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("timeupdate",     onTime);
     audio.addEventListener("ended",          onEnded);
+    audio.addEventListener("error",          onError);
     return () => {
       audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("timeupdate",     onTime);
       audio.removeEventListener("ended",          onEnded);
+      audio.removeEventListener("error",          onError);
     };
   }, []);
 
@@ -64,7 +68,25 @@ export default function AudioPlayer({ slug }: { slug: string }) {
   return (
     <>
       {/* Always mount the audio element so the browser can start loading */}
-      <audio ref={audioRef} src={audioSrc} preload="metadata" style={{ display: "none" }} />
+      <audio ref={audioRef} src={audioSrc} preload="auto" style={{ display: "none" }} />
+
+      {/* Retry pill — only visible when audio fails to load */}
+      {errored && !ready && (
+        <div style={{ maxWidth: 720, margin: "0 auto 2rem", padding: "0 1.5rem" }}>
+          <button
+            onClick={() => { setErrored(false); const a = audioRef.current; if (a) { a.load(); } }}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "0.4rem",
+              background: "transparent", border: "1px solid rgba(13,31,60,0.15)",
+              borderRadius: 20, padding: "0.35rem 0.9rem",
+              fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1",
+              cursor: "pointer",
+            }}
+          >
+            ↺ Retry audio
+          </button>
+        </div>
+      )}
 
       {/* Player UI — only visible once metadata has loaded */}
       {ready && (
