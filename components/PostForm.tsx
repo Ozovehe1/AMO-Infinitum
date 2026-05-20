@@ -19,6 +19,8 @@ const Editor = dynamic(() => import("./Editor"), {
 });
 
 interface Category { id: number; name: string; slug: string; color: string; }
+interface AiMsg { role: "user" | "assistant"; content: string; }
+interface ChatSession { id: string; createdAt: number; preview: string; messages: AiMsg[]; }
 interface PostData {
   id?: number; slug?: string; title?: string; content?: string;
   excerpt?: string; coverImage?: string | null;
@@ -66,7 +68,9 @@ export default function PostForm({ post }: { post?: PostData }) {
 
   // AI chat state
   const [aiOpen,       setAiOpen]       = useState(false);
-  const [aiMessages,   setAiMessages]   = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [aiView,       setAiView]       = useState<"chat" | "history">("chat");
+  const [aiMessages,   setAiMessages]   = useState<AiMsg[]>([]);
+  const [aiSessions,   setAiSessions]   = useState<ChatSession[]>([]);
   const [aiInput,      setAiInput]      = useState("");
   const [aiLoading,    setAiLoading]    = useState(false);
   const [drawerHeight, setDrawerHeight] = useState(60); // vh, user-resizable
@@ -93,22 +97,54 @@ export default function PostForm({ post }: { post?: PostData }) {
     return () => { mobileEditor.off("transaction", handler); };
   }, [mobileEditor]);
 
-  // Load AI chat history from sessionStorage on mount
+  // Load AI chat + session history from sessionStorage on mount
   useEffect(() => {
-    const key = `ai-chat-${postId ?? "new"}`;
+    const pid = postId ?? "new";
     try {
-      const saved = sessionStorage.getItem(key);
-      if (saved) setAiMessages(JSON.parse(saved));
+      const chat = sessionStorage.getItem(`ai-chat-${pid}`);
+      if (chat) setAiMessages(JSON.parse(chat));
+      const hist = sessionStorage.getItem(`ai-sessions-${pid}`);
+      if (hist) setAiSessions(JSON.parse(hist));
     } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Save AI chat history to sessionStorage whenever messages change
+  // Persist current chat to sessionStorage
   useEffect(() => {
     const key = `ai-chat-${postId ?? "new"}`;
     if (aiMessages.length > 0) sessionStorage.setItem(key, JSON.stringify(aiMessages));
     else sessionStorage.removeItem(key);
   }, [aiMessages, postId]);
+
+  // ── Session management ────────────────────────────────────
+  const archiveCurrent = (msgs: AiMsg[], sessions: ChatSession[], pid: number | undefined): ChatSession[] => {
+    if (msgs.length === 0) return sessions;
+    const preview = msgs.find(m => m.role === "user")?.content.slice(0, 90) ?? "Conversation";
+    const session: ChatSession = { id: Date.now().toString(), createdAt: Date.now(), preview, messages: msgs };
+    const updated = [session, ...sessions].slice(0, 30);
+    try { sessionStorage.setItem(`ai-sessions-${pid ?? "new"}`, JSON.stringify(updated)); } catch { /* storage full */ }
+    return updated;
+  };
+
+  const startNewChat = () => {
+    const updated = archiveCurrent(aiMessages, aiSessions, postId);
+    setAiSessions(updated);
+    setAiMessages([]);
+    setAiView("chat");
+  };
+
+  const resumeSession = (session: ChatSession) => {
+    const updated = archiveCurrent(aiMessages, aiSessions.filter(s => s.id !== session.id), postId);
+    setAiSessions(updated);
+    setAiMessages(session.messages);
+    setAiView("chat");
+  };
+
+  const deleteSession = (id: string) => {
+    const updated = aiSessions.filter(s => s.id !== id);
+    setAiSessions(updated);
+    try { sessionStorage.setItem(`ai-sessions-${postId ?? "new"}`, JSON.stringify(updated)); } catch { }
+  };
 
   // Auto-scroll AI chat to latest message
   useEffect(() => {
@@ -763,36 +799,57 @@ export default function PostForm({ post }: { post?: PostData }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.25rem 1.25rem 0.625rem", borderBottom: "1px solid rgba(200,169,126,0.12)", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <span style={{ fontSize: "1rem" }}>🧠</span>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>AI Assistant</h3>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>
+                    {aiView === "history" ? "History" : "AI Assistant"}
+                  </h3>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {aiMessages.length > 0 && (
-                    <button onClick={() => { setAiMessages([]); sessionStorage.removeItem(`ai-chat-${postId ?? "new"}`); }} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
-                      New chat
+                  {aiView === "chat" ? (
+                    <>
+                      {aiSessions.length > 0 && (
+                        <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
+                          History ({aiSessions.length})
+                        </button>
+                      )}
+                      {aiMessages.length > 0 && (
+                        <button onClick={startNewChat} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                          New chat
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <button onClick={() => setAiView("chat")} style={{ background: "none", border: "none", color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+                      ← Back
                     </button>
                   )}
                   <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
                 </div>
               </div>
-              {/* Messages */}
+              {/* Body */}
               <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-                {aiMessages.length === 0 && (
-                  <div style={{ textAlign: "center", padding: "2rem 0" }}>
-                    <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: "0 0 0.5rem" }}>
-                      Ask me anything about your post —<br />titles, angles, edits, ideas.
-                    </p>
-                  </div>
+                {aiView === "history" ? (
+                  <AiHistoryView sessions={aiSessions} onResume={resumeSession} onDelete={deleteSession} />
+                ) : (
+                  <>
+                    {aiMessages.length === 0 && (
+                      <div style={{ textAlign: "center", padding: "2rem 0" }}>
+                        <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
+                          Your thinking partner — brainstorm,<br />research, challenge ideas.
+                        </p>
+                      </div>
+                    )}
+                    {aiMessages.map((m, i) => (
+                      <AiMessage key={i} role={m.role} content={m.content} />
+                    ))}
+                    {aiLoading && aiMessages[aiMessages.length - 1]?.content === "" && (
+                      <AiTypingDot />
+                    )}
+                    <div ref={aiEndRef} />
+                  </>
                 )}
-                {aiMessages.map((m, i) => (
-                  <AiMessage key={i} role={m.role} content={m.content} />
-                ))}
-                {aiLoading && aiMessages[aiMessages.length - 1]?.content === "" && (
-                  <AiTypingDot />
-                )}
-                <div ref={aiEndRef} />
               </div>
-              {/* Input */}
-              <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />
+              {/* Input — only in chat view */}
+              {aiView === "chat" && <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />}
             </div>
           </>
         )}
@@ -854,36 +911,57 @@ export default function PostForm({ post }: { post?: PostData }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid rgba(200,169,126,0.12)", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ fontSize: "1.1rem" }}>🧠</span>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>AI Assistant</h3>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>
+                {aiView === "history" ? "History" : "AI Assistant"}
+              </h3>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              {aiMessages.length > 0 && (
-                <button onClick={() => { setAiMessages([]); sessionStorage.removeItem(`ai-chat-${postId ?? "new"}`); }} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
-                  New chat
+              {aiView === "chat" ? (
+                <>
+                  {aiSessions.length > 0 && (
+                    <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
+                      History ({aiSessions.length})
+                    </button>
+                  )}
+                  {aiMessages.length > 0 && (
+                    <button onClick={startNewChat} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                      New chat
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button onClick={() => setAiView("chat")} style={{ background: "none", border: "none", color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+                  ← Back
                 </button>
               )}
               <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
             </div>
           </div>
-          {/* Messages */}
+          {/* Body */}
           <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-            {aiMessages.length === 0 && (
-              <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
-                <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.7, margin: 0 }}>
-                  Ask me anything about your post —<br />titles, angles, edits, ideas.
-                </p>
-              </div>
+            {aiView === "history" ? (
+              <AiHistoryView sessions={aiSessions} onResume={resumeSession} onDelete={deleteSession} />
+            ) : (
+              <>
+                {aiMessages.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                    <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.7, margin: 0 }}>
+                      Your thinking partner — brainstorm,<br />research, challenge ideas.
+                    </p>
+                  </div>
+                )}
+                {aiMessages.map((m, i) => (
+                  <AiMessage key={i} role={m.role} content={m.content} />
+                ))}
+                {aiLoading && aiMessages[aiMessages.length - 1]?.content === "" && (
+                  <AiTypingDot />
+                )}
+                <div ref={aiEndRef} />
+              </>
             )}
-            {aiMessages.map((m, i) => (
-              <AiMessage key={i} role={m.role} content={m.content} />
-            ))}
-            {aiLoading && aiMessages[aiMessages.length - 1]?.content === "" && (
-              <AiTypingDot />
-            )}
-            <div ref={aiEndRef} />
           </div>
-          {/* Input */}
-          <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />
+          {/* Input — only in chat view */}
+          {aiView === "chat" && <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />}
         </div>
       )}
 
@@ -1151,6 +1229,51 @@ function ShareRow({ slug }: { slug: string }) {
 }
 
 /* ── AI chat helpers ─────────────────────────────── */
+
+function AiHistoryView({ sessions, onResume, onDelete }: {
+  sessions: ChatSession[];
+  onResume: (s: ChatSession) => void;
+  onDelete: (id: string) => void;
+}) {
+  if (sessions.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+        <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
+          No archived conversations yet.<br />Click "New chat" to archive the current one.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+      {sessions.map(s => (
+        <div key={s.id} style={{ background: "rgba(255,254,249,0.06)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 10, padding: "0.875rem 1rem" }}>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", margin: "0 0 0.35rem", letterSpacing: "0.04em" }}>
+            {new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+            {" · "}{s.messages.length} messages
+          </p>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#fffef9", margin: "0 0 0.75rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+            {s.preview}
+          </p>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button
+              onClick={() => onResume(s)}
+              style={{ flex: 1, background: "#c8a97e", color: "#0d1f3c", border: "none", borderRadius: 6, padding: "0.45rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer" }}
+            >
+              Resume
+            </button>
+            <button
+              onClick={() => onDelete(s.id)}
+              style={{ background: "rgba(192,64,64,0.15)", color: "#e07070", border: "1px solid rgba(192,64,64,0.2)", borderRadius: 6, padding: "0.45rem 0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", cursor: "pointer" }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function mdToHtml(md: string): string {
   if (!md) return "";
