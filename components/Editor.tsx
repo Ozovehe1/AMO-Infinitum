@@ -137,8 +137,8 @@ export default function Editor({
           .tiptap-editor h2 { font-size: 1.4rem; font-weight: 700; margin: 1.75rem 0 0.5rem; line-height: 1.25; font-family: 'Playfair Display', Georgia, serif; }
           .tiptap-editor h3 { font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.4rem; line-height: 1.3; font-family: 'Playfair Display', Georgia, serif; }
           .tiptap-editor blockquote { border-left: 3px solid #c8a97e; padding-left: 1.25rem; color: #555; margin: 1.5rem 0; font-style: italic; border-radius: 0; }
-          .tiptap-editor ul { padding-left: 1.75rem; margin: 0 0 1.4em; }
-          .tiptap-editor ol { padding-left: 1.75rem; margin: 0 0 1.4em; }
+          .tiptap-editor ul { list-style-type: disc; padding-left: 1.75rem; margin: 0 0 1.4em; }
+          .tiptap-editor ol { list-style-type: decimal; padding-left: 1.75rem; margin: 0 0 1.4em; }
           .tiptap-editor li { margin-bottom: 0.4em; }
           .tiptap-editor img { max-width: 100%; border-radius: 6px; margin: 1.5rem auto; display: block; }
           .tiptap-editor img.ProseMirror-selectednode { outline: 2px solid #0d1f3c; }
@@ -248,7 +248,8 @@ export default function Editor({
         .tiptap-editor h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin: 1.75rem 0 0.5rem; line-height: 1.25; }
         .tiptap-editor h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.4rem; line-height: 1.3; }
         .tiptap-editor blockquote { border-left: 3px solid #c8a97e; padding-left: 1.25rem; color: #555; margin: 1.5rem 0; font-style: italic; }
-        .tiptap-editor ul, .tiptap-editor ol { margin: 0 0 1.4em; padding-left: 1.75rem; }
+        .tiptap-editor ul { list-style-type: disc; margin: 0 0 1.4em; padding-left: 1.75rem; }
+        .tiptap-editor ol { list-style-type: decimal; margin: 0 0 1.4em; padding-left: 1.75rem; }
         .tiptap-editor li { margin-bottom: 0.4em; }
         .tiptap-editor a { color: #2d7d9a; text-decoration: underline; }
         .tiptap-editor code { background: rgba(13,31,60,0.07); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.88em; font-family: 'Courier New', monospace; }
