@@ -272,20 +272,25 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (res.ok) {
         const data = await res.json();
         if (data.slug) setPostSlug(data.slug);
+        const isFirstPublish = options.publish === true && !published && data.slug;
         if (!postId) {
           setPostId(data.id);
-          if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
-          else router.push(`/inkwell/posts/${data.id}`);
+          // Don't navigate yet if we're about to show the publish overlay —
+          // router.push would unmount the component before the overlay renders.
+          if (!isFirstPublish) {
+            if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
+            else router.push(`/inkwell/posts/${data.id}`);
+          } else {
+            // Update URL silently so back-button works, without unmounting
+            window.history.replaceState({}, "", `/inkwell/posts/${data.id}`);
+          }
         }
         if (options.publish !== undefined) setPublished(options.publish);
         setLastSaved(new Date());
         if (!options.silent) {
           setSaved(true); setSheetOpen(false);
           setTimeout(() => setSaved(false), 3000);
-          // Show publish success overlay on first publish
-          if (options.publish === true && !published && data.slug) {
-            setPublishedSlug(data.slug);
-          }
+          if (isFirstPublish) setPublishedSlug(data.slug);
         }
         return true;
       } else {
@@ -435,16 +440,27 @@ export default function PostForm({ post }: { post?: PostData }) {
               <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto 1.75rem" }} />
 
               {/* Header */}
-              <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-                <div style={{ fontSize: "2.25rem", marginBottom: "0.625rem" }}>🎉</div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#0d1f3c", margin: "0 0 0.35rem", fontWeight: 600 }}>Your post is live!</h2>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#8fa3b1", margin: 0 }}>{title}</p>
+              <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
+                <div style={{ fontSize: "2.25rem", marginBottom: "0.5rem" }}>🎉</div>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#0d1f3c", margin: "0 0 0.25rem", fontWeight: 600 }}>Your post is live!</h2>
               </div>
 
-              {/* View post */}
-              <a href={`/blog/${publishedSlug}`} target="_blank" rel="noreferrer"
-                style={{ display: "block", background: "#0d1f3c", color: "#c8a97e", textAlign: "center", textDecoration: "none", borderRadius: 12, padding: "0.9rem", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700, marginBottom: "1.25rem" }}>
-                View Post ↗
+              {/* Link preview card — OG branding */}
+              <a href={`/blog/${publishedSlug}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none", display: "block", marginBottom: "1.25rem" }}>
+                <div style={{ border: "1px solid rgba(13,31,60,0.12)", borderRadius: 10, overflow: "hidden", background: "#f5f0e8" }}>
+                  {coverImage && (
+                    <div style={{ height: 140, overflow: "hidden", background: "#0d1f3c" }}>
+                      <img src={coverImage} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9 }} />
+                    </div>
+                  )}
+                  <div style={{ padding: "0.875rem 1rem" }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.65rem", color: "#8fa3b1", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 0.35rem" }}>
+                      amo-infinitum.vercel.app
+                    </p>
+                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", fontWeight: 600, margin: "0 0 0.25rem", lineHeight: 1.3 }}>{title}</p>
+                    {excerpt && <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", margin: 0, lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{excerpt}</p>}
+                  </div>
+                </div>
               </a>
 
               {/* Share section */}
@@ -481,7 +497,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 </a>
               </div>
 
-              <button onClick={() => setPublishedSlug(null)}
+              <button onClick={() => { setPublishedSlug(null); }}
                 style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", width: "100%" }}>
                 Continue editing
               </button>
