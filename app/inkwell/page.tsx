@@ -42,8 +42,8 @@ export default function AdminDashboard() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
       <AdminNav />
-      <main className="admin-main" style={{ flex: 1 }}>
-        <div style={{ maxWidth: 900 }}>
+      <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
+        <div style={{ maxWidth: 900, width: "100%" }}>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#0d1f3c", margin: "0 0 0.5rem" }}>
             Good to see you.
           </h1>
@@ -86,18 +86,18 @@ export default function AdminDashboard() {
                 </p>
               ) : (
                 recent.map((p, i) => (
-                  <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: i < recent.length - 1 ? "1px solid rgba(13,31,60,0.06)" : "none" }}>
-                    <div>
-                      <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", marginBottom: "0.2rem" }}>{p.title}</div>
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", padding: "1rem 1.25rem", borderBottom: i < recent.length - 1 ? "1px solid rgba(13,31,60,0.06)" : "none" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", marginBottom: "0.2rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
                       <div style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>
                         {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · {p.readingTime} min
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <span style={{ background: p.published ? "#4a9e7a18" : "#c8a97e18", color: p.published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${p.published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.2rem 0.6rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                        {p.published ? "Published" : "Draft"}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                      <span style={{ background: p.published ? "#4a9e7a18" : "#c8a97e18", color: p.published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${p.published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.2rem 0.5rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.65rem", letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                        {p.published ? "Live" : "Draft"}
                       </span>
-                      <Link href={`/inkwell/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
+                      <Link href={`/inkwell/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none", whiteSpace: "nowrap" }}>Edit</Link>
                     </div>
                   </div>
                 ))

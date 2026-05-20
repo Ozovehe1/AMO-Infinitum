@@ -55,15 +55,24 @@ export default function CategoriesPage() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
       <AdminNav />
-      <main className="admin-main" style={{ flex: 1 }}>
-        <div style={{ maxWidth: 700 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem" }}>
-            <div>
+      <style>{`
+        .cat-new-label-full { display: inline; }
+        .cat-new-label-short { display: none; }
+        @media (max-width: 768px) {
+          .cat-new-label-full { display: none !important; }
+          .cat-new-label-short { display: inline !important; }
+        }
+      `}</style>
+      <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
+        <div style={{ maxWidth: 700, width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", marginBottom: "1.75rem" }}>
+            <div style={{ minWidth: 0 }}>
               <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Categories · {categories.length}</p>
               <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Sections & Topics</h1>
             </div>
-            <button onClick={openCreate} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 6, padding: "0.65rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer" }}>
-              + New Category
+            <button onClick={openCreate} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 6, padding: "0.65rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
+              <span className="cat-new-label-full">+ New Category</span>
+              <span className="cat-new-label-short">+ New</span>
             </button>
           </div>
 
