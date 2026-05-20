@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
@@ -75,6 +76,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
     include: { categories: { include: { category: true } } },
   });
 
+  revalidatePath("/");
+  revalidatePath(`/blog/${post.slug}`);
+
   return NextResponse.json(post);
 }
 
@@ -86,6 +90,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const postId = parseInt(id);
   if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
+  const post = await prisma.post.findUnique({ where: { id: postId }, select: { slug: true } });
+  if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   await prisma.post.delete({ where: { id: postId } });
+
+  revalidatePath("/");
+  revalidatePath(`/blog/${post.slug}`);
+
   return NextResponse.json({ success: true });
 }
