@@ -57,7 +57,7 @@ export default function Header() {
             Home
           </Link>
           {categories.slice(0, 4).map(cat => (
-            <Link key={cat.id} href={`/category/${cat.slug}`} style={{ color: pathname === `/category/${cat.slug}` ? "#c8a97e" : "#8fa3b1", textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", fontWeight: 400, transition: "color 0.2s" }}>
+            <Link key={cat.id} href={`/?category=${cat.slug}`} style={{ color: pathname === "/" && typeof window !== "undefined" && window.location.search.includes(cat.slug) ? "#c8a97e" : "#8fa3b1", textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", fontWeight: 400, transition: "color 0.2s" }}>
               {cat.name}
             </Link>
           ))}
@@ -87,7 +87,7 @@ export default function Header() {
         <div style={{ background: "rgba(13,31,60,0.99)", borderTop: "1px solid rgba(200,169,126,0.15)", padding: "1rem 1.5rem 1.5rem" }}>
           <Link href="/" onClick={() => setMenuOpen(false)} style={{ display: "block", color: "#c8a97e", textDecoration: "none", padding: "0.75rem 0", borderBottom: "1px solid rgba(200,169,126,0.1)", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>Home</Link>
           {categories.map(cat => (
-            <Link key={cat.id} href={`/category/${cat.slug}`} onClick={() => setMenuOpen(false)} style={{ display: "block", color: "#8fa3b1", textDecoration: "none", padding: "0.75rem 0", borderBottom: "1px solid rgba(200,169,126,0.08)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <Link key={cat.id} href={`/?category=${cat.slug}`} onClick={() => setMenuOpen(false)} style={{ display: "block", color: "#8fa3b1", textDecoration: "none", padding: "0.75rem 0", borderBottom: "1px solid rgba(200,169,126,0.08)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>
               {cat.name}
             </Link>
           ))}
