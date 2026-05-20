@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
@@ -12,12 +12,44 @@ function formatTime(s: number): string {
 export default function AudioPlayer({ slug }: { slug: string }) {
   const audioRef    = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  const [ready,    setReady]    = useState(false);
-  const [errored,  setErrored]  = useState(false);
+  const [status,   setStatus]   = useState<"loading" | "ready" | "error">("loading");
   const [playing,  setPlaying]  = useState(false);
   const [current,  setCurrent]  = useState(0);
   const [duration, setDuration] = useState(0);
   const [speed,    setSpeed]    = useState(1);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleMeta = () => {
+      setDuration(audio.duration);
+      setStatus("ready");
+    };
+    const handleErr = () => {
+      const err = audio.error;
+      console.error("AudioPlayer error — code:", err?.code, "message:", err?.message, "src:", audio.src);
+      setStatus("error");
+    };
+    const handleTime  = () => setCurrent(audio.currentTime);
+    const handleEnded = () => setPlaying(false);
+
+    audio.addEventListener("loadedmetadata", handleMeta);
+    audio.addEventListener("error",          handleErr);
+    audio.addEventListener("timeupdate",     handleTime);
+    audio.addEventListener("ended",          handleEnded);
+
+    // Handle event already fired before this effect ran (SSR hydration race)
+    if (audio.readyState >= 1) handleMeta();
+    else if (audio.error)      handleErr();
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleMeta);
+      audio.removeEventListener("error",          handleErr);
+      audio.removeEventListener("timeupdate",     handleTime);
+      audio.removeEventListener("ended",          handleEnded);
+    };
+  }, []);
 
   const togglePlay = () => {
     const a = audioRef.current;
@@ -44,33 +76,38 @@ export default function AudioPlayer({ slug }: { slug: string }) {
 
   return (
     <>
-      {/* Audio element — React synthetic events avoid useEffect timing issues */}
+      {/* Hidden audio element — always mounted so loading begins immediately */}
       <audio
         ref={audioRef}
         src={`/api/tts?slug=${encodeURIComponent(slug)}`}
         preload="auto"
         style={{ display: "none" }}
-        onLoadedMetadata={e => {
-          setDuration(e.currentTarget.duration);
-          setReady(true);
-          setErrored(false);
-        }}
-        onTimeUpdate={e => setCurrent(e.currentTarget.currentTime)}
-        onEnded={() => setPlaying(false)}
-        onError={e => {
-          const err = e.currentTarget.error;
-          console.error("AudioPlayer error — code:", err?.code, "message:", err?.message, "src:", e.currentTarget.src);
-          setErrored(true);
-        }}
       />
 
-      {/* Retry pill — shown when TTS fails */}
-      {errored && !ready && (
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 1.5rem" }}>
+      {/* Loading — subtle pill so user knows audio is being generated */}
+      {status === "loading" && (
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 0 1.5rem" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "0.5rem",
+            background: "rgba(13,31,60,0.04)", border: "1px solid rgba(13,31,60,0.1)",
+            borderRadius: 20, padding: "0.4rem 1rem",
+            fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1",
+          }}>
+            <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#c8a97e", animation: "pulse 1.4s ease-in-out infinite" }} />
+            Generating audio…
+          </div>
+          <style>{`@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }`}</style>
+        </div>
+      )}
+
+      {/* Error — retry pill */}
+      {status === "error" && (
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 0 1.5rem" }}>
           <button
             onClick={() => {
-              setErrored(false);
-              audioRef.current?.load();
+              setStatus("loading");
+              const a = audioRef.current;
+              if (a) { a.load(); }
             }}
             style={{
               display: "inline-flex", alignItems: "center", gap: "0.4rem",
@@ -85,8 +122,8 @@ export default function AudioPlayer({ slug }: { slug: string }) {
         </div>
       )}
 
-      {/* Player — appears once audio is ready */}
-      {ready && (
+      {/* Player — visible once audio metadata is loaded */}
+      {status === "ready" && (
         <div style={{
           background: "#fffef9",
           border: "1px solid rgba(13,31,60,0.12)",
