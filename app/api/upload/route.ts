@@ -25,25 +25,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No file provided." }, { status: 400 });
   }
 
-  // Sanitize filename — strip special chars so Vercel Blob accepts it
   const ext = file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : "jpg";
   const safeName = `covers/${Date.now()}.${ext}`;
 
   try {
     const blob = await put(safeName, file, {
-      access: "public",
+      access: "private",
       contentType: file.type || "image/jpeg",
     });
-    return NextResponse.json({ url: blob.url });
+    // Return a proxy URL so the private blob is publicly viewable on the blog
+    const proxyUrl = `/api/img?src=${encodeURIComponent(blob.url)}`;
+    return NextResponse.json({ url: proxyUrl });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("Blob upload error:", msg);
-    if (msg.includes("private store") || msg.includes("private access")) {
-      return NextResponse.json(
-        { error: "Your Vercel Blob store is set to Private. Go to Vercel → Storage → your Blob store and change access to Public." },
-        { status: 500 }
-      );
-    }
     return NextResponse.json({ error: `Upload error: ${msg}` }, { status: 500 });
   }
 }
