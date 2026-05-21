@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after, revalidatePath } from "next/server";
+import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
