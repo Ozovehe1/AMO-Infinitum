@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
+import { generatePostAudio } from "@/lib/tts-generate";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -76,6 +78,10 @@ export async function POST(req: NextRequest) {
     },
     include: { categories: { include: { category: true } } },
   });
+
+  if (post.published) {
+    after(() => generatePostAudio(post.slug, post.title, post.content));
+  }
 
   return NextResponse.json(post, { status: 201 });
 }

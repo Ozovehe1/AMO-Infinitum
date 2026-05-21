@@ -58,25 +58,25 @@ export async function makePostcardBlob({
   const H   = canvas.height;
   const PAD = Math.round(W * PAD_RATIO);
 
-  // AMO badge (top-left)
-  const badgeR = Math.round(W * 0.016);
+  // AMO badge (top-left) — large enough to read clearly in any share thumbnail
+  const badgeR = Math.round(W * 0.030);
   const bx     = PAD + badgeR;
-  const by     = Math.round(H * 0.08);
+  const by     = Math.round(H * 0.10);
   ctx.beginPath();
   ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
   ctx.fillStyle = "#c8a97e";
   ctx.fill();
-  ctx.fillStyle = img ? "#000" : "#0d1f3c";
-  ctx.font      = `bold ${Math.round(badgeR * 1.1)}px sans-serif`;
+  ctx.fillStyle    = img ? "#000" : "#0d1f3c";
+  ctx.font         = `bold ${Math.round(badgeR * 1.1)}px sans-serif`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("A", bx, by);
 
   ctx.fillStyle    = "#c8a97e";
-  ctx.font         = `${Math.round(W * 0.015)}px sans-serif`;
+  ctx.font         = `bold ${Math.round(W * 0.026)}px serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("AMO INFINITUM", bx + badgeR + Math.round(W * 0.012), by);
+  ctx.fillText("AMO INFINITUM", bx + badgeR + Math.round(W * 0.016), by);
 
   // Gold rule near the bottom
   const ruleY = H - Math.round(H * 0.09);

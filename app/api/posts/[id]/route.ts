@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { after, revalidatePath } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
+import { generatePostAudio } from "@/lib/tts-generate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -79,6 +80,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   revalidatePath("/");
   revalidatePath(`/blog/${post.slug}`);
+
+  if (post.published) {
+    after(() => generatePostAudio(post.slug, post.title, post.content));
+  }
 
   return NextResponse.json(post);
 }

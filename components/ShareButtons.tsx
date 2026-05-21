@@ -119,8 +119,8 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                         : "linear-gradient(to top, rgba(13,31,60,0.6) 0%, transparent 100%)" }} />
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
-                        <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                        <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
+                        <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
                       </div>
                       <div>
                         <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
