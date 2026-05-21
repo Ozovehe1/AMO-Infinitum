@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
-import { generatePostAudio } from "@/lib/tts-generate";
+import { tasks } from "@trigger.dev/sdk/v3";
 
-export const maxDuration = 60;
+export const maxDuration = 30;
 
 type Params = { params: Promise<{ id: string }> };
+
+async function triggerAudio(slug: string, title: string, content: string) {
+  if (!process.env.TRIGGER_SECRET_KEY) return;
+  try {
+    await tasks.trigger("generate-post-audio", { slug, title, content });
+  } catch { /* Trigger.dev not configured — audio skipped */ }
+}
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
@@ -85,11 +91,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
   revalidatePath(`/blog/${post.slug}`);
 
   if (post.published) {
-    // Clear old audio immediately so readers don't hear stale version while new one generates
+    // Clear old audio so readers don't hear stale version while new one generates
     await prisma.siteSettings.deleteMany({
       where: { key: { in: [`audio_${existing.slug}`, `audio_${post.slug}`] } },
     });
-    after(() => generatePostAudio(post.slug, post.title, post.content));
+    await triggerAudio(post.slug, post.title, post.content);
   }
 
   return NextResponse.json(post);
