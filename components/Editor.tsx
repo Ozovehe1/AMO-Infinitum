@@ -10,7 +10,38 @@ import Typography from "@tiptap/extension-typography";
 import CharacterCount from "@tiptap/extension-character-count";
 import ImageExt from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
-import Youtube from "@tiptap/extension-youtube";
+import { Node, mergeAttributes } from "@tiptap/core";
+
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+const YoutubeEmbed = Node.create({
+  name: "youtubeEmbed",
+  group: "block",
+  atom: true,
+  draggable: true,
+  addAttributes() {
+    return { videoId: { default: null } };
+  },
+  parseHTML() {
+    return [{ tag: "div[data-youtube-video]" }];
+  },
+  renderHTML({ node }) {
+    const id = node.attrs.videoId;
+    if (!id) return ["div", {}];
+    return ["div", mergeAttributes({ "data-youtube-video": "" }),
+      ["iframe", {
+        src: `https://www.youtube-nocookie.com/embed/${id}`,
+        frameborder: "0",
+        allowfullscreen: "true",
+        allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+        style: "width:100%;aspect-ratio:16/9;height:auto;border-radius:8px;display:block;",
+      }],
+    ];
+  },
+});
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface EditorProps {
@@ -43,7 +74,7 @@ export default function Editor({
       CharacterCount,
       ImageExt.configure({ inline: false, allowBase64: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Youtube.configure({ width: 720, height: 405, nocookie: true }),
+      YoutubeEmbed,
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -83,7 +114,8 @@ export default function Editor({
       if (!val) editor.chain().focus().extendMarkRange("link").unsetLink().run();
       else editor.chain().focus().extendMarkRange("link").setLink({ href: val }).run();
     } else if (urlBar.mode === "youtube") {
-      if (val) editor.chain().focus().setYoutubeVideo({ src: val }).run();
+      const videoId = getYouTubeId(val);
+      if (videoId) editor.chain().focus().insertContent({ type: "youtubeEmbed", attrs: { videoId } }).run();
     } else {
       if (val) editor.chain().focus().setImage({ src: val }).run();
     }
