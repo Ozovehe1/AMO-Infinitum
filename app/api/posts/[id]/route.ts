@@ -83,6 +83,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
   revalidatePath(`/blog/${post.slug}`);
 
   if (post.published) {
+    // Clear old audio immediately so readers don't hear stale version while new one generates
+    await prisma.siteSettings.deleteMany({
+      where: { key: { in: [`audio_${existing.slug}`, `audio_${post.slug}`] } },
+    });
     after(() => generatePostAudio(post.slug, post.title, post.content));
   }
 
