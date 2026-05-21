@@ -18,19 +18,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No messages" }, { status: 400 });
   }
 
-  const postContext = `The author is currently working on a blog post for AMO Infinitum.\n\nTitle: ${title?.trim() || "(untitled)"}\n\nContent so far:\n${content ? stripHtml(content) : "(empty)"}`;
-
   const systemBlock = {
     type: "text" as const,
+    cache_control: { type: "ephemeral" as const },
     text: "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Your role is to help them think deeper — not to write for them. Help with: brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. You have access to web search — use it sparingly and only when: (1) the author explicitly asks you to research or look something up, (2) the question involves current events, recent data, or information that may have changed after your training, or (3) you genuinely don't know something and a search would give a meaningfully better answer. For general brainstorming, philosophy, ideas, and conceptual discussion, rely on your own knowledge — do not search unnecessarily. Do NOT write paragraphs of their blog post, rewrite their prose, or produce ready-to-publish content. If they ask you to write something, redirect them toward thinking it through. Be intellectually engaging, direct, and curious. You may use markdown formatting — headings, bold, lists — where it aids clarity. The interface renders markdown properly.",
   };
-  const contextBlock = { type: "text" as const, text: postContext };
+
+  // Post context is only included when the author explicitly shares it via the toggle
+  const hasPostContext = !!(title?.trim() || content?.trim());
+  const systemBlocks = hasPostContext
+    ? [
+        systemBlock,
+        {
+          type: "text" as const,
+          text: `The author has shared their current post with you.\n\nTitle: ${title?.trim() || "(untitled)"}\n\nContent so far:\n${content ? stripHtml(content) : "(empty)"}`,
+        },
+      ]
+    : [systemBlock];
 
   const stream = await anthropic.messages.stream({
     model: "claude-opus-4-7",
     max_tokens: 4096,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    system: [{ ...systemBlock, cache_control: { type: "ephemeral" } }, contextBlock] as any,
+    system: systemBlocks as any,
     tools: [{ type: "web_search_20250305" as const, name: "web_search" }],
     messages: messages.map((m: { role: string; content: string }) => ({
       role: m.role as "user" | "assistant",

@@ -101,6 +101,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [aiSessions,   setAiSessions]   = useState<ChatSession[]>([]);
   const [aiInput,      setAiInput]      = useState("");
   const [aiLoading,    setAiLoading]    = useState(false);
+  const [aiSharePost,  setAiSharePost]  = useState(false); // explicit toggle: share post with AI
   const [drawerHeight, setDrawerHeight] = useState(60); // vh, user-resizable
   const drawerHeightRef = useRef(60);
   useEffect(() => { drawerHeightRef.current = drawerHeight; }, [drawerHeight]);
@@ -134,17 +135,20 @@ export default function PostForm({ post }: { post?: PostData }) {
     return () => { mobileEditor.off("transaction", handler); };
   }, [mobileEditor]);
 
-  // Load AI chat + session history from localStorage on mount
+  // Load AI chat + session history on mount
   useEffect(() => {
     const pid = postId ?? "new";
+    // Current active chat lives in localStorage (ephemeral working state is fine here)
     try {
       const chat = localStorage.getItem(`ai-chat-${pid}`);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (chat) setAiMessages(JSON.parse(chat));
-      const hist = localStorage.getItem(`ai-sessions-${pid}`);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (hist) setAiSessions(JSON.parse(hist));
     } catch { /* ignore */ }
+    // Archived sessions come from the DB — permanent, only the author can delete them
+    fetch(`/api/ai/history?postId=${pid}`)
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.sessions)) setAiSessions(d.sessions); })
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -156,12 +160,21 @@ export default function PostForm({ post }: { post?: PostData }) {
   }, [aiMessages, postId]);
 
   // ── Session management ────────────────────────────────────
+  // Saves sessions to DB — permanent storage, only the author can delete
+  const persistSessions = (sessions: ChatSession[], pid: number | undefined) => {
+    fetch("/api/ai/history", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ postId: pid ?? "new", sessions }),
+    }).catch(() => {});
+  };
+
   const archiveCurrent = (msgs: AiMsg[], sessions: ChatSession[], pid: number | undefined): ChatSession[] => {
     if (msgs.length === 0) return sessions;
     const preview = msgs.find(m => m.role === "user")?.content.slice(0, 90) ?? "Conversation";
     const session: ChatSession = { id: Date.now().toString(), createdAt: Date.now(), preview, messages: msgs };
     const updated = [session, ...sessions].slice(0, 30);
-    try { localStorage.setItem(`ai-sessions-${pid ?? "new"}`, JSON.stringify(updated)); } catch { /* storage full */ }
+    persistSessions(updated, pid);
     return updated;
   };
 
@@ -182,7 +195,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const deleteSession = (id: string) => {
     const updated = aiSessions.filter(s => s.id !== id);
     setAiSessions(updated);
-    try { localStorage.setItem(`ai-sessions-${postId ?? "new"}`, JSON.stringify(updated)); } catch { }
+    persistSessions(updated, postId); // empty array → API deletes the key
   };
 
   // Auto-scroll AI chat to latest message
@@ -233,7 +246,8 @@ export default function PostForm({ post }: { post?: PostData }) {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, title, content }),
+        // Only send post content when the author explicitly enables the toggle
+        body: JSON.stringify({ messages: history, ...(aiSharePost ? { title, content } : {}) }),
       });
 
       if (!res.ok || !res.body) {
@@ -883,6 +897,20 @@ export default function PostForm({ post }: { post?: PostData }) {
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   {aiView === "chat" ? (
                     <>
+                      <button
+                        onClick={() => setAiSharePost(s => !s)}
+                        title={aiSharePost ? "AI can see this post — tap to hide" : "Tap to let AI read this post"}
+                        style={{
+                          background: aiSharePost ? "rgba(200,169,126,0.18)" : "transparent",
+                          border: `1px solid ${aiSharePost ? "rgba(200,169,126,0.5)" : "rgba(200,169,126,0.18)"}`,
+                          color: aiSharePost ? "#c8a97e" : "#8fa3b1",
+                          borderRadius: 5, padding: "2px 7px",
+                          fontFamily: "Inter, sans-serif", fontSize: "0.65rem",
+                          cursor: "pointer", letterSpacing: "0.02em", whiteSpace: "nowrap",
+                        }}
+                      >
+                        📄 {aiSharePost ? "Post shared" : "Share post"}
+                      </button>
                       {aiSessions.length > 0 && (
                         <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
                           History ({aiSessions.length})
@@ -995,6 +1023,20 @@ export default function PostForm({ post }: { post?: PostData }) {
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
               {aiView === "chat" ? (
                 <>
+                  <button
+                    onClick={() => setAiSharePost(s => !s)}
+                    title={aiSharePost ? "AI can see this post — click to hide" : "Click to let AI read this post"}
+                    style={{
+                      background: aiSharePost ? "rgba(200,169,126,0.18)" : "transparent",
+                      border: `1px solid ${aiSharePost ? "rgba(200,169,126,0.5)" : "rgba(200,169,126,0.18)"}`,
+                      color: aiSharePost ? "#c8a97e" : "#8fa3b1",
+                      borderRadius: 5, padding: "2px 8px",
+                      fontFamily: "Inter, sans-serif", fontSize: "0.68rem",
+                      cursor: "pointer", letterSpacing: "0.02em", whiteSpace: "nowrap",
+                    }}
+                  >
+                    📄 {aiSharePost ? "Post shared" : "Share post"}
+                  </button>
                   {aiSessions.length > 0 && (
                     <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
                       History ({aiSessions.length})
