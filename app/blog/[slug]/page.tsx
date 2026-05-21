@@ -61,18 +61,23 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
 
   if (!post) notFound();
 
-  const related = await prisma.post.findMany({
-    where: {
-      published: true,
-      id: { not: post.id },
-      categories: post.categories.length > 0
-        ? { some: { categoryId: { in: post.categories.map(c => c.categoryId) } } }
-        : undefined,
-    },
-    include: { categories: { include: { category: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-  });
+  const [related, audioRow] = await Promise.all([
+    prisma.post.findMany({
+      where: {
+        published: true,
+        id: { not: post.id },
+        categories: post.categories.length > 0
+          ? { some: { categoryId: { in: post.categories.map(c => c.categoryId) } } }
+          : undefined,
+      },
+      include: { categories: { include: { category: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+    prisma.siteSettings.findUnique({ where: { key: `audio_${slug}` } }),
+  ]);
+
+  const audioUrl = audioRow?.value ?? null;
 
   const date = formatDate(post.publishedAt || post.createdAt);
 
@@ -101,7 +106,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
       {/* Article body */}
       <main style={{ background: "#fffef9", flex: 1 }}>
         <article style={{ maxWidth: 720, margin: "0 auto", padding: "4rem 1.5rem 5rem" }}>
-          <AudioPlayer slug={post.slug} />
+          <AudioPlayer audioUrl={audioUrl} />
           <div
             className="prose-amo"
             dangerouslySetInnerHTML={{ __html: post.content }}

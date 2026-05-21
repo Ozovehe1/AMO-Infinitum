@@ -1214,6 +1214,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
         </div>
 
         {published && postSlug && <ShareRow slug={postSlug} />}
+        {published && postSlug && <AudioGenPanel slug={postSlug} />}
 
         <label style={{ display: "flex", alignItems: "center", gap: "0.625rem", cursor: "pointer" }}>
           <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#c8a97e" }} />
@@ -1661,5 +1662,84 @@ function SpinnerIcon() {
       <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="20" strokeDashoffset="8" strokeLinecap="round" />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </svg>
+  );
+}
+
+// ── Audio generation panel (shown in SettingsPanel for published posts) ──
+function AudioGenPanel({ slug }: { slug: string }) {
+  const [apiKey,  setApiKey]  = useState("");
+  const [status,  setStatus]  = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [errMsg,  setErrMsg]  = useState("");
+
+  const generate = async () => {
+    setStatus("loading");
+    setErrMsg("");
+    try {
+      const res = await fetch("/api/tts/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, apiKey: apiKey.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generation failed");
+      setStatus("done");
+      setApiKey("");
+    } catch (e) {
+      setErrMsg(e instanceof Error ? e.message : "Unknown error");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div style={{ borderTop: "1px solid rgba(13,31,60,0.07)", paddingTop: "0.875rem" }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#0d1f3c", margin: "0 0 0.6rem" }}>
+        Audio
+      </p>
+
+      {status === "done" ? (
+        <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#4a9e7a", margin: 0 }}>
+          ✓ Audio generated — readers can now listen
+          <button
+            onClick={() => setStatus("idle")}
+            style={{ marginLeft: 8, fontSize: "0.68rem", color: "#8fa3b1", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}
+          >
+            regenerate
+          </button>
+        </p>
+      ) : (
+        <>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={e => setApiKey(e.target.value)}
+            placeholder="Deepgram API key (saved after first use)"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "0.5rem 0.75rem", border: "1px solid rgba(13,31,60,0.15)",
+              borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.78rem",
+              color: "#0d1f3c", background: "#fff", marginBottom: "0.5rem",
+            }}
+          />
+          <button
+            onClick={generate}
+            disabled={status === "loading"}
+            style={{
+              width: "100%", padding: "0.55rem", border: "none", borderRadius: 6,
+              background: status === "loading" ? "rgba(13,31,60,0.4)" : "#0d1f3c",
+              color: "#c8a97e", fontFamily: "Inter, sans-serif",
+              fontSize: "0.78rem", fontWeight: 600, cursor: status === "loading" ? "default" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+            }}
+          >
+            {status === "loading" ? <><SpinnerIcon /> Generating…</> : "Generate Audio"}
+          </button>
+          {status === "error" && (
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#c0392b", margin: "0.4rem 0 0" }}>
+              {errMsg}
+            </p>
+          )}
+        </>
+      )}
+    </div>
   );
 }
