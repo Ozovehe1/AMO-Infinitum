@@ -146,9 +146,10 @@ export async function makePostcardBlob({
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    const timer = setTimeout(() => reject(new Error("timeout")), 6000);
     img.crossOrigin = "anonymous";
-    img.onload  = () => resolve(img);
-    img.onerror = reject;
+    img.onload  = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error("error")); };
     img.src = src;
   });
 }
