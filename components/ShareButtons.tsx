@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import ShareCard from "./ShareCard";
+import { useState, useEffect } from "react";
+import { makePostcardBlob } from "@/lib/postcard";
 
 interface ShareButtonsProps {
   title: string;
@@ -14,7 +14,6 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
   const [copied,      setCopied]      = useState(false);
   const [sharing,     setSharing]     = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   const siteUrl   = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const url       = `${siteUrl}/blog/${slug}`;
@@ -32,31 +31,15 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const makeBlob = async (): Promise<Blob | null> => {
-    const node = cardRef.current;
-    if (!node) return null;
-    try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(node, { width: 1200, height: 630, pixelRatio: 1 });
-      const res = await fetch(dataUrl);
-      return await res.blob();
-    } catch { return null; }
-  };
-
   const nativeShare = async () => {
     setSharing(true);
     try {
-      const blob = await makeBlob();
+      const blob = await makePostcardBlob({ title, excerpt, coverImage });
       const shareData: ShareData = { title: shareText, url };
-
-      if (blob) {
-        const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ ...shareData, files: [file] });
-          return;
-        }
-      }
-      if (navigator.share) {
+      const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ ...shareData, files: [file] });
+      } else if (navigator.share) {
         await navigator.share(shareData);
       }
     } catch { /* cancelled */ }
@@ -66,8 +49,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
   const download = async () => {
     setDownloading(true);
     try {
-      const blob = await makeBlob();
-      if (!blob) return;
+      const blob = await makePostcardBlob({ title, excerpt, coverImage });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}-postcard.png`;
@@ -85,11 +67,6 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
 
   return (
     <>
-      {/* Hidden off-screen share card for capture */}
-      <div style={{ position: "fixed", pointerEvents: "none", zIndex: -1 }}>
-        <ShareCard cardRef={cardRef} title={title} excerpt={excerpt} coverImage={coverImage} />
-      </div>
-
       {/* Trigger */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "2rem 1.5rem 1rem" }}>
         <button

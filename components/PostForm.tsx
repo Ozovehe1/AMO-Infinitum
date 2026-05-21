@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
-import ShareCard from "./ShareCard";
+import { makePostcardBlob } from "@/lib/postcard";
 
 function timeSince(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -1310,7 +1310,6 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
 }) {
   const [sharing, setSharing] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const postUrl = `${origin}/blog/${slug}`;
   const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
@@ -1320,22 +1319,10 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText + "\n" + postUrl)}`;
   const emailHref    = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent((preview ? preview + "\n\n" : "") + postUrl)}`;
 
-  const makeBlob = async (): Promise<Blob | null> => {
-    const node = cardRef.current;
-    if (!node) return null;
-    try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(node, { width: 1200, height: 630, pixelRatio: 1 });
-      const res = await fetch(dataUrl);
-      return await res.blob();
-    } catch { return null; }
-  };
-
   const downloadCard = async () => {
     setDownloading(true);
     try {
-      const blob = await makeBlob();
-      if (!blob) return;
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}-postcard.png`;
@@ -1350,17 +1337,12 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const shareWithPreview = async () => {
     setSharing(true);
     try {
-      const blob = await makeBlob();
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
       const shareData: ShareData = { title: shareText, url: postUrl };
-
-      if (blob) {
-        const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ ...shareData, files: [file] });
-          return;
-        }
-      }
-      if (navigator.share) {
+      const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ ...shareData, files: [file] });
+      } else if (navigator.share) {
         await navigator.share(shareData);
       }
     } catch { /* user cancelled or not supported */ }
@@ -1370,11 +1352,6 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onDismiss}>
-      {/* Hidden off-screen card for capture */}
-      <div style={{ position: "fixed", pointerEvents: "none", zIndex: -1 }}>
-        <ShareCard cardRef={cardRef} title={title} excerpt={preview} coverImage={coverImage || undefined} />
-      </div>
-
       {/* Sheet */}
       <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", overflow: "hidden", width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
 
