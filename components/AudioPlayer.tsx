@@ -25,10 +25,15 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     const a = audioRef.current;
     if (!a) return;
     const onMeta  = () => setDuration(a.duration);
-    const onTime  = () => setProgress((a.currentTime / a.duration) * 100);
+    const onTime  = () => {
+      if (!Number.isFinite(a.duration) || a.duration <= 0) return;
+      setProgress((a.currentTime / a.duration) * 100);
+    };
     const onEnded = () => { setPlaying(false); setProgress(100); };
     const onErr   = () => {
       console.warn("Deepgram TTS failed — falling back to Web Speech");
+      setPlaying(false);
+      setProgress(0);
       setMode("speech");
     };
     a.addEventListener("loadedmetadata", onMeta);
@@ -49,6 +54,11 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = speed;
   }, [speed]);
+
+  /* ── Web Speech: cancel on unmount ── */
+  useEffect(() => {
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
 
   /* ── Web Speech: speak from position ── */
   const speechSpeak = (fromChar: number, rate: number) => {
@@ -73,7 +83,11 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
       const a = audioRef.current;
       if (!a) return;
       if (playing) { a.pause(); setPlaying(false); }
-      else { a.play().catch(() => {}); setPlaying(true); }
+      else {
+        a.play()
+          .then(() => setPlaying(true))
+          .catch((err) => { console.warn("Audio play failed:", err); setPlaying(false); });
+      }
     } else {
       if (!("speechSynthesis" in window)) return;
       const synth = window.speechSynthesis;
