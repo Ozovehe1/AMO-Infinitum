@@ -5,7 +5,11 @@ import Anthropic from "@anthropic-ai/sdk";
 const anthropic = new Anthropic({ apiKey: process.env.ClaudeAPI });
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 4000);
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ").trim();
 }
 
 export async function POST(req: NextRequest) {
@@ -21,17 +25,16 @@ export async function POST(req: NextRequest) {
   const systemBlock = {
     type: "text" as const,
     cache_control: { type: "ephemeral" as const },
-    text: "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Your role is to help them think deeper — not to write for them. Help with: brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. You have access to web search — use it sparingly and only when: (1) the author explicitly asks you to research or look something up, (2) the question involves current events, recent data, or information that may have changed after your training, or (3) you genuinely don't know something and a search would give a meaningfully better answer. For general brainstorming, philosophy, ideas, and conceptual discussion, rely on your own knowledge — do not search unnecessarily. Do NOT write paragraphs of their blog post, rewrite their prose, or produce ready-to-publish content. If they ask you to write something, redirect them toward thinking it through. Be intellectually engaging, direct, and curious. You may use markdown formatting — headings, bold, lists — where it aids clarity. The interface renders markdown properly.",
+    text: "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Help with brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. Use web search sparingly — only when the author explicitly asks, or when the question involves current events or data that may have changed after your training. Do NOT write paragraphs of their post, rewrite their prose, or produce ready-to-publish content. Be intellectually engaging, direct, and curious. Use markdown where it aids clarity.",
   };
 
-  // Post context is only included when the author explicitly shares it via the toggle
   const hasPostContext = !!(title?.trim() || content?.trim());
   const systemBlocks = hasPostContext
     ? [
         systemBlock,
         {
           type: "text" as const,
-          text: `The author has shared their current post with you.\n\nTitle: ${title?.trim() || "(untitled)"}\n\nContent so far:\n${content ? stripHtml(content) : "(empty)"}`,
+          text: `Post title: ${title?.trim() || "(untitled)"}\n\n${content ? stripHtml(content) : ""}`.trim(),
         },
       ]
     : [systemBlock];
