@@ -1216,7 +1216,6 @@ export default function PostForm({ post }: { post?: PostData }) {
         @media (max-width: 768px) {
           .mobile-write-wrap  { display: flex !important; }
           .desktop-write-wrap { display: none !important; }
-          .desktop-ai-panel   { display: none !important; }
         }
         .ai-prose p  { margin: 0 0 0.5em; }
         .ai-prose p:last-child { margin-bottom: 0; }
