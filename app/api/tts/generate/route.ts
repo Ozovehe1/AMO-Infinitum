@@ -7,8 +7,8 @@ import { stripHtml } from "@/lib/utils";
 export const maxDuration = 60;
 
 const DG_URL    = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
-const CHUNK_MAX = 1800;  // Deepgram TTS limit is 2000 chars — stay safe
-const TEXT_CAP  = 9000;  // ~5 min audio; keeps total time well under 60 s
+const CHUNK_MAX = 1800;  // Deepgram TTS hard limit is 2000 chars
+const TEXT_CAP  = 7200;  // 4 chunks max — parallel calls finish in ~5 s total
 
 function chunkText(text: string): string[] {
   const chunks: string[] = [];
@@ -79,33 +79,29 @@ export async function POST(req: NextRequest) {
 
   const chunks = chunkText(`${post.title}. ${stripHtml(post.content)}`);
 
-  // ── call Deepgram for each chunk ──────────────────────────────────────
-  const buffers: ArrayBuffer[] = [];
-
-  for (let i = 0; i < chunks.length; i++) {
-    let dgRes: Response;
-    try {
-      dgRes = await fetch(DG_URL, {
-        method:  "POST",
-        headers: { Authorization: `Token ${dgKey}`, "Content-Type": "application/json" },
-        body:    JSON.stringify({ text: chunks[i] }),
-      });
-    } catch (fetchErr) {
-      return NextResponse.json(
-        { error: `Network error reaching Deepgram (chunk ${i + 1}): ${String(fetchErr)}` },
-        { status: 502 }
-      );
-    }
-
-    if (!dgRes.ok) {
-      const detail = await dgRes.text().catch(() => dgRes.statusText);
-      return NextResponse.json(
-        { error: `Deepgram ${dgRes.status} on chunk ${i + 1}/${chunks.length}: ${detail}` },
-        { status: 502 }
-      );
-    }
-
-    buffers.push(await dgRes.arrayBuffer());
+  // ── call Deepgram for ALL chunks in parallel ─────────────────────────
+  // Total time = slowest single call (~3-5 s) instead of n × call-time
+  let buffers: ArrayBuffer[];
+  try {
+    buffers = await Promise.all(
+      chunks.map(async (chunk, i) => {
+        const res = await fetch(DG_URL, {
+          method:  "POST",
+          headers: { Authorization: `Token ${dgKey}`, "Content-Type": "application/json" },
+          body:    JSON.stringify({ text: chunk }),
+        });
+        if (!res.ok) {
+          const detail = await res.text().catch(() => res.statusText);
+          throw new Error(`Deepgram ${res.status} on chunk ${i + 1}/${chunks.length}: ${detail}`);
+        }
+        return res.arrayBuffer();
+      })
+    );
+  } catch (dgErr) {
+    return NextResponse.json(
+      { error: String(dgErr instanceof Error ? dgErr.message : dgErr) },
+      { status: 502 }
+    );
   }
 
   // ── concatenate MP3 frames ────────────────────────────────────────────
