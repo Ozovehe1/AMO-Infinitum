@@ -22,10 +22,11 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
   const totalLen = text.length;
   const estSecs  = Math.max(30, (totalLen / 750) * 60);
 
-  // Refs that let the mount-time error handler read current values without
-  // going stale (the effect runs once so its closure would otherwise be frozen).
+  // Refs for values read inside the mount-time effect (stale closure guard)
   const speedRef          = useRef(speed);
   speedRef.current        = speed;
+  const totalLenRef       = useRef(totalLen);
+  totalLenRef.current     = totalLen;
   const wasAttemptingPlay = useRef(false);
   const speechSpeakRef    = useRef<(fromChar: number, rate: number) => void>(() => {});
 
@@ -41,11 +42,15 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     const onErr   = () => {
       const autoStart = wasAttemptingPlay.current;
       wasAttemptingPlay.current = false;
+      // Capture position before resetting so the speech fallback can resume
+      const resumeChar = (Number.isFinite(a.duration) && a.duration > 0)
+        ? Math.floor((a.currentTime / a.duration) * totalLenRef.current)
+        : 0;
       setPlaying(false);
       setProgress(0);
       setMode("speech");
       if (autoStart && "speechSynthesis" in window) {
-        speechSpeakRef.current(0, speedRef.current);
+        speechSpeakRef.current(resumeChar, speedRef.current);
       }
     };
     a.addEventListener("loadedmetadata", onMeta);
@@ -86,7 +91,6 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     setPlaying(true);
   };
 
-  // Keep ref current so the error handler (stale closure) always calls the latest version
   speechSpeakRef.current = speechSpeak;
 
   const togglePlay = () => {
@@ -116,16 +120,42 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     }
   };
 
+  const seek = (pct: number) => {
+    const clamped = Math.max(0, Math.min(1, pct));
+    if (mode === "deepgram") {
+      const a = audioRef.current;
+      if (!a || !duration) return;
+      a.currentTime = clamped * duration;
+      setProgress(clamped * 100);
+    } else {
+      const targetChar = Math.floor(clamped * totalLen);
+      charRef.current  = targetChar;
+      setProgress(clamped * 100);
+      if (playing) speechSpeak(targetChar, speed);
+    }
+  };
+
   const cycleSpeed = () => {
     const next = (speedIdx + 1) % SPEEDS.length;
     setSpeedIdx(next);
     if (playing && mode === "speech") speechSpeak(charRef.current, SPEEDS[next]);
   };
 
+  const retryDeepgram = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    window.speechSynthesis?.cancel();
+    setProgress(0);
+    setPlaying(false);
+    a.load();
+    setMode("deepgram");
+  };
+
   const pct = Math.min(100, progress);
 
+  // Bug #1 fix: both elapsed and total in wall-clock time (media-time ÷ speed)
   const elapsed = mode === "deepgram"
-    ? (audioRef.current?.currentTime ?? 0)
+    ? (audioRef.current?.currentTime ?? 0) / speed
     : (pct / 100) * (estSecs / speed);
 
   const total = mode === "deepgram"
@@ -166,11 +196,37 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
           </button>
 
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ height: 3, background: "rgba(13,31,60,0.1)", borderRadius: 2, position: "relative", overflow: "hidden", marginBottom: "0.3rem" }}>
-              <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "#c8a97e", borderRadius: 2, transition: "width 0.2s linear" }} />
+            {/* Bug #3 fix: clickable progress bar for seeking */}
+            <div
+              role="slider"
+              aria-label="Seek"
+              aria-valuenow={Math.round(pct)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                seek((e.clientX - rect.left) / rect.width);
+              }}
+              style={{ height: 12, display: "flex", alignItems: "center", cursor: "pointer", marginBottom: "0.15rem" }}
+            >
+              <div style={{ height: 3, width: "100%", background: "rgba(13,31,60,0.1)", borderRadius: 2, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "#c8a97e", borderRadius: 2, transition: "width 0.2s linear" }} />
+              </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontSize: "0.65rem", color: "#8fa3b1" }}>Listen to this essay</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.65rem", color: "#8fa3b1" }}>
+                {mode === "speech" ? (
+                  <>
+                    Browser TTS
+                    <button
+                      onClick={retryDeepgram}
+                      style={{ marginLeft: 6, fontSize: "0.6rem", color: "#2d7d9a", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}
+                    >
+                      retry audio
+                    </button>
+                  </>
+                ) : "Listen to this essay"}
+              </span>
               <span style={{ fontSize: "0.65rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
                 {total > 0 ? `${fmt(elapsed)} / ${fmt(total)}` : ""}
               </span>
