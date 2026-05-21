@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
     const blob = new Blob([combined], { type: "audio/mpeg" });
     // Timestamp in the path so regeneration always produces a fresh URL
     const { url } = await put(`tts/${slug}-${Date.now()}.mp3`, blob, {
-      access:          "public",
+      access:          "private",
       contentType:     "audio/mpeg",
       addRandomSuffix: false,
     });

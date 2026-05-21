@@ -77,7 +77,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
     prisma.siteSettings.findUnique({ where: { key: `audio_${slug}` } }),
   ]);
 
-  const audioUrl = audioRow?.value ?? null;
+  const audioUrl = audioRow?.value ? `/api/tts?slug=${slug}` : null;
 
   const date = formatDate(post.publishedAt || post.createdAt);
 
