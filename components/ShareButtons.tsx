@@ -112,10 +112,10 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     {coverImage ? (
                       <img src={coverImage} alt="" style={{ display: "block", width: "100%", height: "auto" }} />
                     ) : null}
-                    {/* Bottom gradient for text readability */}
+                    {/* Gradient — matches canvas: opaque at 10% from top so text at 40% is readable */}
                     <div style={{ position: coverImage ? "absolute" : "relative", inset: 0,
                       background: coverImage
-                        ? "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 35%, transparent 60%)"
+                        ? "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0.50) 65%, transparent 85%)"
                         : "linear-gradient(to top, rgba(13,31,60,0.6) 0%, transparent 100%)" }} />
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -123,8 +123,8 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                         <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
                       </div>
                       <div>
-                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
-                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,22px)", color: "rgba(255,255,255,0.82)", lineHeight: 1.5, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
+                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
                         <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                       </div>
                     </div>

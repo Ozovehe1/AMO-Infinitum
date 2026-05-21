@@ -1,4 +1,4 @@
-const PAD_RATIO = 0.06; // padding as fraction of width
+const PAD_RATIO = 0.06;
 
 export async function makePostcardBlob({
   title,
@@ -24,24 +24,23 @@ export async function makePostcardBlob({
   }
 
   if (img) {
-    // Cap at 1200px so text stays legible when the image is compressed to phone-screen width
     const maxDim = 1200;
     const scale  = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
     canvas.width  = Math.round(img.naturalWidth  * scale);
     canvas.height = Math.round(img.naturalHeight * scale);
 
-    // Cover photo — full opacity, fills entire canvas
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Gradient covers bottom half so the larger text block is always readable
-    const grad = ctx.createLinearGradient(0, canvas.height * 0.30, 0, canvas.height);
-    grad.addColorStop(0, "rgba(0,0,0,0)");
-    grad.addColorStop(0.45, "rgba(0,0,0,0.60)");
-    grad.addColorStop(1,   "rgba(0,0,0,0.88)");
+    // Gradient: darkens quickly from 10% so title at ~29% sits on ~54% opacity,
+    // and excerpt below that is on 70%+ opacity — both readable in white.
+    const grad = ctx.createLinearGradient(0, canvas.height * 0.10, 0, canvas.height);
+    grad.addColorStop(0,    "rgba(0,0,0,0)");
+    grad.addColorStop(0.15, "rgba(0,0,0,0.50)");
+    grad.addColorStop(0.50, "rgba(0,0,0,0.75)");
+    grad.addColorStop(1,    "rgba(0,0,0,0.92)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else {
-    // No cover — navy branded card at standard OG dimensions
     canvas.width  = 1200;
     canvas.height = 630;
 
@@ -73,23 +72,22 @@ export async function makePostcardBlob({
   ctx.textBaseline = "middle";
   ctx.fillText("A", bx, by);
 
-  // Publication name
   ctx.fillStyle    = "#c8a97e";
   ctx.font         = `${Math.round(W * 0.015)}px sans-serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
   ctx.fillText("AMO INFINITUM", bx + badgeR + Math.round(W * 0.012), by);
 
-  // Gold rule
+  // Gold rule near the bottom
   const ruleY = H - Math.round(H * 0.09);
   ctx.fillStyle = "#c8a97e";
   ctx.fillRect(PAD, ruleY, Math.round(W * 0.04), Math.round(H * 0.005));
 
-  // Text sizes proportional to canvas width
+  // Text sizes — excerpt is 56% of canvas width (large enough to fill ≥1/3 of card)
   const titleSize    = Math.round(W * (title.length > 60 ? 0.044 : 0.055));
   const TITLE_LINE_H = Math.round(titleSize * 1.22);
-  const excerptSize  = Math.round(W * 0.052);
-  const EXCERPT_LINE_H = Math.round(excerptSize * 1.6);
+  const excerptSize  = Math.round(W * 0.056);
+  const EXCERPT_LINE_H = Math.round(excerptSize * 1.48);
 
   ctx.font = `bold ${titleSize}px serif`;
   const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);
@@ -97,12 +95,24 @@ export async function makePostcardBlob({
   let excerptLines: string[] = [];
   if (excerpt) {
     ctx.font = `${excerptSize}px sans-serif`;
-    excerptLines = wrapText(ctx, excerpt, W - PAD * 2, 4);
+
+    // minTy is the highest the text block may start (H*0.28 = gradient ~54% opacity,
+    // enough for large bold white title). Compute how many excerpt lines fit between
+    // minTy and the rule so the block never overflows.
+    const minTy       = Math.round(H * 0.28);
+    const gap         = Math.round(H * 0.022);
+    const maxBlockH   = ruleY - Math.round(H * 0.025) - minTy;
+    const titleBlock  = titleLines.length * TITLE_LINE_H + gap;
+    const excerptRoom = Math.max(0, maxBlockH - titleBlock);
+    const maxLines    = Math.min(5, Math.max(1, Math.floor(excerptRoom / EXCERPT_LINE_H)));
+
+    excerptLines = wrapText(ctx, excerpt, W - PAD * 2, maxLines);
   }
 
-  const gap    = excerptLines.length > 0 ? Math.round(H * 0.02) : 0;
+  const gap    = excerptLines.length > 0 ? Math.round(H * 0.022) : 0;
   const blockH = titleLines.length * TITLE_LINE_H + gap + excerptLines.length * EXCERPT_LINE_H;
-  let ty = ruleY - Math.round(H * 0.025) - blockH;
+  // Bottom-anchor the text above the rule; clamp so it never rises above minTy.
+  let ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
 
   // Title
   ctx.fillStyle    = "#ffffff";
@@ -114,10 +124,10 @@ export async function makePostcardBlob({
     ty += TITLE_LINE_H;
   }
 
-  // Excerpt
+  // Excerpt — slightly dimmer than title to create visual hierarchy
   if (excerptLines.length > 0) {
     ty += gap;
-    ctx.fillStyle = "rgba(255,255,255,0.78)";
+    ctx.fillStyle = "rgba(255,255,255,0.88)";
     ctx.font      = `${excerptSize}px sans-serif`;
     for (const line of excerptLines) {
       ctx.fillText(line, PAD, ty);
