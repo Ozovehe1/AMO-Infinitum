@@ -123,8 +123,8 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                         <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
                       </div>
                       <div>
-                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(14px,3.8vw,22px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 6px" }}>{title}</h2>
-                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "rgba(255,255,255,0.78)", lineHeight: 1.4, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(20px,5.5vw,32px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 8px" }}>{title}</h2>
+                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(14px,3.8vw,22px)", color: "rgba(255,255,255,0.78)", lineHeight: 1.45, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
                         <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                       </div>
                     </div>

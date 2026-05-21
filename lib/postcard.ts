@@ -86,10 +86,10 @@ export async function makePostcardBlob({
   ctx.fillRect(PAD, ruleY, Math.round(W * 0.04), Math.round(H * 0.005));
 
   // Text sizes proportional to canvas width
-  const titleSize    = Math.round(W * (title.length > 60 ? 0.037 : 0.046));
-  const TITLE_LINE_H = Math.round(titleSize * 1.2);
-  const excerptSize  = Math.round(W * 0.019);
-  const EXCERPT_LINE_H = Math.round(excerptSize * 1.5);
+  const titleSize    = Math.round(W * (title.length > 60 ? 0.040 : 0.050));
+  const TITLE_LINE_H = Math.round(titleSize * 1.22);
+  const excerptSize  = Math.round(W * 0.028);
+  const EXCERPT_LINE_H = Math.round(excerptSize * 1.55);
 
   ctx.font = `bold ${titleSize}px serif`;
   const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);

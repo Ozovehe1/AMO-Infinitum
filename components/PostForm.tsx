@@ -1380,8 +1380,8 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
                   <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
                 </div>
                 <div>
-                  <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(16px,4vw,28px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 8px" }}>{title}</h2>
-                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "rgba(255,255,255,0.78)", lineHeight: 1.4, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{preview}</p>}
+                  <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(20px,5.5vw,32px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 8px" }}>{title}</h2>
+                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(14px,3.8vw,22px)", color: "rgba(255,255,255,0.78)", lineHeight: 1.45, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{preview}</p>}
                   <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                 </div>
               </div>
