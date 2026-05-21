@@ -1716,7 +1716,7 @@ function AudioGenPanel() {
         Audio
       </p>
       <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1", margin: 0 }}>
-        🎙 Audio generates on every save
+        🎙 Audio generates on every publish or update
       </p>
     </div>
   );
