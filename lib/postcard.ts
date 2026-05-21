@@ -33,11 +33,11 @@ export async function makePostcardBlob({
     // Cover photo — full opacity, fills entire canvas
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Gradient only at the bottom third so the image stays visible on top
-    const grad = ctx.createLinearGradient(0, canvas.height * 0.45, 0, canvas.height);
+    // Gradient covers bottom half so the larger text block is always readable
+    const grad = ctx.createLinearGradient(0, canvas.height * 0.30, 0, canvas.height);
     grad.addColorStop(0, "rgba(0,0,0,0)");
-    grad.addColorStop(0.5, "rgba(0,0,0,0.55)");
-    grad.addColorStop(1,   "rgba(0,0,0,0.82)");
+    grad.addColorStop(0.45, "rgba(0,0,0,0.60)");
+    grad.addColorStop(1,   "rgba(0,0,0,0.88)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else {
@@ -88,8 +88,8 @@ export async function makePostcardBlob({
   // Text sizes proportional to canvas width
   const titleSize    = Math.round(W * (title.length > 60 ? 0.044 : 0.055));
   const TITLE_LINE_H = Math.round(titleSize * 1.22);
-  const excerptSize  = Math.round(W * 0.038);
-  const EXCERPT_LINE_H = Math.round(excerptSize * 1.5);
+  const excerptSize  = Math.round(W * 0.052);
+  const EXCERPT_LINE_H = Math.round(excerptSize * 1.6);
 
   ctx.font = `bold ${titleSize}px serif`;
   const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);
@@ -97,7 +97,7 @@ export async function makePostcardBlob({
   let excerptLines: string[] = [];
   if (excerpt) {
     ctx.font = `${excerptSize}px sans-serif`;
-    excerptLines = wrapText(ctx, excerpt, W - PAD * 2, 2);
+    excerptLines = wrapText(ctx, excerpt, W - PAD * 2, 4);
   }
 
   const gap    = excerptLines.length > 0 ? Math.round(H * 0.02) : 0;
