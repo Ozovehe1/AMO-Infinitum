@@ -9,18 +9,26 @@ function fmt(s: number) {
 }
 
 export default function AudioPlayer({ slug, text }: { slug: string; text: string }) {
-  const audioRef    = useRef<HTMLAudioElement>(null);
-  const charRef     = useRef(0);
-  const [mode,      setMode]      = useState<"deepgram" | "speech">("deepgram");
-  const [playing,   setPlaying]   = useState(false);
-  const [progress,  setProgress]  = useState(0);
-  const [duration,  setDuration]  = useState(0);
-  const [speedIdx,  setSpeedIdx]  = useState(0);
-  const speed   = SPEEDS[speedIdx];
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const charRef  = useRef(0);
+
+  const [mode,     setMode]     = useState<"deepgram" | "speech">("deepgram");
+  const [playing,  setPlaying]  = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [speedIdx, setSpeedIdx] = useState(0);
+
+  const speed    = SPEEDS[speedIdx];
   const totalLen = text.length;
   const estSecs  = Math.max(30, (totalLen / 750) * 60);
 
-  /* ── Deepgram: wire up audio element events ── */
+  // Refs that let the mount-time error handler read current values without
+  // going stale (the effect runs once so its closure would otherwise be frozen).
+  const speedRef          = useRef(speed);
+  speedRef.current        = speed;
+  const wasAttemptingPlay = useRef(false);
+  const speechSpeakRef    = useRef<(fromChar: number, rate: number) => void>(() => {});
+
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
@@ -31,10 +39,14 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     };
     const onEnded = () => { setPlaying(false); setProgress(100); };
     const onErr   = () => {
-      console.warn("Deepgram TTS failed — falling back to Web Speech");
+      const autoStart = wasAttemptingPlay.current;
+      wasAttemptingPlay.current = false;
       setPlaying(false);
       setProgress(0);
       setMode("speech");
+      if (autoStart && "speechSynthesis" in window) {
+        speechSpeakRef.current(0, speedRef.current);
+      }
     };
     a.addEventListener("loadedmetadata", onMeta);
     a.addEventListener("timeupdate",     onTime);
@@ -50,17 +62,14 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     };
   }, []);
 
-  /* ── Deepgram: apply speed to audio element ── */
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = speed;
   }, [speed]);
 
-  /* ── Web Speech: cancel on unmount ── */
   useEffect(() => {
     return () => { window.speechSynthesis?.cancel(); };
   }, []);
 
-  /* ── Web Speech: speak from position ── */
   const speechSpeak = (fromChar: number, rate: number) => {
     const synth = window.speechSynthesis;
     synth.cancel();
@@ -77,16 +86,26 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
     setPlaying(true);
   };
 
-  /* ── Unified play / pause ── */
+  // Keep ref current so the error handler (stale closure) always calls the latest version
+  speechSpeakRef.current = speechSpeak;
+
   const togglePlay = () => {
     if (mode === "deepgram") {
       const a = audioRef.current;
       if (!a) return;
-      if (playing) { a.pause(); setPlaying(false); }
-      else {
+      if (playing) {
+        wasAttemptingPlay.current = false;
+        a.pause();
+        setPlaying(false);
+      } else {
+        wasAttemptingPlay.current = true;
         a.play()
           .then(() => setPlaying(true))
-          .catch((err) => { console.warn("Audio play failed:", err); setPlaying(false); });
+          .catch((err) => {
+            wasAttemptingPlay.current = false;
+            console.warn("Audio play failed:", err);
+            setPlaying(false);
+          });
       }
     } else {
       if (!("speechSynthesis" in window)) return;
@@ -115,11 +134,10 @@ export default function AudioPlayer({ slug, text }: { slug: string; text: string
 
   return (
     <>
-      {/* Hidden audio element always mounted — Deepgram streams into it */}
       <audio
         ref={audioRef}
         src={`/api/tts?slug=${encodeURIComponent(slug)}`}
-        preload="auto"
+        preload="none"
         style={{ display: "none" }}
       />
 
