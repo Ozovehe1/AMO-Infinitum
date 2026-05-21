@@ -6,6 +6,8 @@ import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
 import { generatePostAudio } from "@/lib/tts-generate";
 
+export const maxDuration = 60;
+
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
