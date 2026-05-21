@@ -12,15 +12,31 @@ export async function GET(req: NextRequest) {
   if (!token) return new NextResponse("Not configured", { status: 503 });
 
   try {
-    const res = await fetch(row.value, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return new NextResponse("Audio not available", { status: 404 });
+    // Forward Range header so the browser can seek and get duration
+    const rangeHeader = req.headers.get("range");
+    const upstreamHeaders: HeadersInit = { Authorization: `Bearer ${token}` };
+    if (rangeHeader) upstreamHeaders["Range"] = rangeHeader;
+
+    const res = await fetch(row.value, { headers: upstreamHeaders });
+    if (!res.ok && res.status !== 206) {
+      return new NextResponse("Audio not available", { status: 404 });
+    }
+
+    const headers: Record<string, string> = {
+      "Content-Type": "audio/mpeg",
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=86400",
+    };
+
+    // Forward Content-Length and Content-Range so browser knows file size / duration
+    const contentLength = res.headers.get("Content-Length");
+    const contentRange  = res.headers.get("Content-Range");
+    if (contentLength) headers["Content-Length"] = contentLength;
+    if (contentRange)  headers["Content-Range"]  = contentRange;
+
     return new NextResponse(res.body, {
-      headers: {
-        "Content-Type": "audio/mpeg",
-        "Cache-Control": "public, max-age=86400",
-      },
+      status: res.status,
+      headers,
     });
   } catch {
     return new NextResponse("Error fetching audio", { status: 500 });
