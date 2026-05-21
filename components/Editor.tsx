@@ -10,6 +10,7 @@ import Typography from "@tiptap/extension-typography";
 import CharacterCount from "@tiptap/extension-character-count";
 import ImageExt from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
+import Youtube from "@tiptap/extension-youtube";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface EditorProps {
@@ -29,7 +30,7 @@ export default function Editor({
 }: EditorProps) {
   const imgInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
-  const [urlBar, setUrlBar] = useState<{ mode: "link" | "image"; value: string } | null>(null);
+  const [urlBar, setUrlBar] = useState<{ mode: "link" | "image" | "youtube"; value: string } | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -42,6 +43,7 @@ export default function Editor({
       CharacterCount,
       ImageExt.configure({ inline: false, allowBase64: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Youtube.configure({ width: 720, height: 405, nocookie: true }),
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -80,6 +82,8 @@ export default function Editor({
     if (urlBar.mode === "link") {
       if (!val) editor.chain().focus().extendMarkRange("link").unsetLink().run();
       else editor.chain().focus().extendMarkRange("link").setLink({ href: val }).run();
+    } else if (urlBar.mode === "youtube") {
+      if (val) editor.chain().focus().setYoutubeVideo({ src: val }).run();
     } else {
       if (val) editor.chain().focus().setImage({ src: val }).run();
     }
@@ -151,6 +155,8 @@ export default function Editor({
           .tiptap-editor [style*="text-align: center"] { text-align: center; }
           .tiptap-editor [style*="text-align: right"] { text-align: right; }
           .tiptap-editor [style*="text-align: justify"] { text-align: justify; }
+          .tiptap-editor div[data-youtube-video] { margin: 1.5rem 0; }
+          .tiptap-editor div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
         `}</style>
       </div>
     );
@@ -205,6 +211,7 @@ export default function Editor({
         <button onPointerDown={e=>{e.preventDefault();imgInputRef.current?.click();}} title="Insert image" style={{height:34,minWidth:34,padding:"0 7px",background:"transparent",color:"#0d1f3c",border:"1px solid rgba(13,31,60,0.15)",borderRadius:5,cursor:"pointer",fontSize:"0.77rem",fontFamily:"Inter, sans-serif",flexShrink:0,touchAction:"manipulation",WebkitTapHighlightColor:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>📷</button>
         {btn(urlBar?.mode==="image",openImageBar,"Img URL","Image by URL")}
         {btn(false,()=>editor.chain().focus().setHorizontalRule().run(),"—","Divider")}
+        {btn(urlBar?.mode==="youtube",()=>{ if(urlBar?.mode==="youtube"){setUrlBar(null);}else{setUrlBar({mode:"youtube",value:""}); } },"▶ YouTube","Embed YouTube video")}
         <Sep />
         {btn(false,()=>editor.chain().focus().undo().run(),"↩","Undo")}
         {btn(false,()=>editor.chain().focus().redo().run(),"↪","Redo")}
@@ -215,12 +222,12 @@ export default function Editor({
           <input ref={urlInputRef} value={urlBar.value}
             onChange={e => setUrlBar(u => u ? { ...u, value: e.target.value } : null)}
             onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); submitUrl(); } if (e.key === "Escape") setUrlBar(null); }}
-            placeholder={urlBar.mode === "link" ? "Paste or type a URL…" : "Paste image URL…"}
+            placeholder={urlBar.mode === "link" ? "Paste or type a URL…" : urlBar.mode === "youtube" ? "Paste YouTube URL…" : "Paste image URL…"}
             style={{ flex: 1, background: "#fff", border: "1px solid rgba(13,31,60,0.18)", borderRadius: 6, padding: "0.5rem 0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#0d1f3c", outline: "none" }}
           />
           <button onPointerDown={e => { e.preventDefault(); submitUrl(); }}
             style={{ background: "#2d7d9a", color: "#fff", border: "none", borderRadius: 6, padding: "0.5rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
-            {urlBar.mode === "link" ? "Add Link" : "Insert"}
+            {urlBar.mode === "link" ? "Add Link" : urlBar.mode === "youtube" ? "Embed" : "Insert"}
           </button>
           <button onPointerDown={e => { e.preventDefault(); setUrlBar(null); }}
             style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem 0.25rem", fontSize: "1rem", cursor: "pointer", flexShrink: 0 }}>✕</button>
@@ -262,6 +269,9 @@ export default function Editor({
         .tiptap-editor [style*="text-align: center"] { text-align: center; }
         .tiptap-editor [style*="text-align: right"] { text-align: right; }
         .tiptap-editor [style*="text-align: justify"] { text-align: justify; }
+        .tiptap-editor div[data-youtube-video] { margin: 1.5rem 0; }
+        .tiptap-editor div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
+        .tiptap-editor div[data-youtube-video].ProseMirror-selectednode iframe { outline: 2px solid #2d7d9a; border-radius: 8px; }
       `}</style>
     </div>
   );

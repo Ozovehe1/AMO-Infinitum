@@ -177,6 +177,10 @@ body {
   .prose-amo h3 { font-size: 1.1rem; }
 }
 
+/* YouTube embeds — responsive 16:9 */
+.prose-amo div[data-youtube-video] { margin: 2em 0; }
+.prose-amo div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
