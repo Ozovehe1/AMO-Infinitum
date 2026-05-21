@@ -36,7 +36,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
     try {
       const blob = await makePostcardBlob({ title, excerpt, coverImage });
       const shareData: ShareData = { title: shareText, url };
-      const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
+      const file = new File([blob], `${slug}-postcard.jpg`, { type: "image/jpeg" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ ...shareData, files: [file] });
       } else if (navigator.share) {
@@ -52,7 +52,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
       const blob = await makePostcardBlob({ title, excerpt, coverImage });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `${slug}-postcard.png`;
+      a.download = `${slug}-postcard.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

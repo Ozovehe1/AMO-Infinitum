@@ -138,7 +138,8 @@ export async function makePostcardBlob({
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
-      "image/png"
+      "image/jpeg",
+      0.93
     );
   });
 }
@@ -146,10 +147,9 @@ export async function makePostcardBlob({
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const timer = setTimeout(() => reject(new Error("timeout")), 6000);
     img.crossOrigin = "anonymous";
-    img.onload  = () => { clearTimeout(timer); resolve(img); };
-    img.onerror = () => { clearTimeout(timer); reject(new Error("error")); };
+    img.onload  = () => resolve(img);
+    img.onerror = reject;
     img.src = src;
   });
 }
