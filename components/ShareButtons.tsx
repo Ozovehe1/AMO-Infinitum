@@ -105,21 +105,26 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                   <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
                 </div>
 
-                {/* Inline CSS preview card — mirrors ShareCard visually */}
+                {/* Inline CSS preview card */}
                 <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
-                  <div style={{ position: "relative", aspectRatio: "1200/630", background: "#0d1f3c", width: "100%", overflow: "hidden" }}>
-                    {coverImage && (
-                      <img src={coverImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
-                    )}
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, rgba(13,31,60,0.55) 0%, rgba(13,31,60,0.92) 60%, #0d1f3c 100%)" }} />
+                  <div style={{ position: "relative", background: "#0d1f3c", width: "100%", overflow: "hidden",
+                    aspectRatio: coverImage ? "auto" : "1200/630" }}>
+                    {coverImage ? (
+                      <img src={coverImage} alt="" style={{ display: "block", width: "100%", height: "auto" }} />
+                    ) : null}
+                    {/* Bottom gradient for text readability */}
+                    <div style={{ position: coverImage ? "absolute" : "relative", inset: 0,
+                      background: coverImage
+                        ? "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 35%, transparent 60%)"
+                        : "linear-gradient(to top, rgba(13,31,60,0.6) 0%, transparent 100%)" }} />
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
                         <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
                       </div>
                       <div>
-                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(14px,3.8vw,22px)", fontWeight: 700, color: "#fffef9", lineHeight: 1.2, margin: "0 0 6px" }}>{title}</h2>
-                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "rgba(255,254,249,0.72)", lineHeight: 1.4, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(14px,3.8vw,22px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 6px" }}>{title}</h2>
+                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "rgba(255,255,255,0.78)", lineHeight: 1.4, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
                         <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                       </div>
                     </div>
