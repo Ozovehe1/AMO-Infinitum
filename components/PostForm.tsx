@@ -1080,6 +1080,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Share link (when published) */}
               {published && postSlug && <ShareRow slug={postSlug} />}
+              {published && postSlug && <AudioGenPanel slug={postSlug} />}
 
               {/* Featured */}
               <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
