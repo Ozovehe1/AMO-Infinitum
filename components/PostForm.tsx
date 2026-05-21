@@ -1668,25 +1668,30 @@ function SpinnerIcon() {
 
 // ── Audio generation panel (shown in SettingsPanel for published posts) ──
 function AudioGenPanel({ slug }: { slug: string }) {
-  const [apiKey,  setApiKey]  = useState("");
-  const [status,  setStatus]  = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [errMsg,  setErrMsg]  = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [errMsg, setErrMsg] = useState("");
 
   const generate = async () => {
     setStatus("loading");
     setErrMsg("");
     try {
       const res = await fetch("/api/tts/generate", {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, apiKey: apiKey.trim() || undefined }),
+        body:    JSON.stringify({ slug, apiKey: apiKey.trim() || undefined }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Generation failed");
+
+      let data: { error?: string; audioUrl?: string } = {};
+      try { data = await res.json(); } catch { /* non-JSON body */ }
+
+      if (!res.ok) {
+        throw new Error(data.error || `Server error ${res.status} — check Vercel function logs`);
+      }
       setStatus("done");
       setApiKey("");
     } catch (e) {
-      setErrMsg(e instanceof Error ? e.message : "Unknown error");
+      setErrMsg(e instanceof Error ? e.message : String(e));
       setStatus("error");
     }
   };
@@ -1732,12 +1737,17 @@ function AudioGenPanel({ slug }: { slug: string }) {
               display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
             }}
           >
-            {status === "loading" ? <><SpinnerIcon /> Generating…</> : "Generate Audio"}
+            {status === "loading" ? <><SpinnerIcon /> Generating…</> : "🎙 Generate Audio"}
           </button>
           {status === "error" && (
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#c0392b", margin: "0.4rem 0 0" }}>
-              {errMsg}
-            </p>
+            <div style={{
+              marginTop: "0.5rem", padding: "0.5rem 0.625rem",
+              background: "#fff0f0", border: "1px solid #f5c6c6", borderRadius: 5,
+            }}>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#c0392b", margin: 0, wordBreak: "break-word" }}>
+                {errMsg}
+              </p>
+            </div>
           )}
         </>
       )}
