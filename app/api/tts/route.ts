@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     if (rangeHeader) upstreamHeaders["Range"] = rangeHeader;
 
     const res = await fetch(row.value, { headers: upstreamHeaders });
-    if (!res.ok && res.status !== 206) {
+    if (!res.ok) {
       return new NextResponse("Audio not available", { status: 404 });
     }
 

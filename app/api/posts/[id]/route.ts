@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   let slug = existing.slug;
   if (title !== existing.title) {
-    const baseSlug = slugify(title);
+    const baseSlug = slugify(title) || "post";
     slug = baseSlug;
     let count = 0;
     while (await prisma.post.findFirst({ where: { slug, NOT: { id: postId } } })) {

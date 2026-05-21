@@ -268,7 +268,7 @@ export default function PostForm({ post }: { post?: PostData }) {
     } finally {
       setAiLoading(false);
     }
-  }, [aiInput, aiLoading, aiMessages, title, content]);
+  }, [aiInput, aiLoading, aiMessages, title, content, aiSharePost]);
 
   // ── Save logic ──────────────────────────────────────────
   const performSave = useCallback(async (options: { publish?: boolean; silent?: boolean } = {}) => {
@@ -318,7 +318,7 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (options.silent) setAutoSaving(false);
       else setSaving(false);
     }
-  }, [title, content, excerpt, coverImage, published, featured, selectedCats, postId, router]);
+  }, [title, content, excerpt, coverImage, published, featured, showUpdatedNotice, selectedCats, postId, router]);
 
   // Always keep a ref to the latest performSave so the unmount cleanup can use it
   const performSaveRef = useRef(performSave);
@@ -1188,7 +1188,8 @@ export default function PostForm({ post }: { post?: PostData }) {
                     onClick={async () => {
                       if (!confirm("Delete this post? This cannot be undone.")) return;
                       setDeleting(true);
-                      await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+                      const res = await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+                      if (!res.ok) { setDeleting(false); setError("Delete failed. Try again."); return; }
                       router.push("/inkwell/posts");
                     }}
                     disabled={deleting}
@@ -1376,7 +1377,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
       const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `${slug}-postcard.png`;
+      a.download = `${slug}-postcard.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1390,7 +1391,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
     try {
       const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
       const shareData: ShareData = { title: shareText, url: postUrl };
-      const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
+      const file = new File([blob], `${slug}-postcard.jpg`, { type: "image/jpeg" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ ...shareData, files: [file] });
       } else if (navigator.share) {

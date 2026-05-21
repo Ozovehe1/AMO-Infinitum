@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword, verifyPassword, signToken, setAuthCookie, clearAuthCookie } from "@/lib/auth";
+import { hashPassword, verifyPassword, signToken, setAuthCookie, clearAuthCookie, getAdminSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   const { action, password, currentPassword, newPassword } = await req.json();
@@ -42,6 +42,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "change-password") {
+    const session = await getAdminSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const admin = await prisma.admin.findFirst();
     if (!admin) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

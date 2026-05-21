@@ -3,30 +3,11 @@ import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { put } from "@vercel/blob";
 import { stripHtml } from "@/lib/utils";
+import { chunkText } from "@/lib/tts-generate";
 
 export const maxDuration = 60;
 
-const DG_URL    = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
-const CHUNK_MAX = 1800;  // Deepgram TTS hard limit is 2000 chars
-const TEXT_CAP  = 7200;  // 4 chunks max — parallel calls finish in ~5 s total
-
-function chunkText(text: string): string[] {
-  const chunks: string[] = [];
-  let rem = text.slice(0, TEXT_CAP).trim();
-
-  while (rem.length > CHUNK_MAX) {
-    // Try sentence boundary first, then word boundary, then hard cut
-    let cut = rem.lastIndexOf(". ", CHUNK_MAX);
-    if (cut < CHUNK_MAX * 0.4) cut = rem.lastIndexOf(" ", CHUNK_MAX);
-    if (cut < 1) cut = CHUNK_MAX;
-
-    chunks.push(rem.slice(0, cut + 1).trim());
-    rem = rem.slice(cut + 1).trim();
-  }
-
-  if (rem) chunks.push(rem);
-  return chunks;
-}
+const DG_URL = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
 
 export async function POST(req: NextRequest) {
   // ── auth ──────────────────────────────────────────────────────────────

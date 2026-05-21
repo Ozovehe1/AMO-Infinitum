@@ -4,8 +4,13 @@ export async function GET(req: NextRequest) {
   const src = req.nextUrl.searchParams.get("src");
   if (!src) return new NextResponse("Missing src", { status: 400 });
 
-  // Only proxy Vercel Blob URLs
-  if (!src.includes(".blob.vercel-storage.com/")) {
+  // Only proxy Vercel Blob URLs — use hostname check to prevent SSRF
+  try {
+    const hostname = new URL(src).hostname;
+    if (!hostname.endsWith(".blob.vercel-storage.com")) {
+      return new NextResponse("Invalid src", { status: 400 });
+    }
+  } catch {
     return new NextResponse("Invalid src", { status: 400 });
   }
 

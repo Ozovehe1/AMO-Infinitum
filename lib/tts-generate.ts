@@ -6,7 +6,7 @@ const DG_URL    = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
 const CHUNK_MAX = 1800;
 const TEXT_CAP  = 7200;
 
-function chunkText(text: string): string[] {
+export function chunkText(text: string): string[] {
   const chunks: string[] = [];
   let rem = text.slice(0, TEXT_CAP).trim();
 

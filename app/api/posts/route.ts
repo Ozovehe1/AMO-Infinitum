@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Content required to publish" }, { status: 400 });
   }
 
-  const baseSlug = slugify(title);
+  const baseSlug = slugify(title) || "post";
   let slug = baseSlug;
   let count = 0;
   while (await prisma.post.findUnique({ where: { slug } })) {
