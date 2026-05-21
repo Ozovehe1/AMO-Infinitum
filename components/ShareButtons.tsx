@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import ShareCard from "./ShareCard";
 
 interface ShareButtonsProps {
   title: string;
@@ -13,13 +14,11 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
   const [copied,      setCopied]      = useState(false);
   const [sharing,     setSharing]     = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const siteUrl   = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const url       = `${siteUrl}/blog/${slug}`;
   const shareText = excerpt || title;
-
-  // OG image for download — no cover param (private blob URLs hang the edge function)
-  const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(excerpt || "")}`;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -33,37 +32,45 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const fetchOgBlob = async (): Promise<File | null> => {
+  const makeBlob = async (): Promise<Blob | null> => {
+    const node = cardRef.current;
+    if (!node) return null;
     try {
-      const res = await fetch(ogUrl);
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      return new File([blob], `${slug}-preview.png`, { type: "image/png" });
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(node, { width: 1200, height: 630, pixelRatio: 1 });
+      const res = await fetch(dataUrl);
+      return await res.blob();
     } catch { return null; }
   };
 
   const nativeShare = async () => {
     setSharing(true);
     try {
-      const file = await fetchOgBlob();
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: shareText, url });
-      } else if (navigator.share) {
-        await navigator.share({ title: shareText, url });
+      const blob = await makeBlob();
+      const shareData: ShareData = { title: shareText, url };
+
+      if (blob) {
+        const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ ...shareData, files: [file] });
+          return;
+        }
+      }
+      if (navigator.share) {
+        await navigator.share(shareData);
       }
     } catch { /* cancelled */ }
-    setSharing(false);
+    finally { setSharing(false); }
   };
 
   const download = async () => {
     setDownloading(true);
     try {
-      const res  = await fetch(ogUrl);
-      if (!res.ok) throw new Error("OG failed");
-      const blob = await res.blob();
-      const a    = document.createElement("a");
-      a.href     = URL.createObjectURL(blob);
-      a.download = `${slug}-preview.png`;
+      const blob = await makeBlob();
+      if (!blob) return;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${slug}-postcard.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -78,6 +85,11 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
 
   return (
     <>
+      {/* Hidden off-screen share card for capture */}
+      <div style={{ position: "fixed", pointerEvents: "none", zIndex: -1 }}>
+        <ShareCard cardRef={cardRef} title={title} excerpt={excerpt} coverImage={coverImage} />
+      </div>
+
       {/* Trigger */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "2rem 1.5rem 1rem" }}>
         <button
@@ -116,42 +128,23 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                   <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
                 </div>
 
-                {/* Preview card — CSS-rendered, no external requests */}
+                {/* Inline CSS preview card — mirrors ShareCard visually */}
                 <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
                   <div style={{ position: "relative", aspectRatio: "1200/630", background: "#0d1f3c", width: "100%", overflow: "hidden" }}>
                     {coverImage && (
-                      <img src={coverImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
+                      <img src={coverImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
                     )}
-                    {!coverImage && (
-                      <div style={{
-                        position: "absolute", inset: 0,
-                        background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.35) 0%, transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(200,169,126,0.2) 0%, transparent 50%)",
-                      }} />
-                    )}
-                    <div style={{
-                      position: "absolute", inset: 0,
-                      background: "linear-gradient(135deg, rgba(13,31,60,0.1) 0%, rgba(13,31,60,0.5) 40%, rgba(13,31,60,0.95) 100%)",
-                    }} />
-                    <div style={{ position: "absolute", top: 16, left: 20, display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 3, height: 22, background: "#c8a97e", borderRadius: 2 }} />
-                      <span style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "#c8a97e", letterSpacing: "0.06em" }}>
-                        AMO <em style={{ fontStyle: "italic", color: "#fffef9" }}>Infinitum</em>
-                      </span>
-                    </div>
-                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 18px" }}>
-                      <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 2, marginBottom: 8 }} />
-                      <p style={{
-                        fontFamily: "'Playfair Display', Georgia, serif",
-                        fontSize: "clamp(12px, 3.5vw, 17px)", fontWeight: 700,
-                        color: "#fffef9", margin: "0 0 5px", lineHeight: 1.2,
-                      }}>{title}</p>
-                      {excerpt && (
-                        <p style={{
-                          fontFamily: "system-ui, sans-serif", fontSize: "clamp(9px, 2.2vw, 11px)",
-                          color: "rgba(245,240,232,0.75)", margin: 0, lineHeight: 1.4,
-                          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                        }}>{excerpt}</p>
-                      )}
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, rgba(13,31,60,0.55) 0%, rgba(13,31,60,0.92) 60%, #0d1f3c 100%)" }} />
+                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
+                        <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                      </div>
+                      <div>
+                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(14px,3.8vw,22px)", fontWeight: 700, color: "#fffef9", lineHeight: 1.2, margin: "0 0 6px" }}>{title}</h2>
+                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(10px,2.2vw,13px)", color: "rgba(255,254,249,0.72)", lineHeight: 1.4, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                        <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                      </div>
                     </div>
                   </div>
                 </a>
@@ -164,7 +157,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 
-                  {/* Share */}
+                  {/* Native share (image + link) */}
                   {typeof navigator !== "undefined" && !!navigator.share && (
                     <button onClick={nativeShare} disabled={sharing} style={{
                       width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
@@ -177,7 +170,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                         <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                       </svg>
-                      {sharing ? "Preparing…" : "Share — image + link"}
+                      {sharing ? "Preparing…" : "Share"}
                     </button>
                   )}
 
@@ -193,7 +186,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
-                    {downloading ? "Downloading…" : "Download"}
+                    {downloading ? "Saving…" : "Download"}
                   </button>
 
                   {/* Copy link */}

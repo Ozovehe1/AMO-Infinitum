@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
+import ShareCard from "./ShareCard";
 
 function timeSince(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -1308,54 +1309,73 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void;
 }) {
   const [sharing, setSharing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const postUrl = `${origin}/blog/${slug}`;
   const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
 
-  // Absolute cover URL for the OG endpoint
-  const absCover = coverImage ? (coverImage.startsWith("/") ? origin + coverImage : coverImage) : "";
-  const ogUrl = `${origin}/api/og?title=${encodeURIComponent(title)}&excerpt=${encodeURIComponent(preview)}&cover=${encodeURIComponent(absCover)}`;
-
   const shareText = preview || title;
-  const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postUrl)}`;
+  const twitterHref  = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postUrl)}`;
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText + "\n" + postUrl)}`;
-  const emailHref = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent((preview ? preview + "\n\n" : "") + postUrl)}`;
+  const emailHref    = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent((preview ? preview + "\n\n" : "") + postUrl)}`;
 
-  const fetchOgBlob = async (): Promise<File | null> => {
+  const makeBlob = async (): Promise<Blob | null> => {
+    const node = cardRef.current;
+    if (!node) return null;
     try {
-      const res = await fetch(ogUrl);
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      return new File([blob], `${slug}-preview.png`, { type: "image/png" });
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(node, { width: 1200, height: 630, pixelRatio: 1 });
+      const res = await fetch(dataUrl);
+      return await res.blob();
     } catch { return null; }
   };
 
-  const downloadPreview = () => {
-    // Server sends Content-Disposition: attachment — triggers native download
-    // on Android Chrome, iOS Safari, desktop, and curl without any user-gesture issues
-    window.open(ogUrl + "&download=1", "_blank");
+  const downloadCard = async () => {
+    setDownloading(true);
+    try {
+      const blob = await makeBlob();
+      if (!blob) return;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${slug}-postcard.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    } catch { /* silent */ }
+    setDownloading(false);
   };
 
   const shareWithPreview = async () => {
     setSharing(true);
     try {
-      // Kick off image fetch immediately; if it resolves before navigator.share
-      // is called the gesture context is still alive on Android Chrome.
-      const filePromise = fetchOgBlob();
-      const file = await filePromise;
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: shareText, url: postUrl });
-      } else if (navigator.share) {
-        await navigator.share({ title: shareText, url: postUrl });
+      const blob = await makeBlob();
+      const shareData: ShareData = { title: shareText, url: postUrl };
+
+      if (blob) {
+        const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ ...shareData, files: [file] });
+          return;
+        }
+      }
+      if (navigator.share) {
+        await navigator.share(shareData);
       }
     } catch { /* user cancelled or not supported */ }
-    setSharing(false);
+    finally { setSharing(false); }
   };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onDismiss}>
-      {/* Sheet — overflow:hidden clips image to rounded corners */}
+      {/* Hidden off-screen card for capture */}
+      <div style={{ position: "fixed", pointerEvents: "none", zIndex: -1 }}>
+        <ShareCard cardRef={cardRef} title={title} excerpt={preview} coverImage={coverImage || undefined} />
+      </div>
+
+      {/* Sheet */}
       <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", overflow: "hidden", width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
 
         {/* Scrollable content */}
@@ -1366,10 +1386,24 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
             <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
           </div>
 
-          {/* OG preview image — edge-to-edge, Substack style */}
-          <a href={postUrl} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem" }}>
-            <div style={{ aspectRatio: "1200/630", background: "#0d1f3c", width: "100%" }}>
-              <img src={ogUrl} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          {/* Inline CSS preview card (16:9-ish) — visible to user, same design as capture */}
+          <a href={postUrl} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
+            <div style={{ width: "100%", aspectRatio: "1200/630", background: "#0d1f3c", position: "relative", overflow: "hidden" }}>
+              {coverImage && (
+                <img src={coverImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+              )}
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, rgba(13,31,60,0.55) 0%, rgba(13,31,60,0.92) 60%, #0d1f3c 100%)" }} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px, 5%, 40px) clamp(20px, 6%, 56px)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
+                  <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                </div>
+                <div>
+                  <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(16px,4vw,28px)", fontWeight: 700, color: "#fffef9", lineHeight: 1.2, margin: "0 0 8px" }}>{title}</h2>
+                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "rgba(255,254,249,0.72)", lineHeight: 1.4, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{preview}</p>}
+                  <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                </div>
+              </div>
             </div>
           </a>
 
@@ -1387,16 +1421,16 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
 
             {/* Download + share image row */}
             <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-              <button onClick={downloadPreview}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={downloadCard} disabled={downloading}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: downloading ? 0.7 : 1 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Save preview
+                {downloading ? "Saving…" : "Download"}
               </button>
               {typeof navigator !== "undefined" && !!navigator.share && (
                 <button onClick={shareWithPreview} disabled={sharing}
                   style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: sharing ? 0.7 : 1 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                  {sharing ? "Sharing…" : "Share with image"}
+                  {sharing ? "Sharing…" : "Share"}
                 </button>
               )}
             </div>
