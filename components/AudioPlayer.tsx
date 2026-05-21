@@ -11,7 +11,7 @@ function fmt(s: number) {
 export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing,  setPlaying]  = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [current,  setCurrent]  = useState(0);
   const [duration, setDuration] = useState(0);
   const [speedIdx, setSpeedIdx] = useState(1);
 
@@ -21,23 +21,25 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
     const a = audioRef.current;
     if (!a) return;
 
-    const onMeta  = () => setDuration(a.duration);
-    const onTime  = () => {
-      if (!isFinite(a.duration) || a.duration <= 0) return;
-      setProgress((a.currentTime / a.duration) * 100);
-    };
+    const onMeta  = () => { if (isFinite(a.duration)) setDuration(a.duration); };
+    const onTime  = () => setCurrent(a.currentTime);
     const onPlay  = () => setPlaying(true);
     const onPause = () => setPlaying(false);
-    const onEnded = () => { setPlaying(false); setProgress(100); };
+    const onEnded = () => { setPlaying(false); setCurrent(0); };
 
     a.addEventListener("loadedmetadata", onMeta);
+    a.addEventListener("durationchange", onMeta);
     a.addEventListener("timeupdate",     onTime);
     a.addEventListener("play",           onPlay);
     a.addEventListener("pause",          onPause);
     a.addEventListener("ended",          onEnded);
 
+    // Handle case where metadata already loaded before effect ran
+    if (a.readyState >= 1 && isFinite(a.duration)) setDuration(a.duration);
+
     return () => {
       a.removeEventListener("loadedmetadata", onMeta);
+      a.removeEventListener("durationchange", onMeta);
       a.removeEventListener("timeupdate",     onTime);
       a.removeEventListener("play",           onPlay);
       a.removeEventListener("pause",          onPause);
@@ -67,9 +69,7 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
 
   const cycleSpeed = () => setSpeedIdx(i => (i + 1) % SPEEDS.length);
 
-  const pct     = Math.min(100, progress);
-  const total   = duration ? duration / speed : 0;
-  const elapsed = (pct / 100) * total;
+  const pct = duration > 0 ? Math.min(100, (current / duration) * 100) : 0;
 
   return (
     <>
@@ -132,7 +132,7 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "0.65rem", color: "#8fa3b1" }}>Listen to this essay</span>
               <span style={{ fontSize: "0.65rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
-                {total > 0 ? `${fmt(elapsed)} / ${fmt(total)}` : ""}
+                {duration > 0 ? `${fmt(current)} / ${fmt(duration)}` : ""}
               </span>
             </div>
           </div>
