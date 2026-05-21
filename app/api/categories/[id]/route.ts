@@ -11,6 +11,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const { id } = await params;
   const catId = parseInt(id);
+  if (isNaN(catId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const { name, description, color } = await req.json();
 
   const category = await prisma.category.update({
@@ -27,6 +28,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const { id } = await params;
   const catId = parseInt(id);
+  if (isNaN(catId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   await prisma.category.delete({ where: { id: catId } });
   return NextResponse.json({ success: true });
 }

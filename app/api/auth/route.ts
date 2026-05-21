@@ -10,7 +10,10 @@ export async function POST(req: NextRequest) {
 
     if (!admin) {
       // First-time setup: create admin from env password
-      const envPassword = process.env.ADMIN_PASSWORD || "admin123";
+      const envPassword = process.env.ADMIN_PASSWORD;
+      if (!envPassword) {
+        return NextResponse.json({ error: "ADMIN_PASSWORD env var not set" }, { status: 503 });
+      }
       const hash = await hashPassword(envPassword);
       await prisma.admin.create({ data: { passwordHash: hash } });
 
