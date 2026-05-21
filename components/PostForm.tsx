@@ -89,7 +89,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [styleOpen,      setStyleOpen]      = useState(false);
   const [alignOpen,      setAlignOpen]      = useState(false);
   const [catPickerOpen,  setCatPickerOpen]  = useState(false);
-  const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | null>(null);
+  const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | "youtube" | null>(null);
   const [mobileUrlValue, setMobileUrlValue] = useState("");
   const [deleting,       setDeleting]       = useState(false);
   const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
@@ -406,6 +406,10 @@ export default function PostForm({ post }: { post?: PostData }) {
     if (mobileUrlMode === "link") {
       if (!val) mobileEditor.chain().focus().extendMarkRange("link").unsetLink().run();
       else mobileEditor.chain().focus().extendMarkRange("link").setLink({ href: val }).run();
+    } else if (mobileUrlMode === "youtube") {
+      const m = val.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      const videoId = m ? m[1] : null;
+      if (videoId) mobileEditor.chain().focus().insertContent({ type: "youtubeEmbed", attrs: { videoId } }).run();
     } else {
       if (val) mobileEditor.chain().focus().setImage({ src: val }).run();
     }
@@ -539,7 +543,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 if (e.key === "Enter") { e.preventDefault(); submitMobileUrl(); }
                 if (e.key === "Escape") { setMobileUrlMode(null); setMobileUrlValue(""); }
               }}
-              placeholder={mobileUrlMode === "link" ? "Paste a link URL…" : "Paste image URL…"}
+              placeholder={mobileUrlMode === "link" ? "Paste a link URL…" : mobileUrlMode === "youtube" ? "Paste YouTube URL…" : "Paste image URL…"}
               style={{
                 flex: 1, background: "#f5f5f5", border: "none",
                 borderRadius: 6, padding: "8px 12px",
@@ -556,7 +560,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 fontFamily: "system-ui, sans-serif", fontSize: "0.82rem",
                 fontWeight: 700, cursor: "pointer", flexShrink: 0,
               }}
-            >{mobileUrlMode === "link" ? "Add Link" : "Insert"}</button>
+            >{mobileUrlMode === "link" ? "Add Link" : mobileUrlMode === "youtube" ? "Embed" : "Insert"}</button>
             <button
               onPointerDown={e => { e.preventDefault(); setMobileUrlMode(null); setMobileUrlValue(""); }}
               style={{ background: "none", border: "none", color: "#888", fontSize: "1.1rem", cursor: "pointer", padding: "4px", flexShrink: 0 }}
@@ -630,6 +634,9 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Image by URL */}
               {TB("Img", () => { setMobileUrlValue(""); setMobileUrlMode("image"); }, mobileUrlMode === "image")}
+
+              {/* YouTube embed */}
+              {TB("▶ YT", () => { setMobileUrlValue(""); setMobileUrlMode("youtube"); }, mobileUrlMode === "youtube")}
               <TSep />
 
               {/* Lists + blocks */}
