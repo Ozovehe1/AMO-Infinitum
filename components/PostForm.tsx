@@ -1710,28 +1710,22 @@ function SpinnerIcon() {
 
 // ── Audio generation panel (shown in SettingsPanel for published posts) ──
 function AudioGenPanel({ slug }: { slug: string }) {
-  const [apiKey, setApiKey] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [errMsg, setErrMsg] = useState("");
 
-  const generate = async () => {
+  const regenerate = async () => {
     setStatus("loading");
     setErrMsg("");
     try {
       const res = await fetch("/api/tts/generate", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ slug, apiKey: apiKey.trim() || undefined }),
+        body:    JSON.stringify({ slug }),
       });
-
-      let data: { error?: string; audioUrl?: string } = {};
-      try { data = await res.json(); } catch { /* non-JSON body */ }
-
-      if (!res.ok) {
-        throw new Error(data.error || `Server error ${res.status} — check Vercel function logs`);
-      }
+      let data: { error?: string } = {};
+      try { data = await res.json(); } catch { /* non-JSON */ }
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
       setStatus("done");
-      setApiKey("");
     } catch (e) {
       setErrMsg(e instanceof Error ? e.message : String(e));
       setStatus("error");
@@ -1740,52 +1734,35 @@ function AudioGenPanel({ slug }: { slug: string }) {
 
   return (
     <div style={{ borderTop: "1px solid rgba(13,31,60,0.07)", paddingTop: "0.875rem" }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#0d1f3c", margin: "0 0 0.6rem" }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#0d1f3c", margin: "0 0 0.5rem" }}>
         Audio
       </p>
 
       {status === "done" ? (
         <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#4a9e7a", margin: 0 }}>
-          ✓ Audio generated — readers can now listen
-          <button
-            onClick={() => setStatus("idle")}
-            style={{ marginLeft: 8, fontSize: "0.68rem", color: "#8fa3b1", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}
-          >
-            regenerate
-          </button>
+          ✓ Audio regenerated
         </p>
       ) : (
         <>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={e => setApiKey(e.target.value)}
-            placeholder="Deepgram API key (saved after first use)"
-            style={{
-              width: "100%", boxSizing: "border-box",
-              padding: "0.5rem 0.75rem", border: "1px solid rgba(13,31,60,0.15)",
-              borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.78rem",
-              color: "#0d1f3c", background: "#fff", marginBottom: "0.5rem",
-            }}
-          />
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1", margin: "0 0 0.5rem" }}>
+            Auto-generates on every save. Tap below to force a refresh.
+          </p>
           <button
-            onClick={generate}
+            onClick={regenerate}
             disabled={status === "loading"}
             style={{
               width: "100%", padding: "0.55rem", border: "none", borderRadius: 6,
               background: status === "loading" ? "rgba(13,31,60,0.4)" : "#0d1f3c",
               color: "#c8a97e", fontFamily: "Inter, sans-serif",
-              fontSize: "0.78rem", fontWeight: 600, cursor: status === "loading" ? "default" : "pointer",
+              fontSize: "0.78rem", fontWeight: 600,
+              cursor: status === "loading" ? "default" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
             }}
           >
-            {status === "loading" ? <><SpinnerIcon /> Generating…</> : "🎙 Generate Audio"}
+            {status === "loading" ? <><SpinnerIcon /> Regenerating…</> : "↺ Regenerate Audio"}
           </button>
           {status === "error" && (
-            <div style={{
-              marginTop: "0.5rem", padding: "0.5rem 0.625rem",
-              background: "#fff0f0", border: "1px solid #f5c6c6", borderRadius: 5,
-            }}>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.625rem", background: "#fff0f0", border: "1px solid #f5c6c6", borderRadius: 5 }}>
               <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#c0392b", margin: 0, wordBreak: "break-word" }}>
                 {errMsg}
               </p>
