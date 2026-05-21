@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { put, list } from "@vercel/blob";
 
+const DEEPGRAM_CHAR_LIMIT = 1950; // Deepgram hard limit is 2000; leave a small safety buffer
+
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]+>/g, " ")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ").trim().slice(0, 3900);
+    .replace(/\s+/g, " ").trim();
 }
 
 async function callDeepgramWithKey(key: string, text: string, model: string): Promise<Response> {
@@ -69,7 +71,9 @@ export async function GET(req: NextRequest) {
   });
   if (!post) return new NextResponse("Post not found", { status: 404 });
 
-  const text = `${post.title}. ${stripHtml(post.content)}`;
+  const titlePrefix = `${post.title}. `;
+  const contentBudget = Math.max(0, DEEPGRAM_CHAR_LIMIT - titlePrefix.length);
+  const text = `${titlePrefix}${stripHtml(post.content).slice(0, contentBudget)}`;
 
   // Try Aura-2 first (current primary), fall back to Aura-1
   let dgRes = await callDeepgramWithKey(dgKey, text, "aura-2-asteria-en");
@@ -99,3 +103,4 @@ export async function GET(req: NextRequest) {
     },
   });
 }
+  
