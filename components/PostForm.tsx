@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
 import { makePostcardBlob } from "@/lib/postcard";
+import { grammarPluginKey, buildGrammarDecos } from "@/lib/grammar-decorations";
 
 function timeSince(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -434,8 +435,12 @@ export default function PostForm({ post }: { post?: PostData }) {
         body: JSON.stringify({ text }),
       });
       const { corrections } = await res.json();
-      setGrammarCorrections(corrections || []);
+      const corrs = corrections || [];
+      setGrammarCorrections(corrs);
       setGrammarChecked(true);
+      mobileEditor.view.dispatch(
+        mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, corrs))
+      );
     } catch { setGrammarCorrections([]); }
     setGrammarLoading(false);
   }, [mobileEditor, grammarLoading]);
@@ -456,9 +461,11 @@ export default function PostForm({ post }: { post?: PostData }) {
         }
       }
     });
-    if (found) view.dispatch(tr);
-    setGrammarCorrections(prev => prev.filter(c => c.original !== original));
-  }, [mobileEditor]);
+    const remaining = grammarCorrections.filter(c => c.original !== original);
+    tr.setMeta(grammarPluginKey, buildGrammarDecos(tr.doc, remaining));
+    view.dispatch(tr);
+    setGrammarCorrections(remaining);
+  }, [mobileEditor, grammarCorrections]);
 
   const toggleCat = (id: number) =>
     setSelectedCats(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
@@ -585,7 +592,13 @@ export default function PostForm({ post }: { post?: PostData }) {
                   {grammarCorrections.length === 0 ? "✓ All good" : `${grammarCorrections.length} suggestion${grammarCorrections.length !== 1 ? "s" : ""}`}
                 </span>
               )}
-              <button onPointerDown={e => { e.preventDefault(); setGrammarOn(false); setGrammarCorrections([]); setGrammarChecked(false); }}
+              <button onPointerDown={e => {
+                e.preventDefault();
+                setGrammarOn(false);
+                setGrammarCorrections([]);
+                setGrammarChecked(false);
+                if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
+              }}
                 style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1rem", cursor: "pointer", padding: "4px", flexShrink: 0 }}>✕</button>
             </div>
             {grammarCorrections.length > 0 && (
@@ -598,7 +611,12 @@ export default function PostForm({ post }: { post?: PostData }) {
                     {c.reason && <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#8fa3b1", flex: 1, minWidth: "100%" }}>{c.reason}</span>}
                     <button onPointerDown={e => { e.preventDefault(); acceptMobileCorrection(c.original, c.corrected); }}
                       style={{ height: 26, padding: "0 10px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0, touchAction: "manipulation" }}>Accept</button>
-                    <button onPointerDown={e => { e.preventDefault(); setGrammarCorrections(prev => prev.filter((_, j) => j !== i)); }}
+                    <button onPointerDown={e => {
+                      e.preventDefault();
+                      const remaining = grammarCorrections.filter((_, j) => j !== i);
+                      setGrammarCorrections(remaining);
+                      if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, remaining)));
+                    }}
                       style={{ height: 26, padding: "0 8px", background: "transparent", color: "#8fa3b1", border: "1px solid rgba(13,31,60,0.12)", borderRadius: 4, cursor: "pointer", fontSize: "0.72rem", flexShrink: 0, touchAction: "manipulation" }}>Skip</button>
                   </div>
                 ))}
@@ -718,7 +736,15 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Grammar toggle */}
               <button
-                onPointerDown={e => { e.preventDefault(); setGrammarOn(g => { if (g) { setGrammarCorrections([]); setGrammarChecked(false); } return !g; }); }}
+                onPointerDown={e => {
+                  e.preventDefault();
+                  if (grammarOn) {
+                    setGrammarCorrections([]);
+                    setGrammarChecked(false);
+                    if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
+                  }
+                  setGrammarOn(g => !g);
+                }}
                 style={{
                   height: 38, padding: "0 9px", position: "relative",
                   background: grammarOn ? "rgba(74,158,122,0.12)" : "transparent",
@@ -1328,6 +1354,7 @@ export default function PostForm({ post }: { post?: PostData }) {
         .ai-prose code   { background: rgba(255,255,255,0.1); padding: 0.1em 0.35em; border-radius: 3px; font-family: monospace; font-size: 0.78rem; }
         .ai-prose ul     { margin: 0.4em 0 0.4em 1.1em; padding: 0; list-style: disc; }
         .ai-prose li     { margin-bottom: 0.2em; }
+        .grammar-error { text-decoration: underline wavy #e74c3c; text-decoration-skip-ink: none; background: rgba(231,76,60,0.06); border-radius: 2px; }
       `}</style>
     </>
   );

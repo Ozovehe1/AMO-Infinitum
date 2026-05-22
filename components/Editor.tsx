@@ -11,6 +11,7 @@ import CharacterCount from "@tiptap/extension-character-count";
 import ImageExt from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import { Node, mergeAttributes } from "@tiptap/core";
+import { GrammarExtension, grammarPluginKey, buildGrammarDecos, type GrammarCorrection } from "@/lib/grammar-decorations";
 
 function getYouTubeId(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -64,7 +65,7 @@ export default function Editor({
   const [urlBar, setUrlBar] = useState<{ mode: "link" | "image" | "youtube"; value: string } | null>(null);
   const [grammarOn, setGrammarOn] = useState(false);
   const [grammarLoading, setGrammarLoading] = useState(false);
-  const [grammarCorrections, setGrammarCorrections] = useState<{ original: string; corrected: string; reason: string }[]>([]);
+  const [grammarCorrections, setGrammarCorrections] = useState<GrammarCorrection[]>([]);
   const [grammarChecked, setGrammarChecked] = useState(false);
 
   const editor = useEditor({
@@ -79,6 +80,7 @@ export default function Editor({
       ImageExt.configure({ inline: false, allowBase64: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       YoutubeEmbed,
+      GrammarExtension,
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -159,8 +161,12 @@ export default function Editor({
         body: JSON.stringify({ text }),
       });
       const { corrections } = await res.json();
-      setGrammarCorrections(corrections || []);
+      const corrs: GrammarCorrection[] = corrections || [];
+      setGrammarCorrections(corrs);
       setGrammarChecked(true);
+      editor.view.dispatch(
+        editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, corrs))
+      );
     } catch { setGrammarCorrections([]); }
     setGrammarLoading(false);
   }, [editor, grammarLoading]);
@@ -181,9 +187,11 @@ export default function Editor({
         }
       }
     });
-    if (found) view.dispatch(tr);
-    setGrammarCorrections(prev => prev.filter(c => c.original !== original));
-  }, [editor]);
+    const remaining = grammarCorrections.filter(c => c.original !== original);
+    tr.setMeta(grammarPluginKey, buildGrammarDecos(tr.doc, remaining));
+    view.dispatch(tr);
+    setGrammarCorrections(remaining);
+  }, [editor, grammarCorrections]);
 
   if (!editor) return null;
 
@@ -232,6 +240,7 @@ export default function Editor({
           .tiptap-editor [style*="text-align: justify"] { text-align: justify; }
           .tiptap-editor div[data-youtube-video] { margin: 1.5rem 0; }
           .tiptap-editor div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
+          .grammar-error { text-decoration: underline wavy #e74c3c; text-decoration-skip-ink: none; background: rgba(231,76,60,0.06); border-radius: 2px; }
         `}</style>
       </div>
     );
@@ -291,7 +300,15 @@ export default function Editor({
         {btn(false,()=>editor.chain().focus().undo().run(),"↩","Undo")}
         {btn(false,()=>editor.chain().focus().redo().run(),"↪","Redo")}
         <Sep />
-        <button key="grammar" onPointerDown={e => { e.preventDefault(); setGrammarOn(g => { if (g) { setGrammarCorrections([]); setGrammarChecked(false); } return !g; }); }} title="Toggle grammar checker"
+        <button key="grammar" onPointerDown={e => {
+          e.preventDefault();
+          if (grammarOn) {
+            setGrammarCorrections([]);
+            setGrammarChecked(false);
+            if (editor) editor.view.dispatch(editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, [])));
+          }
+          setGrammarOn(g => !g);
+        }} title="Toggle grammar checker"
           style={{ height: 34, minWidth: 34, padding: "0 7px", position: "relative", background: grammarOn ? "#4a9e7a" : "transparent", color: grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: "pointer", fontSize: "0.77rem", fontFamily: "Inter, sans-serif", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 7h8M4 12h6M4 17h4"/><path d="M15 14l2 2 4-4"/>
@@ -329,7 +346,12 @@ export default function Editor({
                   {c.reason && <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#8fa3b1", flex: 1 }}>{c.reason}</span>}
                   <button onPointerDown={e => { e.preventDefault(); acceptCorrection(c.original, c.corrected); }}
                     style={{ height: 24, padding: "0 8px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, flexShrink: 0 }}>Accept</button>
-                  <button onPointerDown={e => { e.preventDefault(); setGrammarCorrections(prev => prev.filter((_, j) => j !== i)); }}
+                  <button onPointerDown={e => {
+                    e.preventDefault();
+                    const remaining = grammarCorrections.filter((_, j) => j !== i);
+                    setGrammarCorrections(remaining);
+                    if (editor) editor.view.dispatch(editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, remaining)));
+                  }}
                     style={{ height: 24, padding: "0 8px", background: "transparent", color: "#8fa3b1", border: "1px solid rgba(13,31,60,0.12)", borderRadius: 4, cursor: "pointer", fontSize: "0.7rem", flexShrink: 0 }}>Skip</button>
                 </div>
               ))}
@@ -393,6 +415,7 @@ export default function Editor({
         .tiptap-editor div[data-youtube-video] { margin: 1.5rem 0; }
         .tiptap-editor div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
         .tiptap-editor div[data-youtube-video].ProseMirror-selectednode iframe { outline: 2px solid #2d7d9a; border-radius: 8px; }
+        .grammar-error { text-decoration: underline wavy #e74c3c; text-decoration-skip-ink: none; background: rgba(231,76,60,0.06); border-radius: 2px; }
       `}</style>
     </div>
   );
