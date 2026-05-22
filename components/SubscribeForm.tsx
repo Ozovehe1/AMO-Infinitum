@@ -22,7 +22,7 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
       if (!res.ok) { setState("error"); return; }
       const next = data.message === "already_subscribed" ? "already" : "sent";
       setState(next);
-      if (next === "sent") setTimeout(() => setState("idle"), 5000);
+      setTimeout(() => { setState("idle"); setEmail(""); }, 5000);
     } catch {
       setState("error");
     }
