@@ -1,8 +1,11 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = `AMO Infinitum <${process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"}>`;
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+
+function resend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function baseLayout(body: string) {
   return `<!DOCTYPE html>
@@ -53,7 +56,7 @@ export async function sendConfirmationEmail(email: string, token: string) {
     </p>
   `);
 
-  await resend.emails.send({ from: FROM, to: email, subject: "Confirm your subscription to AMO Infinitum", html });
+  await resend().emails.send({ from: FROM, to: email, subject: "Confirm your subscription to AMO Infinitum", html });
 }
 
 export async function sendNewPostNotifications(
@@ -91,7 +94,7 @@ export async function sendNewPostNotifications(
   // Resend batch: up to 100 per request
   for (let i = 0; i < subscribers.length; i += 100) {
     const batch = subscribers.slice(i, i + 100);
-    await resend.batch.send(
+    await resend().batch.send(
       batch.map(sub => ({
         from: FROM,
         to: sub.email,
