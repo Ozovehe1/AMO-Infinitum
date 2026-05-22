@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
-import { generatePostAudio } from "@/lib/tts-generate";
+import { tasks } from "@trigger.dev/sdk/v3";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -82,8 +81,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
   revalidatePath("/");
   revalidatePath(`/blog/${post.slug}`);
 
-  if (post.published) {
-    after(() => generatePostAudio(post.slug, post.title, post.content));
+  if (post.published && process.env.TRIGGER_SECRET_KEY) {
+    try {
+      await tasks.trigger("generate-post-audio", { slug: post.slug, title: post.title, content: post.content });
+    } catch { /* Trigger.dev not configured */ }
   }
 
   return NextResponse.json(post);
