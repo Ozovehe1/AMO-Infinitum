@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     : [systemBlock];
 
   const stream = await anthropic.messages.stream({
-    model: "claude-opus-4-7",
+    model: "claude-sonnet-4-6",
     max_tokens: 4096,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     system: systemBlocks as any,
