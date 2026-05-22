@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import Anthropic from "@anthropic-ai/sdk";
 
+export const maxDuration = 60;
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function stripHtml(html: string): string {
@@ -29,33 +31,39 @@ export async function POST(req: NextRequest) {
     ? `${systemText}\n\nPost title: ${title?.trim() || "(untitled)"}\n\n${content ? stripHtml(content) : ""}`.trim()
     : systemText;
 
-  let responseText: string;
+  let stream: Awaited<ReturnType<typeof anthropic.messages.stream>>;
   try {
-    const msg = await anthropic.messages.create({
+    stream = await anthropic.messages.stream({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 1024,
       system,
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
     });
-    const textBlock = msg.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      console.error("[ai/chat] no text block in response:", JSON.stringify(msg.content));
-      return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
-    }
-    responseText = textBlock.text;
   } catch (err) {
-    console.error("[ai/chat] error:", err);
+    console.error("[ai/chat] stream init error:", err);
     return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
   }
 
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
-    start(controller) {
-      controller.enqueue(encoder.encode(responseText));
-      controller.close();
+    async start(controller) {
+      try {
+        for await (const chunk of stream) {
+          if (
+            chunk.type === "content_block_delta" &&
+            chunk.delta.type === "text_delta"
+          ) {
+            controller.enqueue(encoder.encode(chunk.delta.text));
+          }
+        }
+      } catch (e) {
+        console.error("[ai/chat] stream chunk error:", e);
+      } finally {
+        controller.close();
+      }
     },
   });
 
