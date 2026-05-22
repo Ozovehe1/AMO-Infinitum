@@ -1491,14 +1491,12 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
               </a>
             </div>
 
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <a href="/inkwell" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.65rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", textAlign: "center" as const }}>
-                Dashboard
-              </a>
-              <button onClick={onDismiss} style={{ flex: 1, background: "transparent", color: "#8fa3b1", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 8, padding: "0.65rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer" }}>
-                Continue editing
-              </button>
-            </div>
+            <a href="/inkwell" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
+              Dashboard
+            </a>
+            <button onClick={onDismiss} style={{ width: "100%", background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer" }}>
+              Continue editing
+            </button>
           </div>
         </div>
       </div>
