@@ -62,6 +62,10 @@ export default function Editor({
   const imgInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlBar, setUrlBar] = useState<{ mode: "link" | "image" | "youtube"; value: string } | null>(null);
+  const [grammarOn, setGrammarOn] = useState(false);
+  const [grammarLoading, setGrammarLoading] = useState(false);
+  const [grammarCorrections, setGrammarCorrections] = useState<{ original: string; corrected: string; reason: string }[]>([]);
+  const [grammarChecked, setGrammarChecked] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -140,6 +144,45 @@ export default function Editor({
       if (e.target?.result) editor.chain().focus().setImage({ src: e.target.result as string }).run();
     };
     reader.readAsDataURL(file);
+  }, [editor]);
+
+  const checkGrammar = useCallback(async () => {
+    if (!editor || grammarLoading) return;
+    const text = editor.getText();
+    if (!text.trim()) return;
+    setGrammarLoading(true);
+    setGrammarChecked(false);
+    try {
+      const res = await fetch("/api/grammar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const { corrections } = await res.json();
+      setGrammarCorrections(corrections || []);
+      setGrammarChecked(true);
+    } catch { setGrammarCorrections([]); }
+    setGrammarLoading(false);
+  }, [editor, grammarLoading]);
+
+  const acceptCorrection = useCallback((original: string, corrected: string) => {
+    if (!editor) return;
+    const { state, view } = editor;
+    const tr = state.tr;
+    let found = false;
+    state.doc.descendants((node, pos) => {
+      if (found) return false;
+      if (node.isText && node.text) {
+        const idx = node.text.indexOf(original);
+        if (idx !== -1) {
+          tr.insertText(corrected, pos + idx, pos + idx + original.length);
+          found = true;
+          return false;
+        }
+      }
+    });
+    if (found) view.dispatch(tr);
+    setGrammarCorrections(prev => prev.filter(c => c.original !== original));
   }, [editor]);
 
   if (!editor) return null;
@@ -247,7 +290,50 @@ export default function Editor({
         <Sep />
         {btn(false,()=>editor.chain().focus().undo().run(),"↩","Undo")}
         {btn(false,()=>editor.chain().focus().redo().run(),"↪","Redo")}
+        <Sep />
+        <button key="grammar" onPointerDown={e => { e.preventDefault(); setGrammarOn(g => { if (g) { setGrammarCorrections([]); setGrammarChecked(false); } return !g; }); }} title="Toggle grammar checker"
+          style={{ height: 34, minWidth: 34, padding: "0 7px", position: "relative", background: grammarOn ? "#4a9e7a" : "transparent", color: grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: "pointer", fontSize: "0.77rem", fontFamily: "Inter, sans-serif", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
+          ✦ Grammar
+          {grammarOn && grammarCorrections.length > 0 && (
+            <span style={{ background: "#fff", color: "#4a9e7a", borderRadius: "50%", width: 16, height: 16, fontSize: "0.6rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
+              {grammarCorrections.length}
+            </span>
+          )}
+        </button>
       </div>
+
+      {grammarOn && (
+        <div style={{ borderBottom: "1px solid rgba(13,31,60,0.1)", background: "#f8fffe" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>✦ Grammar Check</span>
+            <button onPointerDown={e => { e.preventDefault(); checkGrammar(); }} disabled={grammarLoading}
+              style={{ height: 28, padding: "0 12px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.7 : 1 }}>
+              {grammarLoading ? "Checking…" : grammarChecked ? "Re-check" : "Check Writing"}
+            </button>
+            {grammarChecked && !grammarLoading && (
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: grammarCorrections.length === 0 ? "#4a9e7a" : "#8fa3b1" }}>
+                {grammarCorrections.length === 0 ? "✓ No issues found" : `${grammarCorrections.length} suggestion${grammarCorrections.length !== 1 ? "s" : ""}`}
+              </span>
+            )}
+          </div>
+          {grammarCorrections.length > 0 && (
+            <div style={{ maxHeight: 200, overflowY: "auto", padding: "0 12px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+              {grammarCorrections.map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, padding: "6px 10px", flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#c0392b", textDecoration: "line-through", flexShrink: 0 }}>{c.original}</span>
+                  <span style={{ color: "#8fa3b1", fontSize: "0.7rem" }}>→</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#2d7d9a", fontWeight: 600, flexShrink: 0 }}>{c.corrected}</span>
+                  {c.reason && <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#8fa3b1", flex: 1 }}>{c.reason}</span>}
+                  <button onPointerDown={e => { e.preventDefault(); acceptCorrection(c.original, c.corrected); }}
+                    style={{ height: 24, padding: "0 8px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, flexShrink: 0 }}>Accept</button>
+                  <button onPointerDown={e => { e.preventDefault(); setGrammarCorrections(prev => prev.filter((_, j) => j !== i)); }}
+                    style={{ height: 24, padding: "0 8px", background: "transparent", color: "#8fa3b1", border: "1px solid rgba(13,31,60,0.12)", borderRadius: 4, cursor: "pointer", fontSize: "0.7rem", flexShrink: 0 }}>Skip</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {urlBar && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", background: "#eef4f7", borderBottom: "1px solid rgba(13,31,60,0.1)" }}>
