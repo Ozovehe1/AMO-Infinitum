@@ -3,7 +3,7 @@ import { generatePostAudio } from "@/lib/tts-generate";
 
 export const generateAudioTask = task({
   id: "generate-post-audio",
-  maxDuration: 120,
+  maxDuration: 300,
   run: async (payload: { slug: string; title: string; content: string }) => {
     await generatePostAudio(payload.slug, payload.title, payload.content);
   },
