@@ -31,11 +31,13 @@ export async function POST(req: NextRequest) {
     ? `${systemText}\n\nPost title: ${title?.trim() || "(untitled)"}\n\n${content ? stripHtml(content) : ""}`.trim()
     : systemText;
 
-  let stream: Awaited<ReturnType<typeof anthropic.messages.stream>>;
+  // Use create({stream:true}) so the await throws on API errors before we commit to a 200 response
+  let anthropicStream: Anthropic.Stream<Anthropic.Messages.RawMessageStreamEvent>;
   try {
-    stream = await anthropic.messages.stream({
+    anthropicStream = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
+      stream: true,
       system,
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role as "user" | "assistant",
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
       })),
     });
   } catch (err) {
-    console.error("[ai/chat] stream init error:", err);
+    console.error("[ai/chat] error:", err);
     return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
   }
 
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   const readable = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of stream) {
+        for await (const chunk of anthropicStream) {
           if (
             chunk.type === "content_block_delta" &&
             chunk.delta.type === "text_delta"
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (e) {
-        console.error("[ai/chat] stream chunk error:", e);
+        console.error("[ai/chat] stream error:", e);
       } finally {
         controller.close();
       }
