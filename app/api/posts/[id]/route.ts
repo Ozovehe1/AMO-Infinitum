@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
 import { tasks } from "@trigger.dev/sdk/v3";
+import { sendNewPostNotifications } from "@/lib/email";
 
-async function triggerNotify(title: string, slug: string, excerpt: string, coverImage: string | null) {
-  if (!process.env.TRIGGER_SECRET_KEY) return;
-  try {
-    await tasks.trigger("notify-subscribers", { title, slug, excerpt: excerpt || undefined, coverImage: coverImage || undefined });
-  } catch { /* Trigger.dev not configured */ }
+async function notifySubscribers(title: string, slug: string, excerpt: string, coverImage: string | null) {
+  if (!process.env.RESEND_API_KEY) return;
+  const subscribers = await prisma.subscriber.findMany({
+    where: { verified: true },
+    select: { email: true, token: true },
+  });
+  if (subscribers.length === 0) return;
+  await sendNewPostNotifications(subscribers, { title, slug, excerpt, coverImage });
 }
 
 type Params = { params: Promise<{ id: string }> };
@@ -95,7 +100,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   if (wasPublished) {
-    await triggerNotify(post.title, post.slug, post.excerpt || "", post.coverImage);
+    after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage));
   }
 
   return NextResponse.json(post);
