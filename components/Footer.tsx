@@ -1,9 +1,14 @@
 import Link from "next/link";
+import SubscribeForm from "./SubscribeForm";
 
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer style={{ background: "#0d1f3c", borderTop: "1px solid rgba(200,169,126,0.12)", padding: "3rem 1.5rem 2rem" }}>
+      {/* Subscribe banner */}
+      <div style={{ maxWidth: 1200, margin: "0 auto 2.5rem", padding: "2rem", background: "rgba(200,169,126,0.06)", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 6 }}>
+        <SubscribeForm dark />
+      </div>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: "#c8a97e", marginBottom: "0.5rem" }}>

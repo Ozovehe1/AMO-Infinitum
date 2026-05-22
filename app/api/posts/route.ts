@@ -13,6 +13,13 @@ async function triggerAudio(slug: string, title: string, content: string) {
   } catch { /* Trigger.dev not configured — audio skipped */ }
 }
 
+async function triggerNotify(title: string, slug: string, excerpt: string, coverImage: string | null) {
+  if (!process.env.TRIGGER_SECRET_KEY) return;
+  try {
+    await tasks.trigger("notify-subscribers", { title, slug, excerpt: excerpt || undefined, coverImage: coverImage || undefined });
+  } catch { /* Trigger.dev not configured — notifications skipped */ }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
@@ -89,6 +96,7 @@ export async function POST(req: NextRequest) {
 
   if (post.published) {
     await triggerAudio(post.slug, post.title, post.content);
+    await triggerNotify(post.title, post.slug, post.excerpt || "", post.coverImage);
   }
 
   return NextResponse.json(post, { status: 201 });

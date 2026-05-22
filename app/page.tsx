@@ -4,6 +4,8 @@ import Footer from "@/components/Footer";
 import PostCard from "@/components/PostCard";
 import Link from "next/link";
 import { formatDate, truncate } from "@/lib/utils";
+import { Suspense } from "react";
+import SubBanner from "@/components/SubBanner";
 
 export const revalidate = 60;
 
@@ -228,6 +230,8 @@ export default async function Home({
       </main>
 
       <Footer />
+
+      <Suspense><SubBanner /></Suspense>
 
       <style>{`
         @media (max-width: 640px) {
