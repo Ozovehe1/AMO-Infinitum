@@ -34,11 +34,10 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // ── parse body ────────────────────────────────────────────────────────
-  let slug = "", apiKey = "";
+  let slug = "";
   try {
     const body = await req.json();
-    slug   = body.slug   ?? "";
-    apiKey = body.apiKey ?? "";
+    slug = body.slug ?? "";
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
@@ -52,23 +51,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── save / load Deepgram key ──────────────────────────────────────────
-  if (apiKey.trim()) {
-    await prisma.siteSettings.upsert({
-      where:  { key: "deepgram_api_key" },
-      update: { value: apiKey.trim() },
-      create: { key: "deepgram_api_key", value: apiKey.trim() },
-    });
-  }
-
-  const keyRow = await prisma.siteSettings.findUnique({ where: { key: "deepgram_api_key" } });
-  if (!keyRow?.value) {
+  // ── Deepgram key from env ─────────────────────────────────────────────
+  const dgKey = process.env.DEEPGRAM_API_KEY;
+  if (!dgKey) {
     return NextResponse.json(
-      { error: "No Deepgram key saved yet — paste your key and hit Generate." },
-      { status: 400 }
+      { error: "DEEPGRAM_API_KEY not set in environment." },
+      { status: 503 }
     );
   }
-  const dgKey = keyRow.value;
 
   // ── load post ─────────────────────────────────────────────────────────
   const post = await prisma.post.findUnique({
