@@ -5,8 +5,6 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
 import { makePostcardBlob } from "@/lib/postcard";
-import { grammarPluginKey, buildGrammarDecos } from "@/lib/grammar-decorations";
-
 function timeSince(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
   if (s < 10) return "just now";
@@ -92,8 +90,6 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [catPickerOpen,  setCatPickerOpen]  = useState(false);
   const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | null>(null);
   const [mobileUrlValue, setMobileUrlValue] = useState("");
-  const [grammarOn,      setGrammarOn]      = useState(false);
-  const [grammarLoading, setGrammarLoading] = useState(false);
   const [deleting,       setDeleting]       = useState(false);
   const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
 
@@ -416,27 +412,6 @@ export default function PostForm({ post }: { post?: PostData }) {
     mobileEditor.commands.focus();
   }, [mobileEditor, mobileUrlMode, mobileUrlValue]);
 
-  const checkMobileGrammar = useCallback(async () => {
-    if (!mobileEditor || grammarLoading) return;
-    const text = mobileEditor.getText();
-    if (!text.trim()) return;
-    setGrammarLoading(true);
-    try {
-      const res = await fetch("/api/grammar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (res.ok) {
-        const { corrections } = await res.json();
-        mobileEditor.view.dispatch(
-          mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, corrections || []))
-        );
-      }
-    } catch { /* silent */ }
-    setGrammarLoading(false);
-  }, [mobileEditor, grammarLoading]);
-
   const toggleCat = (id: number) =>
     setSelectedCats(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
@@ -654,26 +629,6 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Image by URL */}
               {TB("Img", () => { setMobileUrlValue(""); setMobileUrlMode("image"); }, mobileUrlMode === "image")}
-              <TSep />
-
-              {/* Grammar toggle */}
-              <button
-                onPointerDown={e => {
-                  e.preventDefault();
-                  if (grammarOn) {
-                    if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
-                    setGrammarOn(false);
-                  } else {
-                    setGrammarOn(true);
-                    checkMobileGrammar();
-                  }
-                }}
-                style={{ height: 38, padding: "0 9px", position: "relative", background: grammarOn ? "rgba(74,158,122,0.1)" : "transparent", color: grammarOn ? "#4a9e7a" : "#1a1a1a", border: "none", borderRadius: 4, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.82rem", fontFamily: "system-ui, sans-serif", flexShrink: 0, display: "flex", alignItems: "center", gap: 4, touchAction: "manipulation", WebkitTapHighlightColor: "transparent", opacity: grammarLoading ? 0.6 : 1 }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>
-                </svg>
-                {grammarLoading && <span style={{ fontSize: "0.7rem" }}>…</span>}
-              </button>
               <TSep />
 
               {/* Lists + blocks */}
@@ -1265,7 +1220,6 @@ export default function PostForm({ post }: { post?: PostData }) {
         .ai-prose code   { background: rgba(255,255,255,0.1); padding: 0.1em 0.35em; border-radius: 3px; font-family: monospace; font-size: 0.78rem; }
         .ai-prose ul     { margin: 0.4em 0 0.4em 1.1em; padding: 0; list-style: disc; }
         .ai-prose li     { margin-bottom: 0.2em; }
-        .grammar-error { text-decoration: underline wavy #e74c3c; text-decoration-skip-ink: none; background: rgba(231,76,60,0.06); border-radius: 2px; }
       `}</style>
     </>
   );

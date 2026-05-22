@@ -11,8 +11,6 @@ import CharacterCount from "@tiptap/extension-character-count";
 import ImageExt from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import { Node, mergeAttributes } from "@tiptap/core";
-import { GrammarExtension, grammarPluginKey, buildGrammarDecos } from "@/lib/grammar-decorations";
-
 function getYouTubeId(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
@@ -63,9 +61,6 @@ export default function Editor({
   const imgInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlBar, setUrlBar] = useState<{ mode: "link" | "image" | "youtube"; value: string } | null>(null);
-  const [grammarOn, setGrammarOn] = useState(false);
-  const [grammarLoading, setGrammarLoading] = useState(false);
-
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -78,7 +73,6 @@ export default function Editor({
       ImageExt.configure({ inline: false, allowBase64: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       YoutubeEmbed,
-      GrammarExtension,
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -146,27 +140,6 @@ export default function Editor({
     reader.readAsDataURL(file);
   }, [editor]);
 
-  const checkGrammar = useCallback(async () => {
-    if (!editor || grammarLoading) return;
-    const text = editor.getText();
-    if (!text.trim()) return;
-    setGrammarLoading(true);
-    try {
-      const res = await fetch("/api/grammar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (res.ok) {
-        const { corrections } = await res.json();
-        editor.view.dispatch(
-          editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, corrections || []))
-        );
-      }
-    } catch { /* silent */ }
-    setGrammarLoading(false);
-  }, [editor, grammarLoading]);
-
   if (!editor) return null;
 
   // ── COMPACT MODE: no chrome, used by PostForm mobile ──
@@ -214,7 +187,6 @@ export default function Editor({
           .tiptap-editor [style*="text-align: justify"] { text-align: justify; }
           .tiptap-editor div[data-youtube-video] { margin: 1.5rem 0; }
           .tiptap-editor div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
-          .grammar-error { text-decoration: underline wavy #e74c3c; text-decoration-skip-ink: none; background: rgba(231,76,60,0.06); border-radius: 2px; }
         `}</style>
       </div>
     );
@@ -273,23 +245,6 @@ export default function Editor({
         <Sep />
         {btn(false,()=>editor.chain().focus().undo().run(),"↩","Undo")}
         {btn(false,()=>editor.chain().focus().redo().run(),"↪","Redo")}
-        <Sep />
-        <button key="grammar" onPointerDown={e => {
-          e.preventDefault();
-          if (grammarOn) {
-            editor.view.dispatch(editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, [])));
-            setGrammarOn(false);
-          } else {
-            setGrammarOn(true);
-            checkGrammar();
-          }
-        }} title="Toggle grammar checker"
-          style={{ height: 34, minWidth: 34, padding: "0 8px", background: grammarOn ? "#4a9e7a" : "transparent", color: grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5, WebkitTapHighlightColor: "transparent", touchAction: "manipulation", opacity: grammarLoading ? 0.6 : 1 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>
-          </svg>
-          {grammarLoading ? "…" : "Grammar"}
-        </button>
       </div>
 
       {urlBar && (
@@ -347,7 +302,6 @@ export default function Editor({
         .tiptap-editor div[data-youtube-video] { margin: 1.5rem 0; }
         .tiptap-editor div[data-youtube-video] iframe { width: 100%; aspect-ratio: 16/9; height: auto; border-radius: 8px; display: block; }
         .tiptap-editor div[data-youtube-video].ProseMirror-selectednode iframe { outline: 2px solid #2d7d9a; border-radius: 8px; }
-        .grammar-error { text-decoration: underline wavy #e74c3c; text-decoration-skip-ink: none; background: rgba(231,76,60,0.06); border-radius: 2px; }
       `}</style>
     </div>
   );
