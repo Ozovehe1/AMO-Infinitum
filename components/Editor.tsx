@@ -293,7 +293,10 @@ export default function Editor({
         <Sep />
         <button key="grammar" onPointerDown={e => { e.preventDefault(); setGrammarOn(g => { if (g) { setGrammarCorrections([]); setGrammarChecked(false); } return !g; }); }} title="Toggle grammar checker"
           style={{ height: 34, minWidth: 34, padding: "0 7px", position: "relative", background: grammarOn ? "#4a9e7a" : "transparent", color: grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: "pointer", fontSize: "0.77rem", fontFamily: "Inter, sans-serif", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
-          ✦ Grammar
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 7h8M4 12h6M4 17h4"/><path d="M15 14l2 2 4-4"/>
+          </svg>
+          Grammar
           {grammarOn && grammarCorrections.length > 0 && (
             <span style={{ background: "#fff", color: "#4a9e7a", borderRadius: "50%", width: 16, height: 16, fontSize: "0.6rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
               {grammarCorrections.length}
@@ -305,7 +308,7 @@ export default function Editor({
       {grammarOn && (
         <div style={{ borderBottom: "1px solid rgba(13,31,60,0.1)", background: "#f8fffe" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px" }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>✦ Grammar Check</span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>Grammar Check</span>
             <button onPointerDown={e => { e.preventDefault(); checkGrammar(); }} disabled={grammarLoading}
               style={{ height: 28, padding: "0 12px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.7 : 1 }}>
               {grammarLoading ? "Checking…" : grammarChecked ? "Re-check" : "Check Writing"}

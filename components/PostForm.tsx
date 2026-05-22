@@ -575,7 +575,7 @@ export default function PostForm({ post }: { post?: PostData }) {
           /* Grammar panel */
           <div style={{ background: "#f8fffe", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", flex: 1 }}>✦ Grammar</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", flex: 1 }}>Grammar Check</span>
               <button onPointerDown={e => { e.preventDefault(); checkMobileGrammar(); }} disabled={grammarLoading}
                 style={{ height: 30, padding: "0 12px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.7 : 1, flexShrink: 0 }}>
                 {grammarLoading ? "Checking…" : grammarChecked ? "Re-check" : "Check"}
@@ -727,7 +727,9 @@ export default function PostForm({ post }: { post?: PostData }) {
                   display: "flex", alignItems: "center", gap: 3,
                   touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
                 }}>
-                ✦
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 7h8M4 12h6M4 17h4"/><path d="M15 14l2 2 4-4"/>
+                </svg>
                 {grammarOn && grammarCorrections.length > 0 && (
                   <span style={{ position: "absolute", top: 4, right: 2, background: "#4a9e7a", color: "#fff", borderRadius: "50%", width: 14, height: 14, fontSize: "0.55rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
                     {grammarCorrections.length}
