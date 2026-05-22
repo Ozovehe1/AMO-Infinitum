@@ -29,9 +29,9 @@ export async function POST(req: NextRequest) {
     ? `${systemText}\n\nPost title: ${title?.trim() || "(untitled)"}\n\n${content ? stripHtml(content) : ""}`.trim()
     : systemText;
 
-  let stream: ReturnType<typeof anthropic.messages.stream>;
+  let responseText: string;
   try {
-    stream = anthropic.messages.stream({
+    const msg = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 4096,
       system,
@@ -40,30 +40,17 @@ export async function POST(req: NextRequest) {
         content: m.content,
       })),
     });
+    responseText = msg.content[0].type === "text" ? msg.content[0].text : "";
   } catch (err) {
-    console.error("[ai/chat] stream init error:", err);
+    console.error("[ai/chat] error:", err);
     return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
   }
 
+  const encoder = new TextEncoder();
   const readable = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      try {
-        for await (const event of stream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
-        }
-      } catch (err) {
-        console.error("[ai/chat] stream error:", err);
-      }
+    start(controller) {
+      controller.enqueue(encoder.encode(responseText));
       controller.close();
-    },
-    cancel() {
-      stream.controller.abort();
     },
   });
 
