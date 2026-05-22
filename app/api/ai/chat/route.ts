@@ -40,7 +40,12 @@ export async function POST(req: NextRequest) {
         content: m.content,
       })),
     });
-    responseText = msg.content[0].type === "text" ? msg.content[0].text : "";
+    const textBlock = msg.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      console.error("[ai/chat] no text block in response:", JSON.stringify(msg.content));
+      return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
+    }
+    responseText = textBlock.text;
   } catch (err) {
     console.error("[ai/chat] error:", err);
     return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
