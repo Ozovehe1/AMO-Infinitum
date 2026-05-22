@@ -39,28 +39,38 @@ export async function POST(req: NextRequest) {
       ]
     : [systemBlock];
 
-  const stream = await anthropic.messages.stream({
-    model: "claude-sonnet-4-6",
-    max_tokens: 4096,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    system: systemBlocks as any,
-    tools: [{ type: "web_search_20250305" as const, name: "web_search" }],
-    messages: messages.map((m: { role: string; content: string }) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
-  });
+  let stream: ReturnType<typeof anthropic.messages.stream>;
+  try {
+    stream = anthropic.messages.stream({
+      model: "claude-sonnet-4-6",
+      max_tokens: 4096,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      system: systemBlocks as any,
+      tools: [{ type: "web_search_20260209" as const, name: "web_search" as const }],
+      messages: messages.map((m: { role: string; content: string }) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    });
+  } catch (err) {
+    console.error("[ai/chat] stream init error:", err);
+    return NextResponse.json({ error: "AI chat failed" }, { status: 500 });
+  }
 
   const readable = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
-      for await (const event of stream) {
-        if (
-          event.type === "content_block_delta" &&
-          event.delta.type === "text_delta"
-        ) {
-          controller.enqueue(encoder.encode(event.delta.text));
+      try {
+        for await (const event of stream) {
+          if (
+            event.type === "content_block_delta" &&
+            event.delta.type === "text_delta"
+          ) {
+            controller.enqueue(encoder.encode(event.delta.text));
+          }
         }
+      } catch (err) {
+        console.error("[ai/chat] stream error:", err);
       }
       controller.close();
     },
