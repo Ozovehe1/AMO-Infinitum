@@ -30,7 +30,8 @@ Text:
     });
 
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "[]";
-    const corrections = JSON.parse(raw);
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+    const corrections = JSON.parse(cleaned);
     return NextResponse.json({ corrections: Array.isArray(corrections) ? corrections : [] });
   } catch (err) {
     console.error("[grammar] API error:", err);
