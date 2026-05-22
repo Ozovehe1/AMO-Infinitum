@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import Anthropic from "@anthropic-ai/sdk";
+import type { Stream } from "@anthropic-ai/sdk/streaming";
 
 export const maxDuration = 60;
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     : systemText;
 
   // Use create({stream:true}) so the await throws on API errors before we commit to a 200 response
-  let anthropicStream: Anthropic.Stream<Anthropic.Messages.RawMessageStreamEvent>;
+  let anthropicStream: Stream<Anthropic.Messages.RawMessageStreamEvent>;
   try {
     anthropicStream = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
