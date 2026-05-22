@@ -101,14 +101,11 @@ export default function EditAbout() {
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1", margin: "0 0 1rem" }}>
                   The main content of your about page. Supports rich text — headings, bold, italic, blockquotes, links.
                 </p>
-                <div style={{ border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, overflow: "hidden", width: "100%", boxSizing: "border-box" }}>
-                  <Editor
-                    content={body}
-                    onChange={setBody}
-                    placeholder="Write about yourself and this blog…"
-                    compact
-                  />
-                </div>
+                <Editor
+                  content={body}
+                  onChange={setBody}
+                  placeholder="Write about yourself and this blog…"
+                />
               </div>
 
             </div>
