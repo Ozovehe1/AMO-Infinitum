@@ -16,7 +16,7 @@ async function triggerAudio(slug: string, title: string, content: string) {
 }
 
 async function notifySubscribers(title: string, slug: string, excerpt: string, coverImage: string | null) {
-  if (!process.env.RESEND_API_KEY) return;
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return;
   const subscribers = await prisma.subscriber.findMany({
     where: { verified: true },
     select: { email: true, token: true },
