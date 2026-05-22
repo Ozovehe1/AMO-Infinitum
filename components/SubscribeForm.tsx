@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type State = "idle" | "loading" | "sent" | "already" | "error";
+type State = "idle" | "loading" | "sent" | "already" | "cooldown" | "error";
 
 export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
   const [email, setEmail] = useState("");
@@ -20,7 +20,9 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
       });
       const data = await res.json();
       if (!res.ok) { setState("error"); return; }
-      const next = data.message === "already_subscribed" ? "already" : "sent";
+      const next = data.message === "already_subscribed" ? "already"
+        : data.message === "cooldown" ? "cooldown"
+        : "sent";
       setState(next);
       setTimeout(() => { setState("idle"); setEmail(""); }, 5000);
     } catch {
@@ -33,13 +35,17 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
   const inputBg    = dark ? "rgba(255,254,249,0.06)" : "#fffef9";
   const inputBorder = dark ? "rgba(200,169,126,0.25)" : "rgba(13,31,60,0.18)";
 
-  if (state === "sent" || state === "already") {
+  if (state === "sent" || state === "already" || state === "cooldown") {
+    const message = state === "sent"
+      ? "Check your inbox — confirmation email on its way."
+      : state === "cooldown"
+      ? "Email already sent. Please wait 1 minute before trying again."
+      : "You're already subscribed.";
+
     return (
       <div style={{ padding: "0.5rem 0" }}>
         <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c8a97e" }}>
-          {state === "sent"
-            ? "Check your inbox — confirmation email on its way."
-            : "You're already subscribed."}
+          {message}
         </p>
         {state === "sent" && (
           <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
