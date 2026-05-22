@@ -1374,6 +1374,16 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
     setDownloading(false);
   };
 
+  const shareLinkOnly = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: shareText, url: postUrl });
+      } else {
+        await navigator.clipboard.writeText(postUrl);
+      }
+    } catch { /* cancelled */ }
+  };
+
   const shareWithPreview = async () => {
     setSharing(true);
     try {
@@ -1455,6 +1465,12 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
             </div>
 
             {/* Copy link */}
+            <button onClick={shareLinkOnly}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", marginBottom: "1rem" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+              Share link only
+            </button>
+
             <CopyLinkRow url={postUrl} />
 
             <a href="/inkwell" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
