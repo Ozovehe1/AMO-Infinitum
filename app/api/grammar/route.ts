@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ClaudeAPI });
 
 export async function POST(req: NextRequest) {
   const session = await getAdminSession();
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const msg = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
+      model: "claude-sonnet-4-6",
       max_tokens: 2048,
       messages: [{
         role: "user",
