@@ -96,6 +96,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [grammarLoading,     setGrammarLoading]     = useState(false);
   const [grammarCorrections, setGrammarCorrections] = useState<{ original: string; corrected: string; reason: string }[]>([]);
   const [grammarChecked,     setGrammarChecked]     = useState(false);
+  const [grammarError,       setGrammarError]       = useState<string | null>(null);
   const [deleting,       setDeleting]       = useState(false);
   const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
 
@@ -424,12 +425,17 @@ export default function PostForm({ post }: { post?: PostData }) {
     if (!text.trim()) return;
     setGrammarLoading(true);
     setGrammarChecked(false);
+    setGrammarError(null);
     try {
       const res = await fetch("/api/grammar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
       const { corrections } = await res.json();
       const corrs = corrections || [];
       setGrammarCorrections(corrs);
@@ -437,7 +443,10 @@ export default function PostForm({ post }: { post?: PostData }) {
       mobileEditor.view.dispatch(
         mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, corrs))
       );
-    } catch { setGrammarCorrections([]); }
+    } catch (err) {
+      setGrammarError(err instanceof Error ? err.message : "Check failed");
+      setGrammarCorrections([]);
+    }
     setGrammarLoading(false);
   }, [mobileEditor, grammarLoading]);
 
@@ -574,53 +583,7 @@ export default function PostForm({ post }: { post?: PostData }) {
         </div>
 
         {/* ── Toolbar ─────────────────────────────── */}
-        {grammarOn && !mobileUrlMode ? (
-          /* Grammar panel replaces toolbar when active */
-          <div style={{ background: "#f8fffe", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px" }}>
-              <button onPointerDown={e => {
-                e.preventDefault();
-                setGrammarOn(false);
-                setGrammarCorrections([]);
-                setGrammarChecked(false);
-                if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
-              }} style={{ background: "none", border: "none", color: "#4a9e7a", fontSize: "0.82rem", cursor: "pointer", padding: "2px 0", flexShrink: 0, display: "flex", alignItems: "center", gap: 4, fontFamily: "system-ui, sans-serif" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h8M4 12h6M4 17h4"/><path d="M15 14l2 2 4-4"/></svg>
-                Grammar
-              </button>
-              <div style={{ flex: 1 }} />
-              <button onPointerDown={e => { e.preventDefault(); checkMobileGrammar(); }} disabled={grammarLoading}
-                style={{ height: 28, padding: "0 12px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.73rem", fontFamily: "system-ui, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.7 : 1, flexShrink: 0 }}>
-                {grammarLoading ? "Checking…" : grammarChecked ? "Re-check" : "Check"}
-              </button>
-              {grammarChecked && !grammarLoading && (
-                <span style={{ fontFamily: "system-ui, sans-serif", fontSize: "0.72rem", color: grammarCorrections.length === 0 ? "#4a9e7a" : "#8fa3b1" }}>
-                  {grammarCorrections.length === 0 ? "✓ All good" : `${grammarCorrections.length}`}
-                </span>
-              )}
-            </div>
-            {grammarCorrections.length > 0 && (
-              <div style={{ maxHeight: 170, overflowY: "auto", padding: "0 12px 10px", display: "flex", flexDirection: "column", gap: 5 }}>
-                {grammarCorrections.map((c, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1px solid rgba(13,31,60,0.09)", borderRadius: 6, padding: "5px 9px", flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: "system-ui, sans-serif", fontSize: "0.77rem", color: "#c0392b", textDecoration: "line-through", flexShrink: 0 }}>{c.original}</span>
-                    <span style={{ color: "#aaa", fontSize: "0.68rem" }}>→</span>
-                    <span style={{ fontFamily: "system-ui, sans-serif", fontSize: "0.77rem", color: "#2d7d9a", fontWeight: 600, flexShrink: 0 }}>{c.corrected}</span>
-                    {c.reason && <span style={{ fontFamily: "system-ui, sans-serif", fontSize: "0.67rem", color: "#8fa3b1", flex: 1, minWidth: "100%" }}>{c.reason}</span>}
-                    <button onPointerDown={e => { e.preventDefault(); acceptMobileCorrection(c.original, c.corrected); }}
-                      style={{ height: 24, padding: "0 10px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, flexShrink: 0, touchAction: "manipulation" }}>Accept</button>
-                    <button onPointerDown={e => {
-                      e.preventDefault();
-                      const remaining = grammarCorrections.filter((_, j) => j !== i);
-                      setGrammarCorrections(remaining);
-                      if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, remaining)));
-                    }} style={{ height: 24, padding: "0 8px", background: "transparent", color: "#8fa3b1", border: "1px solid rgba(13,31,60,0.12)", borderRadius: 4, cursor: "pointer", fontSize: "0.7rem", flexShrink: 0, touchAction: "manipulation" }}>Skip</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : mobileUrlMode ? (
+        {mobileUrlMode ? (
           /* URL input replaces toolbar row */
           <div style={{
             height: 48, display: "flex", alignItems: "center", gap: 8,
@@ -735,9 +698,13 @@ export default function PostForm({ post }: { post?: PostData }) {
                   if (grammarOn) {
                     setGrammarCorrections([]);
                     setGrammarChecked(false);
+                    setGrammarError(null);
                     if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
+                    setGrammarOn(false);
+                  } else {
+                    setGrammarOn(true);
+                    checkMobileGrammar();
                   }
-                  setGrammarOn(g => !g);
                 }}
                 style={{ height: 38, padding: "0 9px", position: "relative", background: grammarOn ? "rgba(74,158,122,0.1)" : "transparent", color: grammarOn ? "#4a9e7a" : "#1a1a1a", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.82rem", fontFamily: "system-ui, sans-serif", flexShrink: 0, display: "flex", alignItems: "center", gap: 4, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h8M4 12h6M4 17h4"/><path d="M15 14l2 2 4-4"/></svg>
@@ -927,6 +894,58 @@ export default function PostForm({ post }: { post?: PostData }) {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Grammar panel — shown below toolbar when grammarOn */}
+          {grammarOn && !mobileUrlMode && (
+            <div style={{ background: "#f8fffe", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", flex: 1 }}>Grammar Check</span>
+                {grammarLoading && <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Checking…</span>}
+                {grammarError && !grammarLoading && (
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#c0392b" }}>⚠ {grammarError}</span>
+                )}
+                {grammarChecked && !grammarLoading && !grammarError && (
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: grammarCorrections.length === 0 ? "#4a9e7a" : "#8fa3b1" }}>
+                    {grammarCorrections.length === 0 ? "✓ All good" : `${grammarCorrections.length} suggestion${grammarCorrections.length !== 1 ? "s" : ""}`}
+                  </span>
+                )}
+                <button onPointerDown={e => { e.preventDefault(); checkMobileGrammar(); }} disabled={grammarLoading}
+                  style={{ height: 28, padding: "0 10px", background: "transparent", color: "#4a9e7a", border: "1px solid #4a9e7a", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.72rem", fontFamily: "Inter, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.5 : 1, flexShrink: 0 }}>
+                  {grammarChecked ? "Re-check" : "Check"}
+                </button>
+                <button onPointerDown={e => {
+                  e.preventDefault();
+                  setGrammarOn(false);
+                  setGrammarCorrections([]);
+                  setGrammarChecked(false);
+                  setGrammarError(null);
+                  if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
+                }}
+                  style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1rem", cursor: "pointer", padding: "4px", flexShrink: 0 }}>✕</button>
+              </div>
+              {grammarCorrections.length > 0 && (
+                <div style={{ maxHeight: 180, overflowY: "auto", padding: "0 12px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {grammarCorrections.map((c, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, padding: "6px 10px", flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#c0392b", textDecoration: "line-through", flexShrink: 0 }}>{c.original}</span>
+                      <span style={{ color: "#8fa3b1", fontSize: "0.7rem" }}>→</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#2d7d9a", fontWeight: 600, flexShrink: 0 }}>{c.corrected}</span>
+                      {c.reason && <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.68rem", color: "#8fa3b1", flex: 1, minWidth: "100%" }}>{c.reason}</span>}
+                      <button onPointerDown={e => { e.preventDefault(); acceptMobileCorrection(c.original, c.corrected); }}
+                        style={{ height: 26, padding: "0 10px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0, touchAction: "manipulation" }}>Accept</button>
+                      <button onPointerDown={e => {
+                        e.preventDefault();
+                        const remaining = grammarCorrections.filter((_, j) => j !== i);
+                        setGrammarCorrections(remaining);
+                        if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, remaining)));
+                      }}
+                        style={{ height: 26, padding: "0 8px", background: "transparent", color: "#8fa3b1", border: "1px solid rgba(13,31,60,0.12)", borderRadius: 4, cursor: "pointer", fontSize: "0.72rem", flexShrink: 0, touchAction: "manipulation" }}>Skip</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
