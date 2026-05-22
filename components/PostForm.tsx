@@ -1016,7 +1016,7 @@ export default function PostForm({ post }: { post?: PostData }) {
       {aiOpen && (
         <div className="desktop-ai-panel" style={{
           position: "fixed", top: 0, right: 0, bottom: 0, width: "min(380px, 35vw)", zIndex: 350,
-          background: "#0d1f3c", display: "flex", flexDirection: "column",
+          background: "#0d1f3c", flexDirection: "column",
           boxShadow: "-6px 0 32px rgba(13,31,60,0.25)",
         }}>
           {/* Header */}
