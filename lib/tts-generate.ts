@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "./db";
 import { put } from "@vercel/blob";
-import { stripHtml } from "@/lib/utils";
+import { stripHtml } from "./utils";
 
 
 const DG_URL    = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
