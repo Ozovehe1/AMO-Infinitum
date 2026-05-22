@@ -65,6 +65,7 @@ export default function Editor({
   const [urlBar, setUrlBar] = useState<{ mode: "link" | "image" | "youtube"; value: string } | null>(null);
   const [grammarOn, setGrammarOn] = useState(false);
   const [grammarLoading, setGrammarLoading] = useState(false);
+  const [grammarError, setGrammarError] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -151,6 +152,7 @@ export default function Editor({
     const text = editor.getText();
     if (!text.trim()) return;
     setGrammarLoading(true);
+    setGrammarError(false);
     try {
       const res = await fetch("/api/grammar", {
         method: "POST",
@@ -162,8 +164,10 @@ export default function Editor({
         editor.view.dispatch(
           editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, corrections || []))
         );
+      } else {
+        setGrammarError(true);
       }
-    } catch { /* silent */ }
+    } catch { setGrammarError(true); }
     setGrammarLoading(false);
   }, [editor, grammarLoading]);
 
@@ -279,16 +283,17 @@ export default function Editor({
           if (grammarOn) {
             editor.view.dispatch(editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, [])));
             setGrammarOn(false);
+            setGrammarError(false);
           } else {
             setGrammarOn(true);
             checkGrammar();
           }
-        }} title="Toggle grammar checker"
-          style={{ height: 34, minWidth: 34, padding: "0 8px", background: grammarOn ? "#4a9e7a" : "transparent", color: grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5, WebkitTapHighlightColor: "transparent", touchAction: "manipulation", opacity: grammarLoading ? 0.6 : 1 }}>
+        }} title={grammarError ? "Grammar check failed — click to retry" : "Toggle grammar checker"}
+          style={{ height: 34, minWidth: 34, padding: "0 8px", background: grammarError ? "#e74c3c" : grammarOn ? "#4a9e7a" : "transparent", color: grammarError ? "#fff" : grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarError ? "#e74c3c" : grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5, WebkitTapHighlightColor: "transparent", touchAction: "manipulation", opacity: grammarLoading ? 0.6 : 1 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>
           </svg>
-          {grammarLoading ? "…" : "Grammar"}
+          {grammarLoading ? "…" : grammarError ? "Failed" : "Grammar"}
         </button>
       </div>
 
