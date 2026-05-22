@@ -5,7 +5,7 @@ import type { Stream } from "@anthropic-ai/sdk/streaming";
 
 export const maxDuration = 60;
 
-const anthropic = new Anthropic({ apiKey: process.env.ClaudeAPI || process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ClaudeAPI });
 
 function stripHtml(html: string): string {
   return html
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   let anthropicStream: Stream<Anthropic.Messages.RawMessageStreamEvent>;
   try {
     anthropicStream = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
       stream: true,
       system,
