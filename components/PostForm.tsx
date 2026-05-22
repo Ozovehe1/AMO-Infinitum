@@ -317,7 +317,7 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (options.silent) setAutoSaving(false);
       else setSaving(false);
     }
-  }, [title, content, excerpt, coverImage, published, featured, selectedCats, postId, router]);
+  }, [title, content, excerpt, coverImage, published, featured, showUpdatedNotice, selectedCats, postId, router]);
 
   // Always keep a ref to the latest performSave so the unmount cleanup can use it
   const performSaveRef = useRef(performSave);
