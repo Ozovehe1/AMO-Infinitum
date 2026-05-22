@@ -1,5 +1,5 @@
 import { task } from "@trigger.dev/sdk/v3";
-import { generatePostAudio } from "@/lib/tts-generate";
+import { generatePostAudio } from "../lib/tts-generate";
 
 export const generateAudioTask = task({
   id: "generate-post-audio",
