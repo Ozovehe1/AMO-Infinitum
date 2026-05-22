@@ -20,7 +20,9 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
       });
       const data = await res.json();
       if (!res.ok) { setState("error"); return; }
-      setState(data.message === "already_subscribed" ? "already" : "sent");
+      const next = data.message === "already_subscribed" ? "already" : "sent";
+      setState(next);
+      if (next === "sent") setTimeout(() => setState("idle"), 5000);
     } catch {
       setState("error");
     }
@@ -33,12 +35,17 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
 
   if (state === "sent" || state === "already") {
     return (
-      <div style={{ textAlign: "center", padding: "0.5rem 0" }}>
-        <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c8a97e" }}>
+      <div style={{ padding: "0.5rem 0" }}>
+        <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c8a97e" }}>
           {state === "sent"
             ? "Check your inbox — confirmation email on its way."
             : "You're already subscribed."}
         </p>
+        {state === "sent" && (
+          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
+            Don't see it? Check your spam folder and mark it as not spam.
+          </p>
+        )}
       </div>
     );
   }
