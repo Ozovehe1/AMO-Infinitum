@@ -94,7 +94,6 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [mobileUrlValue, setMobileUrlValue] = useState("");
   const [grammarOn,      setGrammarOn]      = useState(false);
   const [grammarLoading, setGrammarLoading] = useState(false);
-  const [grammarError,   setGrammarError]   = useState(false);
   const [deleting,       setDeleting]       = useState(false);
   const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
 
@@ -426,7 +425,6 @@ export default function PostForm({ post }: { post?: PostData }) {
     const text = mobileEditor.getText();
     if (!text.trim()) return;
     setGrammarLoading(true);
-    setGrammarError(false);
     try {
       const res = await fetch("/api/grammar", {
         method: "POST",
@@ -438,10 +436,8 @@ export default function PostForm({ post }: { post?: PostData }) {
         mobileEditor.view.dispatch(
           mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, corrections || []))
         );
-      } else {
-        setGrammarError(true);
       }
-    } catch { setGrammarError(true); }
+    } catch { /* silent */ }
     setGrammarLoading(false);
   }, [mobileEditor, grammarLoading]);
 
@@ -674,18 +670,16 @@ export default function PostForm({ post }: { post?: PostData }) {
                   if (grammarOn) {
                     if (mobileEditor) mobileEditor.view.dispatch(mobileEditor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(mobileEditor.state.doc, [])));
                     setGrammarOn(false);
-                    setGrammarError(false);
                   } else {
                     setGrammarOn(true);
                     checkMobileGrammar();
                   }
                 }}
-                title={grammarError ? "Grammar check failed — tap to retry" : "Toggle grammar checker"}
-                style={{ height: 38, padding: "0 9px", position: "relative", background: grammarError ? "rgba(231,76,60,0.12)" : grammarOn ? "rgba(74,158,122,0.1)" : "transparent", color: grammarError ? "#e74c3c" : grammarOn ? "#4a9e7a" : "#1a1a1a", border: "none", borderRadius: 4, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.82rem", fontFamily: "system-ui, sans-serif", flexShrink: 0, display: "flex", alignItems: "center", gap: 4, touchAction: "manipulation", WebkitTapHighlightColor: "transparent", opacity: grammarLoading ? 0.6 : 1 }}>
+                style={{ height: 38, padding: "0 9px", position: "relative", background: grammarOn ? "rgba(74,158,122,0.1)" : "transparent", color: grammarOn ? "#4a9e7a" : "#1a1a1a", border: "none", borderRadius: 4, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.82rem", fontFamily: "system-ui, sans-serif", flexShrink: 0, display: "flex", alignItems: "center", gap: 4, touchAction: "manipulation", WebkitTapHighlightColor: "transparent", opacity: grammarLoading ? 0.6 : 1 }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>
                 </svg>
-                {grammarLoading ? <span style={{ fontSize: "0.7rem" }}>…</span> : grammarError ? <span style={{ fontSize: "0.7rem" }}>!</span> : null}
+                {grammarLoading && <span style={{ fontSize: "0.7rem" }}>…</span>}
               </button>
               <TSep />
 
