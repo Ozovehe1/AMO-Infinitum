@@ -9,7 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // Use non-pooled URL for migrations — Vercel Postgres provides this automatically
-    url: process.env["POSTGRES_URL_NON_POOLING"] || process.env["DATABASE_URL"],
+    url: process.env["DATABASE_URL"],
   },
 });
