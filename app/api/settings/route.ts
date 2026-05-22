@@ -19,22 +19,14 @@ export async function GET() {
   }
 }
 
-const ALLOWED_KEYS = new Set([
-  "about_hero_subtitle",
-  "about_body",
-]);
-
 export async function PUT(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const updates: Record<string, string> = await req.json();
-  const filtered = Object.fromEntries(
-    Object.entries(updates).filter(([key]) => ALLOWED_KEYS.has(key))
-  );
 
   await Promise.all(
-    Object.entries(filtered).map(([key, value]) =>
+    Object.entries(updates).map(([key, value]) =>
       prisma.siteSettings.upsert({
         where: { key },
         update: { value },

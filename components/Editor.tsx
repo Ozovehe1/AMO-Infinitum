@@ -247,7 +247,6 @@ export default function Editor({
         {btn(false,()=>editor.chain().focus().redo().run(),"↪","Redo")}
       </div>
 
-
       {urlBar && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", background: "#eef4f7", borderBottom: "1px solid rgba(13,31,60,0.1)" }}>
           <input ref={urlInputRef} value={urlBar.value}

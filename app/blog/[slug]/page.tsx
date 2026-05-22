@@ -8,7 +8,7 @@ import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
 import AudioPlayer from "@/components/AudioPlayer";
 
-export const revalidate = 10;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -18,17 +18,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = `${siteUrl}/blog/${slug}`;
   const desc = post.excerpt || post.title;
 
-  // Resolve cover to absolute URL — edge function cannot fetch relative paths
-  const absoluteCover = post.coverImage
-    ? (post.coverImage.startsWith("/") ? `${siteUrl}${post.coverImage}` : post.coverImage)
-    : "";
-
   // Generated branded OG image — title + cover photo + AMO Infinitum branding
   const ogImageUrl =
     `${siteUrl}/api/og` +
     `?title=${encodeURIComponent(post.title)}` +
     `&excerpt=${encodeURIComponent(post.excerpt || truncate(post.content, 130))}` +
-    `&cover=${encodeURIComponent(absoluteCover)}`;
+    `&cover=${encodeURIComponent(post.coverImage || "")}`;
 
   const ogImage = { url: ogImageUrl, width: 1200, height: 630, alt: post.title };
 

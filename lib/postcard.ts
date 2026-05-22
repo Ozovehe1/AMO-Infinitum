@@ -138,8 +138,7 @@ export async function makePostcardBlob({
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
-      "image/jpeg",
-      0.93
+      "image/png"
     );
   });
 }
