@@ -46,7 +46,6 @@ export async function POST(req: NextRequest) {
       max_tokens: 4096,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       system: systemBlocks as any,
-      tools: [{ type: "web_search_20260209" as const, name: "web_search" as const }],
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
