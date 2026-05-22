@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { put } from "@vercel/blob";
 import { stripHtml } from "@/lib/utils";
 
+
 const DG_URL    = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
 const CHUNK_MAX = 1800;
 const TEXT_CAP  = 7200;
@@ -29,9 +30,8 @@ export async function generatePostAudio(
 ): Promise<void> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return;
 
-  const keyRow = await prisma.siteSettings.findUnique({ where: { key: "deepgram_api_key" } });
-  if (!keyRow?.value) return;
-  const dgKey = keyRow.value;
+  const dgKey = process.env.DEEPGRAM_API_KEY;
+  if (!dgKey) return;
 
   const chunks = chunkText(`${title}. ${stripHtml(content)}`);
 

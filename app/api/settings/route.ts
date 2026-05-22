@@ -22,7 +22,6 @@ export async function GET() {
 const ALLOWED_KEYS = new Set([
   "about_hero_subtitle",
   "about_body",
-  "deepgram_api_key",
 ]);
 
 export async function PUT(req: NextRequest) {
