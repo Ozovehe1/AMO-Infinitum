@@ -67,6 +67,7 @@ export default function Editor({
   const [grammarLoading, setGrammarLoading] = useState(false);
   const [grammarCorrections, setGrammarCorrections] = useState<GrammarCorrection[]>([]);
   const [grammarChecked, setGrammarChecked] = useState(false);
+  const [grammarError, setGrammarError] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -154,12 +155,17 @@ export default function Editor({
     if (!text.trim()) return;
     setGrammarLoading(true);
     setGrammarChecked(false);
+    setGrammarError(null);
     try {
       const res = await fetch("/api/grammar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
       const { corrections } = await res.json();
       const corrs: GrammarCorrection[] = corrections || [];
       setGrammarCorrections(corrs);
@@ -167,7 +173,10 @@ export default function Editor({
       editor.view.dispatch(
         editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, corrs))
       );
-    } catch { setGrammarCorrections([]); }
+    } catch (err) {
+      setGrammarError(err instanceof Error ? err.message : "Check failed");
+      setGrammarCorrections([]);
+    }
     setGrammarLoading(false);
   }, [editor, grammarLoading]);
 
@@ -305,9 +314,13 @@ export default function Editor({
           if (grammarOn) {
             setGrammarCorrections([]);
             setGrammarChecked(false);
+            setGrammarError(null);
             if (editor) editor.view.dispatch(editor.state.tr.setMeta(grammarPluginKey, buildGrammarDecos(editor.state.doc, [])));
+            setGrammarOn(false);
+          } else {
+            setGrammarOn(true);
+            checkGrammar();
           }
-          setGrammarOn(g => !g);
         }} title="Toggle grammar checker"
           style={{ height: 34, minWidth: 34, padding: "0 7px", position: "relative", background: grammarOn ? "#4a9e7a" : "transparent", color: grammarOn ? "#fff" : "#0d1f3c", border: "1px solid " + (grammarOn ? "#4a9e7a" : "rgba(13,31,60,0.15)"), borderRadius: 5, cursor: "pointer", fontSize: "0.77rem", fontFamily: "Inter, sans-serif", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -325,16 +338,20 @@ export default function Editor({
       {grammarOn && (
         <div style={{ borderBottom: "1px solid rgba(13,31,60,0.1)", background: "#f8fffe" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px" }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>Grammar Check</span>
-            <button onPointerDown={e => { e.preventDefault(); checkGrammar(); }} disabled={grammarLoading}
-              style={{ height: 28, padding: "0 12px", background: "#4a9e7a", color: "#fff", border: "none", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.7 : 1 }}>
-              {grammarLoading ? "Checking…" : grammarChecked ? "Re-check" : "Check Writing"}
-            </button>
-            {grammarChecked && !grammarLoading && (
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#4a9e7a", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", flex: 1 }}>Grammar Check</span>
+            {grammarLoading && <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Checking…</span>}
+            {grammarError && !grammarLoading && (
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#c0392b" }}>⚠ {grammarError}</span>
+            )}
+            {grammarChecked && !grammarLoading && !grammarError && (
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: grammarCorrections.length === 0 ? "#4a9e7a" : "#8fa3b1" }}>
                 {grammarCorrections.length === 0 ? "✓ No issues found" : `${grammarCorrections.length} suggestion${grammarCorrections.length !== 1 ? "s" : ""}`}
               </span>
             )}
+            <button onPointerDown={e => { e.preventDefault(); checkGrammar(); }} disabled={grammarLoading}
+              style={{ height: 28, padding: "0 12px", background: "transparent", color: "#4a9e7a", border: "1px solid #4a9e7a", borderRadius: 5, cursor: grammarLoading ? "default" : "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 600, opacity: grammarLoading ? 0.5 : 1, flexShrink: 0 }}>
+              {grammarChecked ? "Re-check" : "Check"}
+            </button>
           </div>
           {grammarCorrections.length > 0 && (
             <div style={{ maxHeight: 200, overflowY: "auto", padding: "0 12px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
