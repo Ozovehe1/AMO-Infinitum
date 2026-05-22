@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
 import { tasks } from "@trigger.dev/sdk/v3";
+import { sendNewPostNotifications } from "@/lib/email";
 
 export const maxDuration = 30;
 
@@ -13,11 +15,14 @@ async function triggerAudio(slug: string, title: string, content: string) {
   } catch { /* Trigger.dev not configured — audio skipped */ }
 }
 
-async function triggerNotify(title: string, slug: string, excerpt: string, coverImage: string | null) {
-  if (!process.env.TRIGGER_SECRET_KEY) return;
-  try {
-    await tasks.trigger("notify-subscribers", { title, slug, excerpt: excerpt || undefined, coverImage: coverImage || undefined });
-  } catch { /* Trigger.dev not configured — notifications skipped */ }
+async function notifySubscribers(title: string, slug: string, excerpt: string, coverImage: string | null) {
+  if (!process.env.RESEND_API_KEY) return;
+  const subscribers = await prisma.subscriber.findMany({
+    where: { verified: true },
+    select: { email: true, token: true },
+  });
+  if (subscribers.length === 0) return;
+  await sendNewPostNotifications(subscribers, { title, slug, excerpt, coverImage });
 }
 
 export async function GET(req: NextRequest) {
@@ -96,7 +101,7 @@ export async function POST(req: NextRequest) {
 
   if (post.published) {
     await triggerAudio(post.slug, post.title, post.content);
-    await triggerNotify(post.title, post.slug, post.excerpt || "", post.coverImage);
+    after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage));
   }
 
   return NextResponse.json(post, { status: 201 });
