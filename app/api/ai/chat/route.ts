@@ -5,7 +5,7 @@ import type { Stream } from "@anthropic-ai/sdk/streaming";
 
 export const maxDuration = 60;
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ClaudeAPI });
 
 function stripHtml(html: string): string {
   return html
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No messages" }, { status: 400 });
   }
 
-  const systemText = "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Help with brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. Do NOT write paragraphs of their post, rewrite their prose, or produce ready-to-publish content. Be intellectually engaging, direct, and curious. Use markdown where it aids clarity.";
+  const systemText = "You are a thinking and research partner for the author of AMO Infinitum, a personal blog. Help with brainstorming angles, asking probing questions, challenging assumptions, finding gaps in arguments, suggesting research directions, and exploring ideas. Do NOT write paragraphs of their post, rewrite their prose, or produce ready-to-publish content. Be intellectually engaging, direct, and curious. Use markdown where it aids clarity. Do not hallucinate";
 
   const hasPostContext = !!(title?.trim() || content?.trim());
   const system = hasPostContext
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   let anthropicStream: Stream<Anthropic.Messages.RawMessageStreamEvent>;
   try {
     anthropicStream = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
       stream: true,
       system,
