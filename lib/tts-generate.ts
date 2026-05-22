@@ -30,8 +30,9 @@ export async function generatePostAudio(
 ): Promise<void> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return;
 
-  const dgKey = process.env.DEEPGRAM_API_KEY;
-  if (!dgKey) return;
+  const keyRow = await prisma.siteSettings.findUnique({ where: { key: "deepgram_api_key" } });
+  if (!keyRow?.value) return;
+  const dgKey = keyRow.value;
 
   const chunks = chunkText(`${title}. ${stripHtml(content)}`);
 
