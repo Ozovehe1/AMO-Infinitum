@@ -5,6 +5,13 @@ import { getAdminSession } from "@/lib/auth";
 import { slugify, estimateReadingTime } from "@/lib/utils";
 import { tasks } from "@trigger.dev/sdk/v3";
 
+async function triggerNotify(title: string, slug: string, excerpt: string, coverImage: string | null) {
+  if (!process.env.TRIGGER_SECRET_KEY) return;
+  try {
+    await tasks.trigger("notify-subscribers", { title, slug, excerpt: excerpt || undefined, coverImage: coverImage || undefined });
+  } catch { /* Trigger.dev not configured */ }
+}
+
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
@@ -85,6 +92,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
     try {
       await tasks.trigger("generate-post-audio", { slug: post.slug, title: post.title, content: post.content });
     } catch { /* Trigger.dev not configured */ }
+  }
+
+  if (wasPublished) {
+    await triggerNotify(post.title, post.slug, post.excerpt || "", post.coverImage);
   }
 
   return NextResponse.json(post);
