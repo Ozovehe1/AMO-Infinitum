@@ -71,6 +71,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const readingTime = estimateReadingTime(content);
   const wasPublished = !existing.published && published;
 
+  // Enforce single featured post — unfeature all others when featuring this one
+  if (featured) {
+    await prisma.post.updateMany({ where: { featured: true, NOT: { id: postId } }, data: { featured: false } });
+  }
+
   const post = await prisma.post.update({
     where: { id: postId },
     data: {

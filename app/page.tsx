@@ -28,7 +28,9 @@ export default async function Home({
     prisma.post.findMany({
       where: {
         published: true,
-        ...(category ? { categories: { some: { category: { slug: category } } } } : {}),
+        ...(category
+          ? { categories: { some: { category: { slug: category } } } }
+          : { featured: false }),
       },
       include: { categories: { include: { category: true } } },
       orderBy: { createdAt: "desc" },
@@ -38,7 +40,9 @@ export default async function Home({
     prisma.post.count({
       where: {
         published: true,
-        ...(category ? { categories: { some: { category: { slug: category } } } } : {}),
+        ...(category
+          ? { categories: { some: { category: { slug: category } } } }
+          : { featured: false }),
       },
     }),
     prisma.category.findMany({
