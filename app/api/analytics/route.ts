@@ -78,6 +78,7 @@ export async function GET(req: NextRequest) {
     totalPublished: await prisma.post.count({ where: { published: true } }),
     topPosts,
     subscribersByMonth,
+    newSubscribersByMonth: newByMonth,
     postsByMonth,
     categories: categories.map(c => ({ name: c.name, color: c.color, count: c._count.posts })),
   });

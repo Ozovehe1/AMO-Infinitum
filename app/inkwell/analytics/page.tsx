@@ -25,6 +25,7 @@ interface AnalyticsData {
   totalPublished: number;
   topPosts: TopPost[];
   subscribersByMonth: Record<string, number>;
+  newSubscribersByMonth: Record<string, number>;
   postsByMonth: Record<string, number>;
   categories: { name: string; color: string; count: number }[];
 }
@@ -167,7 +168,11 @@ function LineChart({ data }: { data: Record<string, number> }) {
   );
 }
 
-function BarChart({ data }: { data: Record<string, number> }) {
+function BarChart({ data, unit = "", emptyMsg = "No data this period" }: {
+  data: Record<string, number>;
+  unit?: string;
+  emptyMsg?: string;
+}) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
   const values = Object.values(data);
@@ -179,7 +184,7 @@ function BarChart({ data }: { data: Record<string, number> }) {
   const barW = Math.max(6, slot * 0.55);
   if (allZero) return (
     <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>No posts published this period</p>
+      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>{emptyMsg}</p>
     </div>
   );
   return (
@@ -199,6 +204,7 @@ function BarChart({ data }: { data: Record<string, number> }) {
         const tipX = Math.min(Math.max(cx, PAD.l+38), W-PAD.r-38);
         const tipY = Math.max(4, by - 52);
         const showLabel = labels.length <= 8 || i % 2 === 0;
+        const tipLabel = unit === "" ? `${v} subscriber${v !== 1 ? "s" : ""}` : `${v}${unit}`;
         return (
           <g key={i}>
             <rect x={bx} y={by} width={barW} height={Math.max(barH, 0)} rx={3}
@@ -210,7 +216,7 @@ function BarChart({ data }: { data: Record<string, number> }) {
               <g style={{ pointerEvents: "none" }}>
                 <rect x={tipX-38} y={tipY} width={76} height={36} rx={5} fill="#0d1f3c" />
                 <text x={tipX} y={tipY+13} textAnchor="middle" style={{ fontSize: 9, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>{labels[i]}</text>
-                <text x={tipX} y={tipY+28} textAnchor="middle" style={{ fontSize: 13, fill: "#c8a97e", fontFamily: "Inter,sans-serif", fontWeight: "bold" }}>{v} post{v!==1?"s":""}</text>
+                <text x={tipX} y={tipY+28} textAnchor="middle" style={{ fontSize: 13, fill: "#c8a97e", fontFamily: "Inter,sans-serif", fontWeight: "bold" }}>{tipLabel}</text>
               </g>
             )}
           </g>
@@ -327,9 +333,21 @@ export default function AnalyticsPage() {
             <StatCard label="Posts Published" value={data.totalPublished.toLocaleString()} sub="all time" sparkValues={sparkPosts} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }} className="charts-grid">
-            <div style={card}><p style={secLabel}>Total Subscribers Over Time</p><LineChart data={data.subscribersByMonth} /></div>
-            <div style={card}><p style={secLabel}>Publishing Activity</p><BarChart data={data.postsByMonth} /></div>
+          {/* Subscriber growth — full width card with two stacked charts, Ghost-style */}
+          <div style={{ ...card, marginBottom: "1.5rem" }}>
+            <p style={secLabel}>Subscriber Growth</p>
+            <p style={{ margin: "0 0 1rem", fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Total subscribers over time</p>
+            <LineChart data={data.subscribersByMonth} />
+            <div style={{ margin: "1.75rem 0 1rem", borderTop: "1px solid rgba(13,31,60,0.06)", paddingTop: "1.5rem" }}>
+              <p style={{ margin: "0 0 1rem", fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>New subscribers per month</p>
+              <BarChart data={data.newSubscribersByMonth} unit="" emptyMsg="No new signups this period" />
+            </div>
+          </div>
+
+          {/* Publishing activity */}
+          <div style={{ ...card, marginBottom: "1.5rem" }}>
+            <p style={secLabel}>Publishing Activity</p>
+            <BarChart data={data.postsByMonth} unit=" posts" emptyMsg="No posts published this period" />
           </div>
 
           <div style={{ ...card, marginBottom: "1.5rem" }}>
