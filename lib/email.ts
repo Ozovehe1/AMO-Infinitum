@@ -3,6 +3,30 @@ import nodemailer from "nodemailer";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
 const FROM = `AMO Infinitum <${process.env.GMAIL_USER || "amoinfinitum@gmail.com"}>`;
 
+function toEmailHtml(html: string): string {
+  return html
+    .replace(/<(h[1-3])[^>]*>([\s\S]*?)<\/\1>/gi, (_, _tag, inner) =>
+      `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:600;color:#fffef9;line-height:1.4;">${inner}</p>`)
+    .replace(/<(h[4-6])[^>]*>([\s\S]*?)<\/\1>/gi, (_, _tag, inner) =>
+      `<p style="margin:0 0 14px;font-size:16px;font-weight:600;color:#fffef9;">${inner}</p>`)
+    .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, (_, inner) =>
+      inner.trim() ? `<p style="margin:0 0 18px;font-size:15px;color:#c8d8e4;line-height:1.8;">${inner}</p>` : "")
+    .replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, `<strong style="color:#fffef9;font-weight:700;">$1</strong>`)
+    .replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, `<em style="font-style:italic;">$1</em>`)
+    .replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, inner) =>
+      `<div style="margin:0 0 18px;padding:12px 16px;border-left:3px solid #c8a97e;font-style:italic;color:#8fa3b1;">${inner}</div>`)
+    .replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_, inner) =>
+      `<ul style="margin:0 0 18px;padding-left:20px;color:#c8d8e4;">${inner}</ul>`)
+    .replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (_, inner) =>
+      `<ol style="margin:0 0 18px;padding-left:20px;color:#c8d8e4;">${inner}</ol>`)
+    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, `<li style="margin:0 0 6px;font-size:15px;line-height:1.7;">$1</li>`)
+    .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi,
+      `<a href="$1" style="color:#c8a97e;text-decoration:underline;">$2</a>`)
+    .replace(/<img[^>]*>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
 function transporter() {
   return nodemailer.createTransport({
     service: "gmail",
@@ -106,9 +130,7 @@ export async function sendNewPostNotifications(
       : "";
 
     const contentBlock = post.content
-      ? `<div style="font-size:15px;color:#c8d8e4;line-height:1.8;margin:0 0 32px;">
-           ${post.content}
-         </div>`
+      ? `<div style="margin:0 0 32px;">${toEmailHtml(post.content)}</div>`
       : post.excerpt
         ? `<p style="font-size:15px;color:#c8d8e4;line-height:1.8;margin:0 0 32px;">${post.excerpt}</p>`
         : "";
