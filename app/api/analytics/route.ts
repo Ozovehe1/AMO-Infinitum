@@ -32,7 +32,6 @@ export async function GET(req: NextRequest) {
     prisma.post.findMany({
       where: { published: true },
       orderBy: { views: "desc" },
-      take: 10,
       select: { id: true, title: true, slug: true, views: true, publishedAt: true, readingTime: true },
     }),
     prisma.post.findMany({

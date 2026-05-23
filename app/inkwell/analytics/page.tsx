@@ -323,7 +323,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div style={{ ...card, marginBottom: "1.5rem", overflowX: "auto" }}>
-            <p style={secLabel}>Top Posts by Views</p>
+            <p style={secLabel}>All Posts by Views</p>
             {data.topPosts.length === 0 ? (
               <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#8fa3b1" }}>No views yet — readers need to spend 5+ seconds on a post.</p>
             ) : (
