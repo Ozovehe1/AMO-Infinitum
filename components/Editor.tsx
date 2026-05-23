@@ -237,12 +237,6 @@ export default function Editor({
         {btn(editor.isActive("heading",{level:2}),()=>editor.chain().focus().toggleHeading({level:2}).run(),"H2","Heading 2")}
         {btn(editor.isActive("heading",{level:3}),()=>editor.chain().focus().toggleHeading({level:3}).run(),"H3","Heading 3")}
         <Sep />
-        {btn(editor.isActive("bold"),()=>editor.chain().focus().toggleBold().run(),"B","Bold",{fontWeight:700})}
-        {btn(editor.isActive("italic"),()=>editor.chain().focus().toggleItalic().run(),"I","Italic",{fontStyle:"italic"})}
-        {btn(editor.isActive("underline"),()=>editor.chain().focus().toggleUnderline().run(),"U","Underline",{textDecoration:"underline"})}
-        {btn(editor.isActive("strike"),()=>editor.chain().focus().toggleStrike().run(),"Stk","Strikethrough",{textDecoration:"line-through"})}
-        {btn(editor.isActive("highlight"),()=>editor.chain().focus().toggleHighlight().run(),"Mark","Highlight")}
-        <Sep />
         {btn(editor.isActive({textAlign:"left"}),()=>editor.chain().focus().setTextAlign("left").run(),"Left","Left")}
         {btn(editor.isActive({textAlign:"center"}),()=>editor.chain().focus().setTextAlign("center").run(),"Center","Center")}
         {btn(editor.isActive({textAlign:"right"}),()=>editor.chain().focus().setTextAlign("right").run(),"Right","Right")}
