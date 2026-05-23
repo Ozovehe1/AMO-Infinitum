@@ -5,26 +5,32 @@ const FROM = `AMO Infinitum <${process.env.GMAIL_USER || "amoinfinitum@gmail.com
 
 function toEmailHtml(html: string): string {
   return html
-    .replace(/<(h[1-3])[^>]*>([\s\S]*?)<\/\1>/gi, (_, _tag, inner) =>
-      `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:600;color:#fffef9;line-height:1.4;">${inner}</p>`)
-    .replace(/<(h[4-6])[^>]*>([\s\S]*?)<\/\1>/gi, (_, _tag, inner) =>
-      `<p style="margin:0 0 14px;font-size:16px;font-weight:600;color:#fffef9;">${inner}</p>`)
-    .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, (_, inner) =>
-      inner.trim() ? `<p style="margin:0 0 18px;font-size:15px;color:#c8d8e4;line-height:1.8;">${inner}</p>` : "")
-    .replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, `<strong style="color:#fffef9;font-weight:700;">$1</strong>`)
-    .replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, `<em style="font-style:italic;">$1</em>`)
-    .replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, inner) =>
-      `<div style="margin:0 0 18px;padding:12px 16px;border-left:3px solid #c8a97e;font-style:italic;color:#8fa3b1;">${inner}</div>`)
-    .replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_, inner) =>
-      `<ul style="margin:0 0 18px;padding-left:20px;color:#c8d8e4;">${inner}</ul>`)
-    .replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (_, inner) =>
-      `<ol style="margin:0 0 18px;padding-left:20px;color:#c8d8e4;">${inner}</ol>`)
-    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, `<li style="margin:0 0 6px;font-size:15px;line-height:1.7;">$1</li>`)
-    .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi,
-      `<a href="$1" style="color:#c8a97e;text-decoration:underline;">$2</a>`)
-    .replace(/<img[^>]*>/gi, "")
-    .replace(/<[^>]+>/g, "")
-    .replace(/\n{3,}/g, "\n\n");
+    // Strip class, id, data-* attributes from all tags
+    .replace(/ (class|id|data-[a-z-]+)="[^"]*"/gi, "")
+    // Headings → styled
+    .replace(/<h[1-2]([^>]*)>/gi, '<h2$1 style="margin:0 0 16px;font-family:Georgia,\'Times New Roman\',serif;font-size:20px;font-weight:700;color:#fffef9;line-height:1.35;">')
+    .replace(/<h[3-6]([^>]*)>/gi, '<h3$1 style="margin:0 0 14px;font-family:Georgia,\'Times New Roman\',serif;font-size:17px;font-weight:700;color:#fffef9;line-height:1.4;">')
+    // Paragraphs
+    .replace(/<p([^>]*)>/gi, '<p$1 style="margin:0 0 18px;font-size:15px;color:#c8d8e4;line-height:1.8;">')
+    // Inline formatting
+    .replace(/<strong([^>]*)>/gi, '<strong$1 style="color:#fffef9;font-weight:700;">')
+    .replace(/<em([^>]*)>/gi, '<em$1 style="font-style:italic;">')
+    .replace(/<u([^>]*)>/gi, '<u$1 style="text-decoration:underline;">')
+    // Blockquote
+    .replace(/<blockquote([^>]*)>/gi, '<blockquote$1 style="margin:0 0 18px;padding:12px 16px;border-left:3px solid #c8a97e;font-style:italic;color:#8fa3b1;">')
+    // Lists
+    .replace(/<ul([^>]*)>/gi, '<ul$1 style="margin:0 0 18px;padding-left:24px;color:#c8d8e4;">')
+    .replace(/<ol([^>]*)>/gi, '<ol$1 style="margin:0 0 18px;padding-left:24px;color:#c8d8e4;">')
+    .replace(/<li([^>]*)>/gi, '<li$1 style="margin:0 0 8px;font-size:15px;line-height:1.7;">')
+    // Links
+    .replace(/<a([^>]*href="[^"]*")([^>]*)>/gi, '<a$1$2 style="color:#c8a97e;text-decoration:underline;">')
+    // HR divider
+    .replace(/<hr([^>]*)>/gi, '<hr$1 style="border:none;border-top:1px solid rgba(200,169,126,0.2);margin:24px 0;">')
+    // Code
+    .replace(/<code([^>]*)>/gi, '<code$1 style="font-family:monospace;font-size:13px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:3px;color:#c8d8e4;">')
+    .replace(/<pre([^>]*)>/gi, '<pre$1 style="background:rgba(255,255,255,0.06);padding:16px;border-radius:6px;overflow-x:auto;margin:0 0 18px;font-size:13px;color:#c8d8e4;">')
+    // Remove images (too complex for email without re-hosting)
+    .replace(/<img[^>]*>/gi, "");
 }
 
 function transporter() {
