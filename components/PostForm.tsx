@@ -104,6 +104,14 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [drawerHeight, setDrawerHeight] = useState(60); // vh, user-resizable
   const drawerHeightRef = useRef(60);
   useEffect(() => { drawerHeightRef.current = drawerHeight; }, [drawerHeight]);
+
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 900);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   const aiEndRef    = useRef<HTMLDivElement>(null);
   const aiHandleRef = useRef<HTMLDivElement>(null);
   const aiDragRef   = useRef({ isDragging: false, startY: 0, startH: 60 });
@@ -864,7 +872,7 @@ export default function PostForm({ post }: { post?: PostData }) {
         />
 
         {/* ── Mobile AI drawer ─────────────────────── */}
-        {aiOpen && (
+        {aiOpen && !isDesktop && (
           <>
             <div
               onClick={() => setAiOpen(false)}
@@ -1005,7 +1013,7 @@ export default function PostForm({ post }: { post?: PostData }) {
       {/* ════════════════════════════════════
           DESKTOP AI PANEL — fixed right sidebar
       ════════════════════════════════════ */}
-      {aiOpen && (
+      {aiOpen && isDesktop && (
         <div className="desktop-ai-panel" style={{
           position: "fixed", top: 0, right: 0, bottom: 0, width: "min(380px, 35vw)", zIndex: 350,
           background: "#0d1f3c", display: "flex", flexDirection: "column",
@@ -1205,10 +1213,9 @@ export default function PostForm({ post }: { post?: PostData }) {
         .desktop-write-wrap { display: block; transition: margin-right 0.25s ease; }
         .desktop-write-wrap.ai-open { margin-right: min(380px, 35vw); }
         .desktop-ai-panel   { display: flex; }
-        @media (max-width: 768px) {
+        @media (max-width: 899px) {
           .mobile-write-wrap  { display: flex !important; }
           .desktop-write-wrap { display: none !important; }
-          .desktop-ai-panel   { display: none !important; }
         }
         .ai-prose p  { margin: 0 0 0.5em; }
         .ai-prose p:last-child { margin-bottom: 0; }
