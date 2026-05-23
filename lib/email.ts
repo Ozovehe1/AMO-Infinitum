@@ -157,13 +157,13 @@ export async function sendNewPostNotifications(
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${post.title} — AMO Infinitum</title>
 </head>
-<body style="margin:0;padding:0;background:#f5f0e8;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#0d1f3c;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0d1f3c;">
     <tr><td align="center">
-      <table role="presentation" width="100%" style="max-width:640px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;">
 
         <!-- Header -->
-        <tr><td style="background:#0d1f3c;border-radius:8px 8px 0 0;padding:32px 24px 24px;text-align:center;border-bottom:2px solid #c8a97e;">
+        <tr><td style="padding:32px 24px 24px;text-align:center;border-bottom:2px solid #c8a97e;">
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#c8a97e;letter-spacing:0.02em;">
             AMO <em style="color:#fffef9;font-style:italic;">Infinitum</em>
           </p>
@@ -174,7 +174,7 @@ export async function sendNewPostNotifications(
         ${coverRow}
 
         <!-- Body -->
-        <tr><td style="background:#0d1f3c;padding:40px 24px;">
+        <tr><td style="padding:40px 24px;">
           <p style="margin:0 0 10px;font-size:11px;color:#8fa3b1;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">New essay</p>
           <h2 style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;color:#fffef9;line-height:1.3;">
             ${post.title}
@@ -182,7 +182,7 @@ export async function sendNewPostNotifications(
           ${contentBlock}
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
             <tr><td style="background:#c8a97e;border-radius:5px;">
-              <a href="${postUrl}"
+              <a href="${postUrl}" target="_blank"
                  style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:16px;font-weight:700;color:#0d1f3c;text-decoration:none;letter-spacing:0.02em;">
                 View on the blog &rarr;
               </a>
@@ -191,14 +191,14 @@ export async function sendNewPostNotifications(
         </td></tr>
 
         <!-- Footer -->
-        <tr><td style="background:#091629;border-radius:0 0 8px 8px;padding:20px 24px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
+        <tr><td style="background:#091629;padding:20px 24px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
           <p style="margin:0 0 10px;font-size:12px;color:#8fa3b1;line-height:1.6;">
             You received this because you subscribed to AMO Infinitum.
           </p>
           <p style="margin:0;font-size:12px;">
-            <a href="${unsubUrl}" style="color:#c8a97e;text-decoration:underline;font-weight:600;">Unsubscribe</a>
+            <a href="${unsubUrl}" target="_blank" style="color:#c8a97e;text-decoration:underline;font-weight:600;">Unsubscribe</a>
             &nbsp;&nbsp;·&nbsp;&nbsp;
-            <a href="${SITE}" style="color:#8fa3b1;text-decoration:underline;">Visit the blog</a>
+            <a href="${SITE}" target="_blank" style="color:#8fa3b1;text-decoration:underline;">Visit the blog</a>
           </p>
         </td></tr>
 
