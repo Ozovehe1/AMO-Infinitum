@@ -108,6 +108,21 @@ function fmtAxis(v: number): string {
   return String(v);
 }
 
+/* ── Monthly label: show year only on first visible label and when year changes ── *
+ * Input labels are "Jun '25" format (unique keys from API).
+ * Output: "Jun '25" → first / year-change; "Jun" → same year as previous.
+ * Daily/weekly labels ("5 May") pass through unchanged.
+ */
+function getDisplayLabel(label: string, prevVisibleLabel: string | null): string {
+  if (!label.includes("'")) return label; // daily or weekly — no year in key
+  const spaceIdx = label.indexOf(" ");
+  const month = label.slice(0, spaceIdx);           // "Jun"
+  const yearPart = label.slice(spaceIdx + 1);       // "'25"
+  if (!prevVisibleLabel || !prevVisibleLabel.includes("'")) return label; // first label
+  const prevYear = prevVisibleLabel.slice(prevVisibleLabel.indexOf(" ") + 1);
+  return yearPart !== prevYear ? label : month;     // year changed → full; same year → month only
+}
+
 /* ── X-axis label density: target 6–8 labels regardless of point count ── */
 function getLabelStep(count: number): number {
   if (count <= 6) return 1;   // ≤6 points: show all
@@ -197,11 +212,16 @@ function LineChart({ data }: { data: Record<string, number> }) {
       {pts.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={tipIdx===i ? 5.5 : 3.5} fill={tipIdx===i ? "#fff" : "#c8a97e"} stroke="#c8a97e" strokeWidth={tipIdx===i ? 2.5 : 0} />
       ))}
-      {labels.map((l, i) => {
+      {(() => {
         const step = getLabelStep(labels.length);
-        if (i % step !== 0) return null;
-        return <text key={i} x={pts[i].x} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: tipIdx===i ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: tipIdx===i ? "bold" : "normal" }}>{l}</text>;
-      })}
+        let prevVisible: string | null = null;
+        return labels.map((l, i) => {
+          if (i % step !== 0) return null;
+          const display = getDisplayLabel(l, prevVisible);
+          prevVisible = l;
+          return <text key={i} x={pts[i].x} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: tipIdx===i ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: tipIdx===i ? "bold" : "normal" }}>{display}</text>;
+        });
+      })()}
       {tipIdx !== null && (
         <g style={{ pointerEvents: "none" }}>
           <rect x={tipX-38} y={tipY} width={76} height={36} rx={5} fill="#0d1f3c" />
@@ -283,6 +303,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
           : Math.min(zeroY + barH + 8, H - 48);
         const step = getLabelStep(labels.length);
         const showLabel = i % step === 0;
+        const prevVisibleLabel = showLabel && i >= step ? labels[i - step] : null;
         const tipLabel = allowNegative
           ? `${v > 0 ? "+" : ""}${v} net`
           : (unit === "" ? `${v} subscriber${v !== 1 ? "s" : ""}` : `${v}${unit}`);
@@ -292,7 +313,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
               fill={barFill} opacity={isActive ? 1 : 0.8}
               style={{ cursor: "default", transition: "opacity 0.1s,fill 0.1s" }}
               onMouseEnter={() => setActiveIdx(i)} onMouseLeave={() => setActiveIdx(null)} />
-            {showLabel && <text x={cx} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: isActive ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: isActive ? "bold" : "normal" }}>{labels[i]}</text>}
+            {showLabel && <text x={cx} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: isActive ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: isActive ? "bold" : "normal" }}>{getDisplayLabel(labels[i], prevVisibleLabel)}</text>}
             {isActive && v !== 0 && (
               <g style={{ pointerEvents: "none" }}>
                 <rect x={tipX-38} y={tipY} width={76} height={36} rx={5} fill="#0d1f3c" />
