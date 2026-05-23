@@ -129,9 +129,9 @@ function LineChart({ data }: { data: Record<string, number> }) {
           <stop offset="100%" stopColor="#c8a97e" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {[0, 0.5, 1].map(f => (
+      {[0, 0.25, 0.5, 0.75, 1].map(f => (
         <g key={f}>
-          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke="rgba(13,31,60,0.06)" strokeWidth="1" />
+          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke={f===0||f===1 ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
           <text x={PAD.l-6} y={PAD.t+(1-f)*iH+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{Math.round(max*f)}</text>
         </g>
       ))}
@@ -183,9 +183,9 @@ function BarChart({ data }: { data: Record<string, number> }) {
   );
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible", display: "block" }}>
-      {[0, 0.5, 1].map(f => (
+      {[0, 0.25, 0.5, 0.75, 1].map(f => (
         <g key={f}>
-          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke="rgba(13,31,60,0.06)" strokeWidth="1" />
+          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke={f===0||f===1 ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
           <text x={PAD.l-6} y={PAD.t+(1-f)*iH+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{Math.round(max*f)}</text>
         </g>
       ))}
