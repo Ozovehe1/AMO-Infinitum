@@ -216,7 +216,9 @@ function LineChart({ data }: { data: Record<string, number> }) {
         const step = getLabelStep(labels.length);
         let prevVisible: string | null = null;
         return labels.map((l, i) => {
-          if (i % step !== 0) return null;
+          const isFirst = i === 0;
+          const isLast = i === labels.length - 1;
+          if (!isFirst && !isLast && i % step !== 0) return null;
           const display = getDisplayLabel(l, prevVisible);
           prevVisible = l;
           return <text key={i} x={pts[i].x} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: tipIdx===i ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: tipIdx===i ? "bold" : "normal" }}>{display}</text>;
@@ -302,8 +304,10 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
           ? Math.max(4, by - 52)
           : Math.min(zeroY + barH + 8, H - 48);
         const step = getLabelStep(labels.length);
-        const showLabel = i % step === 0;
-        const prevVisibleLabel = showLabel && i >= step ? labels[i - step] : null;
+        const isFirst = i === 0;
+        const isLast = i === labels.length - 1;
+        const showLabel = isFirst || isLast || i % step === 0;
+        const prevVisibleLabel = showLabel ? (i >= step ? labels[i - step] : null) : null;
         const tipLabel = allowNegative
           ? `${v > 0 ? "+" : ""}${v} net`
           : (unit === "" ? `${v} subscriber${v !== 1 ? "s" : ""}` : `${v}${unit}`);
