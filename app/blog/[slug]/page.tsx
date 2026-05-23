@@ -7,6 +7,7 @@ import { formatDate, truncate } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
 import AudioPlayer from "@/components/AudioPlayer";
+import ViewTracker from "@/components/ViewTracker";
 
 export const revalidate = 60;
 
@@ -109,6 +110,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
       <main style={{ background: "#fffef9", flex: 1 }}>
         <article style={{ maxWidth: 720, margin: "0 auto", padding: "4rem 1.5rem 5rem" }}>
           <AudioPlayer audioUrl={audioUrl} />
+          <ViewTracker postId={post.id} />
           <div
             className="prose-amo"
             dangerouslySetInnerHTML={{ __html: post.content }}

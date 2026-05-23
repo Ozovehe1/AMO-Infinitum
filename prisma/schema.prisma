@@ -21,6 +21,7 @@ model Post {
   updatedAt   DateTime  @updatedAt
   publishedAt DateTime?
   showUpdatedNotice Boolean @default(false)
+  views       Int       @default(0)
 
   categories PostCategory[]
 }
