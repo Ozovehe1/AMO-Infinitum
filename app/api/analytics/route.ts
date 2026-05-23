@@ -1,20 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
-import { subMonths, startOfMonth, format } from "date-fns";
+import {
+  subMonths, subWeeks, subDays,
+  startOfMonth, startOfWeek, startOfDay,
+  format,
+} from "date-fns";
+
+type Range = "1m" | "3m" | "6m" | "12m";
+type Granularity = "day" | "week" | "month";
+
+// GA4 standard: ≤1M → daily, 3M → weekly, 6M/12M → monthly
+function getGranularity(range: Range): Granularity {
+  if (range === "1m") return "day";
+  if (range === "3m") return "week";
+  return "month";
+}
+
+// Calendar-aligned start of the period
+function computeSince(granularity: Granularity, monthCount: number): Date {
+  const now = new Date();
+  if (granularity === "day")  return startOfDay(subDays(now, 29));          // 30 days incl. today
+  if (granularity === "week") return startOfWeek(subWeeks(now, 12), { weekStartsOn: 1 }); // 13 weeks, Mon start
+  return startOfMonth(subMonths(now, monthCount - 1));                       // calendar months
+}
+
+// Equally-sized window before the current period (for trend comparison)
+function computePrevSince(granularity: Granularity, since: Date, monthCount: number): Date {
+  if (granularity === "day")  return startOfDay(subDays(since, 30));
+  if (granularity === "week") return startOfWeek(subWeeks(since, 13), { weekStartsOn: 1 });
+  return startOfMonth(subMonths(since, monthCount));
+}
+
+// Map a record's date to the correct bucket key
+function toKey(date: Date, granularity: Granularity): string {
+  if (granularity === "day")  return format(date, "d MMM");
+  if (granularity === "week") return format(startOfWeek(date, { weekStartsOn: 1 }), "d MMM");
+  return format(date, "MMM ''yy");
+}
+
+// Build ordered empty buckets for the period
+function buildBuckets(granularity: Granularity, monthCount: number): Record<string, number> {
+  const buckets: Record<string, number> = {};
+  const now = new Date();
+  if (granularity === "day") {
+    for (let i = 29; i >= 0; i--)
+      buckets[format(subDays(now, i), "d MMM")] = 0;
+  } else if (granularity === "week") {
+    for (let i = 12; i >= 0; i--)
+      buckets[format(startOfWeek(subWeeks(now, i), { weekStartsOn: 1 }), "d MMM")] = 0;
+  } else {
+    for (let i = monthCount - 1; i >= 0; i--)
+      buckets[format(startOfMonth(subMonths(now, i)), "MMM ''yy")] = 0;
+  }
+  return buckets;
+}
 
 export async function GET(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const range = (req.nextUrl.searchParams.get("range") || "3m") as "1m" | "3m" | "6m" | "12m";
+  const range = (req.nextUrl.searchParams.get("range") || "3m") as Range;
   const monthCount = range === "1m" ? 1 : range === "3m" ? 3 : range === "6m" ? 6 : 12;
-
-  // Everything is calendar-month-aligned.
-  // "3M" on any day of May = March 1 → today. Never Feb 23 → May 23.
-  // This matches Beehiiv/Ghost "Last 3 months" behaviour.
-  const since = startOfMonth(subMonths(new Date(), monthCount - 1)); // first bucket month start
-  const prevSince = startOfMonth(subMonths(since, monthCount));      // same duration before
+  const granularity = getGranularity(range);
+  const since = computeSince(granularity, monthCount);
+  const prevSince = computePrevSince(granularity, since, monthCount);
 
   const [
     totalSubscribers,
@@ -50,25 +100,25 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Build cumulative subscriber totals per month
-  const newByMonth = buildMonthBuckets(monthCount);
+  // Cumulative subscribers per period
+  const newByPeriod = buildBuckets(granularity, monthCount);
   for (const sub of allSubscribers) {
-    const key = format(sub.createdAt, "MMM ''yy");
-    if (newByMonth[key] !== undefined) newByMonth[key]++;
+    const key = toKey(sub.createdAt, granularity);
+    if (newByPeriod[key] !== undefined) newByPeriod[key]++;
   }
   let running = subscribersAtStart;
-  const subscribersByMonth: Record<string, number> = {};
-  for (const [key, count] of Object.entries(newByMonth)) {
+  const subscribersByPeriod: Record<string, number> = {};
+  for (const [key, count] of Object.entries(newByPeriod)) {
     running += count;
-    subscribersByMonth[key] = running;
+    subscribersByPeriod[key] = running;
   }
 
-  // Group posts published by month
-  const postsByMonth = buildMonthBuckets(monthCount);
+  // Posts published per period
+  const postsByPeriod = buildBuckets(granularity, monthCount);
   for (const post of allPosts) {
     if (!post.publishedAt) continue;
-    const key = format(post.publishedAt, "MMM ''yy");
-    if (postsByMonth[key] !== undefined) postsByMonth[key]++;
+    const key = toKey(post.publishedAt, granularity);
+    if (postsByPeriod[key] !== undefined) postsByPeriod[key]++;
   }
 
   return NextResponse.json({
@@ -79,17 +129,10 @@ export async function GET(req: NextRequest) {
     totalViews: totalViews._sum.views ?? 0,
     totalPublished: await prisma.post.count({ where: { published: true } }),
     topPosts,
-    subscribersByMonth,
-    newSubscribersByMonth: newByMonth,
-    postsByMonth,
+    granularity,
+    subscribersByMonth: subscribersByPeriod,
+    newSubscribersByMonth: newByPeriod,
+    postsByMonth: postsByPeriod,
     categories: categories.map(c => ({ name: c.name, color: c.color, count: c._count.posts })),
   });
-}
-
-function buildMonthBuckets(count: number): Record<string, number> {
-  const buckets: Record<string, number> = {};
-  for (let i = count - 1; i >= 0; i--) {
-    buckets[format(startOfMonth(subMonths(new Date(), i)), "MMM ''yy")] = 0;
-  }
-  return buckets;
 }

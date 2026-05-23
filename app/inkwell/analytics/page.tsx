@@ -24,6 +24,7 @@ interface AnalyticsData {
   totalViews: number;
   totalPublished: number;
   topPosts: TopPost[];
+  granularity: "day" | "week" | "month";
   subscribersByMonth: Record<string, number>;
   newSubscribersByMonth: Record<string, number>;
   postsByMonth: Record<string, number>;
@@ -163,7 +164,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
         <circle key={i} cx={p.x} cy={p.y} r={tipIdx===i ? 5.5 : 3.5} fill={tipIdx===i ? "#fff" : "#c8a97e"} stroke="#c8a97e" strokeWidth={tipIdx===i ? 2.5 : 0} />
       ))}
       {labels.map((l, i) => {
-        const every = labels.length > 8 ? 3 : labels.length > 5 ? 2 : 1;
+        const every = labels.length > 20 ? 5 : labels.length > 10 ? 3 : labels.length > 6 ? 2 : 1;
         if (i % every !== 0) return null;
         return <text key={i} x={pts[i].x} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: tipIdx===i ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: tipIdx===i ? "bold" : "normal" }}>{l}</text>;
       })}
