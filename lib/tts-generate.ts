@@ -82,6 +82,14 @@ export async function generatePostAudio(
       update: { value: url },
       create: { key: `audio_${slug}`, value: url },
     });
+
+    // Revalidate the blog page so the new audio URL is served immediately
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+    await fetch(`${siteUrl}/api/revalidate-audio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    }).catch(() => { /* not critical */ });
   } catch (err) {
     console.error("[TTS] blob upload failed:", err);
   }
