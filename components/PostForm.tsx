@@ -619,12 +619,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               >Style <span style={{ fontSize: "0.6rem" }}>▾</span></button>
               <TSep />
 
-              {/* Inline formatting */}
-              {TB("B",    () => mobileEditor?.chain().focus().toggleBold().run(),       mobileEditor?.isActive("bold"),      { fontWeight: 700 })}
-              {TB("I",    () => mobileEditor?.chain().focus().toggleItalic().run(),     mobileEditor?.isActive("italic"),    { fontStyle: "italic" })}
-              {TB("U",    () => mobileEditor?.chain().focus().toggleUnderline().run(),  mobileEditor?.isActive("underline"), { textDecoration: "underline" })}
-              {TB("S",    () => mobileEditor?.chain().focus().toggleStrike().run(),     mobileEditor?.isActive("strike"),    { textDecoration: "line-through" })}
-              {TB("Mark", () => mobileEditor?.chain().focus().toggleHighlight().run(),  mobileEditor?.isActive("highlight"))}
+              {/* Inline formatting (B/I/U/S/Mark handled by Editor's selection bar above keyboard) */}
               {TB("</>",  () => mobileEditor?.chain().focus().toggleCode().run(),       mobileEditor?.isActive("code"),      { fontFamily: "monospace", fontSize: "0.75rem" })}
               <TSep />
 
