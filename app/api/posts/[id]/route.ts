@@ -7,14 +7,14 @@ import { slugify, estimateReadingTime } from "@/lib/utils";
 import { tasks } from "@trigger.dev/sdk/v3";
 import { sendNewPostNotifications } from "@/lib/email";
 
-async function notifySubscribers(title: string, slug: string, excerpt: string, coverImage: string | null) {
+async function notifySubscribers(title: string, slug: string, excerpt: string, coverImage: string | null, content: string) {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return;
   const subscribers = await prisma.subscriber.findMany({
     where: { verified: true },
     select: { email: true, token: true },
   });
   if (subscribers.length === 0) return;
-  await sendNewPostNotifications(subscribers, { title, slug, excerpt, coverImage });
+  await sendNewPostNotifications(subscribers, { title, slug, excerpt, coverImage, content });
 }
 
 type Params = { params: Promise<{ id: string }> };
@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   if (wasPublished) {
-    after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage));
+    after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
   }
 
   return NextResponse.json(post);

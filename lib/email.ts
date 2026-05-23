@@ -90,7 +90,7 @@ export async function sendConfirmationEmail(email: string, token: string) {
 
 export async function sendNewPostNotifications(
   subscribers: { email: string; token: string }[],
-  post: { title: string; slug: string; excerpt?: string | null; coverImage?: string | null }
+  post: { title: string; slug: string; excerpt?: string | null; coverImage?: string | null; content?: string | null }
 ) {
   const postUrl = `${SITE}/blog/${post.slug}`;
   const t = transporter();
@@ -99,43 +99,42 @@ export async function sendNewPostNotifications(
     const unsubUrl = `${SITE}/api/unsubscribe?token=${sub.token}`;
 
     const coverBlock = post.coverImage
-      ? `<div style="margin:0 0 24px;border-radius:4px;overflow:hidden;">
+      ? `<div style="margin:0 0 28px;border-radius:4px;overflow:hidden;">
            <img src="${post.coverImage}" alt="" width="480"
-                style="width:100%;max-height:200px;object-fit:cover;display:block;border-radius:4px;">
+                style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:4px;">
          </div>`
       : "";
 
-    const excerptBlock = post.excerpt
-      ? `<p style="margin:0 0 28px;font-size:15px;color:#c8d8e4;line-height:1.75;font-style:italic;border-left:2px solid #c8a97e;padding-left:16px;">
-           ${post.excerpt}
-         </p>`
-      : "";
+    const contentBlock = post.content
+      ? `<div style="font-size:15px;color:#c8d8e4;line-height:1.8;margin:0 0 32px;">
+           ${post.content}
+         </div>`
+      : post.excerpt
+        ? `<p style="font-size:15px;color:#c8d8e4;line-height:1.8;margin:0 0 32px;">${post.excerpt}</p>`
+        : "";
 
     const html = baseLayout(
       `${coverBlock}
       <p style="margin:0 0 10px;font-size:11px;color:#8fa3b1;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">New essay</p>
-      <h2 style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:600;color:#fffef9;line-height:1.35;">
+      <h2 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#fffef9;line-height:1.35;">
         ${post.title}
       </h2>
-      ${excerptBlock}
-      <!-- CTA button -->
+      ${contentBlock}
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
         <tr><td style="background:#c8a97e;border-radius:5px;">
           <a href="${postUrl}"
              style="display:inline-block;padding:13px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#0d1f3c;text-decoration:none;letter-spacing:0.02em;">
-            Read the essay &rarr;
+            View on the blog &rarr;
           </a>
         </td></tr>
       </table>`,
-      `<p style="margin:0 0 8px;font-size:12px;color:#4e6070;line-height:1.6;">
+      `<p style="margin:0 0 10px;font-size:12px;color:#8fa3b1;line-height:1.6;">
         You received this because you subscribed to AMO Infinitum.
       </p>
-      <p style="margin:0;font-size:11px;color:#3d5060;">
-        <a href="${unsubUrl}" style="color:#5a7080;text-decoration:underline;">Unsubscribe</a>
-        &nbsp;·&nbsp;
-        <a href="${SITE}" style="color:#5a7080;text-decoration:underline;">Visit the blog</a>
-        &nbsp;·&nbsp;
-        © ${new Date().getFullYear()} AMO Infinitum
+      <p style="margin:0;font-size:12px;">
+        <a href="${unsubUrl}" style="color:#c8a97e;text-decoration:underline;font-weight:600;">Unsubscribe</a>
+        &nbsp;&nbsp;·&nbsp;&nbsp;
+        <a href="${SITE}" style="color:#8fa3b1;text-decoration:underline;">Visit the blog</a>
       </p>`
     );
 
