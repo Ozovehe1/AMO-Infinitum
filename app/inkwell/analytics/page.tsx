@@ -20,6 +20,7 @@ interface AnalyticsData {
   newSubscribers: number;
   prevNewSubscribers: number;
   pendingSubscribers: number;
+  subscribersAtStart: number;
   totalViews: number;
   totalPublished: number;
   topPosts: TopPost[];
@@ -115,7 +116,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
   const areaD = pts.length > 0 ? `${lineD} L${pts[pts.length-1].x.toFixed(1)},${(PAD.t+iH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD.t+iH).toFixed(1)} Z` : "";
   if (allZero) return (
     <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>No subscriber signups this period</p>
+      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>No subscribers yet</p>
     </div>
   );
   const tipIdx = activeIdx;
@@ -327,7 +328,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }} className="charts-grid">
-            <div style={card}><p style={secLabel}>Subscriber Growth</p><LineChart data={data.subscribersByMonth} /></div>
+            <div style={card}><p style={secLabel}>Total Subscribers Over Time</p><LineChart data={data.subscribersByMonth} /></div>
             <div style={card}><p style={secLabel}>Publishing Activity</p><BarChart data={data.postsByMonth} /></div>
           </div>
 

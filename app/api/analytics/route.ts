@@ -11,12 +11,15 @@ export async function GET(req: NextRequest) {
   const monthCount = range === "1m" ? 1 : range === "3m" ? 3 : range === "6m" ? 6 : 12;
   const since = subMonths(new Date(), monthCount);
   const prevSince = subMonths(new Date(), monthCount * 2);
+  // Start of the first bucket month — subscribers before this are the cumulative baseline
+  const firstBucketStart = startOfMonth(subMonths(new Date(), monthCount - 1));
 
   const [
     totalSubscribers,
     newSubscribers,
     prevNewSubscribers,
     pendingSubscribers,
+    subscribersAtStart,
     allSubscribers,
     totalViews,
     topPosts,
@@ -27,7 +30,8 @@ export async function GET(req: NextRequest) {
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since } } }),
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since } } }),
     prisma.subscriber.count({ where: { verified: false } }),
-    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: since } }, select: { createdAt: true } }),
+    prisma.subscriber.count({ where: { verified: true, createdAt: { lt: firstBucketStart } } }),
+    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: firstBucketStart } }, select: { createdAt: true } }),
     prisma.post.aggregate({ where: { published: true }, _sum: { views: true } }),
     prisma.post.findMany({
       where: { published: true },
@@ -44,11 +48,17 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Group subscriber signups by month
-  const subscribersByMonth = buildMonthBuckets(monthCount);
+  // Build cumulative subscriber totals per month end
+  const newByMonth = buildMonthBuckets(monthCount);
   for (const sub of allSubscribers) {
     const key = format(sub.createdAt, "MMM yy");
-    if (subscribersByMonth[key] !== undefined) subscribersByMonth[key]++;
+    if (newByMonth[key] !== undefined) newByMonth[key]++;
+  }
+  let running = subscribersAtStart;
+  const subscribersByMonth: Record<string, number> = {};
+  for (const [key, count] of Object.entries(newByMonth)) {
+    running += count;
+    subscribersByMonth[key] = running;
   }
 
   // Group posts published by month
