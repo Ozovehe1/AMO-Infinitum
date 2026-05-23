@@ -62,6 +62,9 @@ export default function Editor({
   const imgInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlBar, setUrlBar] = useState<{ mode: "link" | "image" | "youtube"; value: string } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [hasSelection, setHasSelection] = useState(false);
+  const [mobileBarBottom, setMobileBarBottom] = useState(0);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -94,6 +97,31 @@ export default function Editor({
   useEffect(() => {
     if (urlBar) setTimeout(() => urlInputRef.current?.focus(), 50);
   }, [urlBar?.mode]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setMobileBarBottom(window.innerHeight - vv.height - vv.offsetTop);
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); };
+  }, []);
+
+  useEffect(() => {
+    if (!editor) return;
+    const onSel = () => setHasSelection(!editor.state.selection.empty);
+    const onBlur = () => setHasSelection(false);
+    editor.on("selectionUpdate", onSel);
+    editor.on("blur", onBlur);
+    return () => { editor.off("selectionUpdate", onSel); editor.off("blur", onBlur); };
+  }, [editor]);
 
   const openLinkBar = useCallback(() => {
     if (!editor) return;
@@ -143,24 +171,33 @@ export default function Editor({
 
   if (!editor) return null;
 
+  // Inline format buttons shared by BubbleMenu (desktop) and mobile bar
+  const fmtButtons = [
+    { label: "B",    title: "Bold",          style: { fontWeight: 700 } as React.CSSProperties,               active: editor.isActive("bold"),      action: () => editor.chain().focus().toggleBold().run() },
+    { label: "I",    title: "Italic",         style: { fontStyle: "italic" } as React.CSSProperties,           active: editor.isActive("italic"),    action: () => editor.chain().focus().toggleItalic().run() },
+    { label: "U",    title: "Underline",      style: { textDecoration: "underline" } as React.CSSProperties,   active: editor.isActive("underline"), action: () => editor.chain().focus().toggleUnderline().run() },
+    { label: "Stk",  title: "Strikethrough",  style: { textDecoration: "line-through" } as React.CSSProperties,active: editor.isActive("strike"),    action: () => editor.chain().focus().toggleStrike().run() },
+    { label: "Mark", title: "Highlight",      style: {} as React.CSSProperties,                                active: editor.isActive("highlight"), action: () => editor.chain().focus().toggleHighlight().run() },
+    ...(!compact ? [{ label: "Link", title: "Link", style: {} as React.CSSProperties, active: editor.isActive("link"), action: openLinkBar }] : []),
+  ];
+
+  // Mobile-only: fixed bar that rises with the keyboard via visualViewport
+  const mobileBar = isMobile && hasSelection ? (
+    <div style={{ position: "fixed", bottom: mobileBarBottom, left: 0, right: 0, zIndex: 9999, display: "flex", background: "#0d1f3c", padding: "5px 10px", gap: 4, boxShadow: "0 -2px 12px rgba(0,0,0,0.35)" }}>
+      {fmtButtons.map(({ label, title, style, active, action }) => (
+        <button key={title} onPointerDown={e => { e.preventDefault(); action(); }} title={title}
+          style={{ height: 34, minWidth: 34, padding: "0 8px", background: active ? "#2d7d9a" : "transparent", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: "0.8rem", fontFamily: "Inter, sans-serif", fontWeight: 500, flexShrink: 0, ...style }}>
+          {label}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   // ── COMPACT MODE: no chrome, used by PostForm mobile ──
   if (compact) {
     return (
       <div>
-        <BubbleMenu editor={editor}           style={{ display: "flex", background: "#0d1f3c", borderRadius: 7, boxShadow: "0 4px 16px rgba(0,0,0,0.28)", padding: "3px 4px", gap: 2 }}>
-          {[
-            { label: "B",    title: "Bold",          style: { fontWeight: 700 },                        active: editor.isActive("bold"),      action: () => editor.chain().focus().toggleBold().run() },
-            { label: "I",    title: "Italic",         style: { fontStyle: "italic" },                    active: editor.isActive("italic"),    action: () => editor.chain().focus().toggleItalic().run() },
-            { label: "U",    title: "Underline",      style: { textDecoration: "underline" },            active: editor.isActive("underline"), action: () => editor.chain().focus().toggleUnderline().run() },
-            { label: "Stk",  title: "Strikethrough",  style: { textDecoration: "line-through" },         active: editor.isActive("strike"),    action: () => editor.chain().focus().toggleStrike().run() },
-            { label: "Mark", title: "Highlight",      style: {},                                         active: editor.isActive("highlight"), action: () => editor.chain().focus().toggleHighlight().run() },
-          ].map(({ label, title, style, active, action }) => (
-            <button key={title} onPointerDown={e => { e.preventDefault(); action(); }} title={title}
-              style={{ height: 30, minWidth: 30, padding: "0 6px", background: active ? "#2d7d9a" : "transparent", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 500, ...style }}>
-              {label}
-            </button>
-          ))}
-        </BubbleMenu>
+        {mobileBar}
         <div style={{ padding: "0 16px 80px", minHeight: 240 }}>
           <EditorContent editor={editor} />
         </div>
@@ -273,21 +310,20 @@ export default function Editor({
         </div>
       )}
 
-      <BubbleMenu editor={editor}         style={{ display: "flex", background: "#0d1f3c", borderRadius: 7, boxShadow: "0 4px 16px rgba(0,0,0,0.28)", padding: "3px 4px", gap: 2 }}>
-        {[
-          { label: "B",    title: "Bold",          style: { fontWeight: 700 } as React.CSSProperties,                        active: editor.isActive("bold"),      action: () => editor.chain().focus().toggleBold().run() },
-          { label: "I",    title: "Italic",         style: { fontStyle: "italic" } as React.CSSProperties,                    active: editor.isActive("italic"),    action: () => editor.chain().focus().toggleItalic().run() },
-          { label: "U",    title: "Underline",      style: { textDecoration: "underline" } as React.CSSProperties,            active: editor.isActive("underline"), action: () => editor.chain().focus().toggleUnderline().run() },
-          { label: "Stk",  title: "Strikethrough",  style: { textDecoration: "line-through" } as React.CSSProperties,         active: editor.isActive("strike"),    action: () => editor.chain().focus().toggleStrike().run() },
-          { label: "Mark", title: "Highlight",      style: {} as React.CSSProperties,                                         active: editor.isActive("highlight"), action: () => editor.chain().focus().toggleHighlight().run() },
-          { label: "Link", title: "Link",            style: {} as React.CSSProperties,                                         active: editor.isActive("link"),      action: openLinkBar },
-        ].map(({ label, title, style, active, action }) => (
-          <button key={title} onPointerDown={e => { e.preventDefault(); action(); }} title={title}
-            style={{ height: 30, minWidth: 30, padding: "0 6px", background: active ? "#2d7d9a" : "transparent", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 500, ...style }}>
-            {label}
-          </button>
-        ))}
-      </BubbleMenu>
+      {/* Desktop: BubbleMenu floats above selection. Mobile: visualViewport-aware fixed bar instead */}
+      {!isMobile && (
+        <BubbleMenu editor={editor} shouldShow={({ editor: e }) => !e.state.selection.empty}>
+          <div style={{ display: "flex", background: "#0d1f3c", borderRadius: 7, boxShadow: "0 4px 16px rgba(0,0,0,0.28)", padding: "3px 4px", gap: 2 }}>
+            {fmtButtons.map(({ label, title, style, active, action }) => (
+              <button key={title} onPointerDown={e => { e.preventDefault(); action(); }} title={title}
+                style={{ height: 30, minWidth: 30, padding: "0 6px", background: active ? "#2d7d9a" : "transparent", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 500, ...style }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </BubbleMenu>
+      )}
+      {mobileBar}
 
       <div style={{ padding: "1.25rem 1rem", minHeight: 280 }}>
         <EditorContent editor={editor} />
