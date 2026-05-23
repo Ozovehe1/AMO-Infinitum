@@ -9,10 +9,12 @@ export async function GET(req: NextRequest) {
 
   const range = (req.nextUrl.searchParams.get("range") || "3m") as "1m" | "3m" | "6m" | "12m";
   const monthCount = range === "1m" ? 1 : range === "3m" ? 3 : range === "6m" ? 6 : 12;
-  const since = subMonths(new Date(), monthCount);
-  const prevSince = subMonths(new Date(), monthCount * 2);
-  // Start of the first bucket month — subscribers before this are the cumulative baseline
-  const firstBucketStart = startOfMonth(subMonths(new Date(), monthCount - 1));
+
+  // Everything is calendar-month-aligned.
+  // "3M" on any day of May = March 1 → today. Never Feb 23 → May 23.
+  // This matches Beehiiv/Ghost "Last 3 months" behaviour.
+  const since = startOfMonth(subMonths(new Date(), monthCount - 1)); // first bucket month start
+  const prevSince = startOfMonth(subMonths(since, monthCount));      // same duration before
 
   const [
     totalSubscribers,
@@ -30,8 +32,8 @@ export async function GET(req: NextRequest) {
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since } } }),
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since } } }),
     prisma.subscriber.count({ where: { verified: false } }),
-    prisma.subscriber.count({ where: { verified: true, createdAt: { lt: firstBucketStart } } }),
-    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: firstBucketStart } }, select: { createdAt: true } }),
+    prisma.subscriber.count({ where: { verified: true, createdAt: { lt: since } } }),
+    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: since } }, select: { createdAt: true } }),
     prisma.post.aggregate({ where: { published: true }, _sum: { views: true } }),
     prisma.post.findMany({
       where: { published: true },
@@ -48,7 +50,7 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Build cumulative subscriber totals per month end
+  // Build cumulative subscriber totals per month
   const newByMonth = buildMonthBuckets(monthCount);
   for (const sub of allSubscribers) {
     const key = format(sub.createdAt, "MMM ''yy");
