@@ -101,6 +101,13 @@ function StatCard({ label, value, sub, sparkValues, trend }: {
   );
 }
 
+/* ── Y-axis number abbreviation (GA4 / Mixpanel / Stripe standard) ── */
+function fmtAxis(v: number): string {
+  if (Math.abs(v) >= 1_000_000) return `${+(v / 1_000_000).toPrecision(3)}M`;
+  if (Math.abs(v) >= 1_000)     return `${+(v / 1_000).toPrecision(3)}K`;
+  return String(v);
+}
+
 /* ── X-axis label density: target 6–8 labels regardless of point count ── */
 function getLabelStep(count: number): number {
   if (count <= 6) return 1;   // ≤6 points: show all
@@ -150,7 +157,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
   const values = Object.values(data);
   const allZero = values.every(v => v === 0);
   const { ticks: yTicks, axisMax } = computeYAxis(Math.max(...values, 0));
-  const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
+  const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 40 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const pts = values.map((v, i) => ({
     x: labels.length <= 1 ? PAD.l + iW / 2 : PAD.l + (i / (labels.length - 1)) * iW,
@@ -180,7 +187,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
         return (
           <g key={v}>
             <line x1={PAD.l} x2={W-PAD.r} y1={y} y2={y} stroke={isEdge ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
-            <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{v}</text>
+            <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{fmtAxis(v)}</text>
           </g>
         );
       })}
@@ -231,7 +238,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
   const { ticks, axisMin, axisMax } = computeYAxisRange(rawMin, rawMax);
   const totalRange = axisMax - axisMin;
 
-  const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
+  const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 40 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const slot = iW / labels.length;
   const barW = Math.max(6, slot * 0.55);
@@ -256,7 +263,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
             <line x1={PAD.l} x2={W-PAD.r} y1={y} y2={y}
               stroke={isZero ? "rgba(13,31,60,0.25)" : isEdge ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"}
               strokeWidth={isZero ? 1.5 : 1} />
-            <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{v}</text>
+            <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{fmtAxis(v)}</text>
           </g>
         );
       })}
