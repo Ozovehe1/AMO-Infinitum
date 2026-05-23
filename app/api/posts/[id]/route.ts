@@ -12,7 +12,7 @@ async function notifySubscribers(title: string, slug: string, excerpt: string, c
   const hasGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
   if (!hasBrevo && !hasGmail) return;
   const subscribers = await prisma.subscriber.findMany({
-    where: { verified: true },
+    where: { verified: true, unsubscribedAt: null },
     select: { email: true, token: true },
   });
   if (subscribers.length === 0) return;

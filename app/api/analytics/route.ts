@@ -72,18 +72,39 @@ export async function GET(req: NextRequest) {
     prevNewSubscribers,
     pendingSubscribers,
     subscribersAtStart,
-    allSubscribers,
+    allNewSubscribers,
+    allUnsubscribers,
     totalViews,
     topPosts,
     allPosts,
     categories,
   ] = await Promise.all([
-    prisma.subscriber.count({ where: { verified: true } }),
+    // Currently active subscribers (signed up + not unsubscribed)
+    prisma.subscriber.count({ where: { verified: true, unsubscribedAt: null } }),
+    // New sign-ups this period (regardless of whether they later unsubscribed)
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since } } }),
+    // New sign-ups in previous period (for trend badge)
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since } } }),
-    prisma.subscriber.count({ where: { verified: false } }),
-    prisma.subscriber.count({ where: { verified: true, createdAt: { lt: since } } }),
-    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: since } }, select: { createdAt: true } }),
+    // Pending confirmation (unverified, not yet unsubscribed)
+    prisma.subscriber.count({ where: { verified: false, unsubscribedAt: null } }),
+    // Active subscribers at the START of our chart period (who hadn't already unsubscribed)
+    prisma.subscriber.count({
+      where: {
+        verified: true,
+        createdAt: { lt: since },
+        OR: [{ unsubscribedAt: null }, { unsubscribedAt: { gte: since } }],
+      },
+    }),
+    // All new verified subscribers in this period (for bucketing)
+    prisma.subscriber.findMany({
+      where: { verified: true, createdAt: { gte: since } },
+      select: { createdAt: true },
+    }),
+    // All unsubscribes that happened within this period (for bucketing)
+    prisma.subscriber.findMany({
+      where: { unsubscribedAt: { not: null, gte: since } },
+      select: { unsubscribedAt: true },
+    }),
     prisma.post.aggregate({ where: { published: true }, _sum: { views: true } }),
     prisma.post.findMany({
       where: { published: true },
@@ -100,17 +121,33 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Cumulative subscribers per period
+  // New sign-ups per period bucket
   const newByPeriod = buildBuckets(granularity, monthCount);
-  for (const sub of allSubscribers) {
+  for (const sub of allNewSubscribers) {
     const key = toKey(sub.createdAt, granularity);
     if (newByPeriod[key] !== undefined) newByPeriod[key]++;
   }
+
+  // Unsubscribes per period bucket
+  const unsubsByPeriod = buildBuckets(granularity, monthCount);
+  for (const sub of allUnsubscribers) {
+    if (!sub.unsubscribedAt) continue;
+    const key = toKey(sub.unsubscribedAt, granularity);
+    if (unsubsByPeriod[key] !== undefined) unsubsByPeriod[key]++;
+  }
+
+  // Net new per period (signups − cancellations); can be negative
+  const netByPeriod: Record<string, number> = {};
+  for (const key of Object.keys(newByPeriod)) {
+    netByPeriod[key] = newByPeriod[key] - unsubsByPeriod[key];
+  }
+
+  // Cumulative running total — goes UP on net gain, DOWN on net loss
   let running = subscribersAtStart;
   const subscribersByPeriod: Record<string, number> = {};
-  for (const [key, count] of Object.entries(newByPeriod)) {
-    running += count;
-    subscribersByPeriod[key] = running;
+  for (const key of Object.keys(newByPeriod)) {
+    running += netByPeriod[key];
+    subscribersByPeriod[key] = Math.max(0, running); // floor at 0 (can't have negative subscribers)
   }
 
   // Posts published per period
@@ -131,7 +168,7 @@ export async function GET(req: NextRequest) {
     topPosts,
     granularity,
     subscribersByMonth: subscribersByPeriod,
-    newSubscribersByMonth: newByPeriod,
+    newSubscribersByMonth: netByPeriod,   // net new per period (can be negative)
     postsByMonth: postsByPeriod,
     categories: categories.map(c => ({ name: c.name, color: c.color, count: c._count.posts })),
   });

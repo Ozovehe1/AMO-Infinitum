@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const normalised = email.trim().toLowerCase();
   const existing = await prisma.subscriber.findUnique({ where: { email: normalised } });
 
-  if (existing?.verified) {
+  if (existing?.verified && !existing.unsubscribedAt) {
     return NextResponse.json({ message: "already_subscribed" });
   }
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (existing) {
     await prisma.subscriber.update({
       where: { email: normalised },
-      data: { token, name: name?.trim() || null, lastSentAt: now },
+      data: { token, name: name?.trim() || null, lastSentAt: now, unsubscribedAt: null, verified: false },
     });
   } else {
     await prisma.subscriber.create({

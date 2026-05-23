@@ -60,11 +60,12 @@ model SiteSettings {
 }
 
 model Subscriber {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  name       String?
-  token      String    @unique
-  verified   Boolean   @default(false)
-  lastSentAt DateTime?
-  createdAt  DateTime  @default(now())
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  name           String?
+  token          String    @unique
+  verified       Boolean   @default(false)
+  lastSentAt     DateTime?
+  createdAt      DateTime  @default(now())
+  unsubscribedAt DateTime?
 }

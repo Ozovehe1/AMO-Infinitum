@@ -5,8 +5,11 @@ const base = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.a
 
 async function unsubscribe(token: string | null) {
   if (!token) return false;
-  await prisma.subscriber.deleteMany({ where: { token } });
-  return true;
+  const result = await prisma.subscriber.updateMany({
+    where: { token, unsubscribedAt: null },
+    data: { unsubscribedAt: new Date() },
+  });
+  return result.count > 0;
 }
 
 // Clicked link in email

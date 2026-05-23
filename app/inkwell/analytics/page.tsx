@@ -20,7 +20,6 @@ interface AnalyticsData {
   newSubscribers: number;
   prevNewSubscribers: number;
   pendingSubscribers: number;
-  subscribersAtStart: number;
   totalViews: number;
   totalPublished: number;
   topPosts: TopPost[];
@@ -102,7 +101,15 @@ function StatCard({ label, value, sub, sparkValues, trend }: {
   );
 }
 
-/* ── Smart Y-axis ticks ── */
+/* ── X-axis label density: target 6–8 labels regardless of point count ── */
+function getLabelStep(count: number): number {
+  if (count <= 6) return 1;   // ≤6 points: show all
+  if (count <= 12) return 2;  // 7–12: every 2nd  (~6 labels)
+  if (count <= 20) return 3;  // 13–20: every 3rd (~6 labels)
+  return 4;                   // 21–30: every 4th (~7 labels)
+}
+
+/* ── Smart Y-axis ticks (positive only) ── */
 function computeYAxis(dataMax: number): { ticks: number[]; axisMax: number } {
   if (dataMax <= 0) return { ticks: [0, 1], axisMax: 1 };
   if (dataMax <= 5) {
@@ -115,6 +122,26 @@ function computeYAxis(dataMax: number): { ticks: number[]; axisMax: number } {
   const ticks: number[] = [];
   for (let v = 0; v <= axisMax + step * 0.01; v += step) ticks.push(Math.round(v));
   return { ticks, axisMax };
+}
+
+/* ── Smart Y-axis ticks (supports negative values) ── */
+function computeYAxisRange(dataMin: number, dataMax: number): { ticks: number[]; axisMin: number; axisMax: number } {
+  const absMax = Math.max(Math.abs(dataMax), Math.abs(dataMin), 1);
+  if (absMax <= 5) {
+    const lo = Math.min(Math.floor(dataMin), 0);
+    const hi = Math.max(Math.ceil(dataMax), 1);
+    const ticks: number[] = [];
+    for (let v = lo; v <= hi; v++) ticks.push(v);
+    return { ticks, axisMin: lo, axisMax: hi };
+  }
+  const rawStep = absMax / 4;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const step = ([1, 2, 5, 10].map(s => s * magnitude).find(s => s >= rawStep)) ?? magnitude * 10;
+  const axisMax = Math.ceil(Math.max(dataMax, 0) / step) * step || step;
+  const axisMin = dataMin < 0 ? Math.floor(dataMin / step) * step : 0;
+  const ticks: number[] = [];
+  for (let v = axisMin; v <= axisMax + step * 0.01; v += step) ticks.push(Math.round(v));
+  return { ticks, axisMin, axisMax };
 }
 
 function LineChart({ data }: { data: Record<string, number> }) {
@@ -164,8 +191,8 @@ function LineChart({ data }: { data: Record<string, number> }) {
         <circle key={i} cx={p.x} cy={p.y} r={tipIdx===i ? 5.5 : 3.5} fill={tipIdx===i ? "#fff" : "#c8a97e"} stroke="#c8a97e" strokeWidth={tipIdx===i ? 2.5 : 0} />
       ))}
       {labels.map((l, i) => {
-        const every = labels.length > 20 ? 5 : labels.length > 10 ? 3 : labels.length > 6 ? 2 : 1;
-        if (i % every !== 0) return null;
+        const step = getLabelStep(labels.length);
+        if (i % step !== 0) return null;
         return <text key={i} x={pts[i].x} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: tipIdx===i ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: tipIdx===i ? "bold" : "normal" }}>{l}</text>;
       })}
       {tipIdx !== null && (
@@ -188,59 +215,82 @@ function LineChart({ data }: { data: Record<string, number> }) {
   );
 }
 
-function BarChart({ data, unit = "", emptyMsg = "No data this period" }: {
+function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNegative = false }: {
   data: Record<string, number>;
   unit?: string;
   emptyMsg?: string;
+  allowNegative?: boolean;
 }) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
   const values = Object.values(data);
   const allZero = values.every(v => v === 0);
-  const { ticks: yTicks, axisMax } = computeYAxis(Math.max(...values, 0));
+
+  const rawMin = allowNegative ? Math.min(...values, 0) : 0;
+  const rawMax = Math.max(...values, 0);
+  const { ticks, axisMin, axisMax } = computeYAxisRange(rawMin, rawMax);
+  const totalRange = axisMax - axisMin;
+
   const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const slot = iW / labels.length;
   const barW = Math.max(6, slot * 0.55);
+
+  // Y-position of the zero baseline
+  const zeroY = PAD.t + (1 - (0 - axisMin) / totalRange) * iH;
+
   if (allZero) return (
     <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>{emptyMsg}</p>
     </div>
   );
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible", display: "block" }}>
-      {yTicks.map((v, i) => {
-        const y = PAD.t + (1 - v / axisMax) * iH;
-        const isEdge = i === 0 || i === yTicks.length - 1;
+      {ticks.map((v, i) => {
+        const y = PAD.t + (1 - (v - axisMin) / totalRange) * iH;
+        const isZero = v === 0 && allowNegative && axisMin < 0;
+        const isEdge = i === 0 || i === ticks.length - 1;
         return (
           <g key={v}>
-            <line x1={PAD.l} x2={W-PAD.r} y1={y} y2={y} stroke={isEdge ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
+            <line x1={PAD.l} x2={W-PAD.r} y1={y} y2={y}
+              stroke={isZero ? "rgba(13,31,60,0.25)" : isEdge ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"}
+              strokeWidth={isZero ? 1.5 : 1} />
             <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{v}</text>
           </g>
         );
       })}
       {values.map((v, i) => {
-        const barH = (v / axisMax) * iH;
+        const isPositive = v >= 0;
+        const barH = (Math.abs(v) / totalRange) * iH;
         const cx = PAD.l + i * slot + slot / 2;
         const bx = cx - barW / 2;
-        const by = PAD.t + iH - barH;
+        const by = isPositive ? zeroY - barH : zeroY;
         const isActive = activeIdx === i;
+        const barFill = allowNegative && !isPositive
+          ? (isActive ? "#c94040" : "#e05c5c")
+          : (isActive ? "#b8966a" : "#c8a97e");
         const tipX = Math.min(Math.max(cx, PAD.l+38), W-PAD.r-38);
-        const tipY = Math.max(4, by - 52);
-        const showLabel = labels.length <= 8 || i % 2 === 0;
-        const tipLabel = unit === "" ? `${v} subscriber${v !== 1 ? "s" : ""}` : `${v}${unit}`;
+        const tipY = isPositive
+          ? Math.max(4, by - 52)
+          : Math.min(zeroY + barH + 8, H - 48);
+        const step = getLabelStep(labels.length);
+        const showLabel = i % step === 0;
+        const tipLabel = allowNegative
+          ? `${v > 0 ? "+" : ""}${v} net`
+          : (unit === "" ? `${v} subscriber${v !== 1 ? "s" : ""}` : `${v}${unit}`);
         return (
           <g key={i}>
             <rect x={bx} y={by} width={barW} height={Math.max(barH, 0)} rx={3}
-              fill={isActive ? "#b8966a" : "#c8a97e"} opacity={isActive ? 1 : 0.8}
+              fill={barFill} opacity={isActive ? 1 : 0.8}
               style={{ cursor: "default", transition: "opacity 0.1s,fill 0.1s" }}
               onMouseEnter={() => setActiveIdx(i)} onMouseLeave={() => setActiveIdx(null)} />
             {showLabel && <text x={cx} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: isActive ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: isActive ? "bold" : "normal" }}>{labels[i]}</text>}
-            {isActive && v > 0 && (
+            {isActive && v !== 0 && (
               <g style={{ pointerEvents: "none" }}>
                 <rect x={tipX-38} y={tipY} width={76} height={36} rx={5} fill="#0d1f3c" />
                 <text x={tipX} y={tipY+13} textAnchor="middle" style={{ fontSize: 9, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>{labels[i]}</text>
-                <text x={tipX} y={tipY+28} textAnchor="middle" style={{ fontSize: 13, fill: "#c8a97e", fontFamily: "Inter,sans-serif", fontWeight: "bold" }}>{tipLabel}</text>
+                <text x={tipX} y={tipY+28} textAnchor="middle" style={{ fontSize: 13, fill: isPositive ? "#c8a97e" : "#e05c5c", fontFamily: "Inter,sans-serif", fontWeight: "bold" }}>{tipLabel}</text>
               </g>
             )}
           </g>
@@ -363,8 +413,8 @@ export default function AnalyticsPage() {
             <p style={{ margin: "0 0 1rem", fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Total subscribers over time</p>
             <LineChart data={data.subscribersByMonth} />
             <div style={{ margin: "1.75rem 0 1rem", borderTop: "1px solid rgba(13,31,60,0.06)", paddingTop: "1.5rem" }}>
-              <p style={{ margin: "0 0 1rem", fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>New subscribers per month</p>
-              <BarChart data={data.newSubscribersByMonth} unit="" emptyMsg="No new signups this period" />
+              <p style={{ margin: "0 0 1rem", fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Net new subscribers per period</p>
+              <BarChart data={data.newSubscribersByMonth} unit="" emptyMsg="No subscriber changes this period" allowNegative />
             </div>
           </div>
 
