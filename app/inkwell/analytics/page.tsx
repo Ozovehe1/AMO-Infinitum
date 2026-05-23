@@ -226,6 +226,9 @@ export default function AnalyticsPage() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("views");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     setLoading(true);
@@ -242,17 +245,23 @@ export default function AnalyticsPage() {
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
     else { setSortKey(key); setSortDir(key === "title" ? "asc" : "desc"); }
+    setPage(1);
   };
 
-  const sortedPosts = data ? [...data.topPosts].sort((a, b) => {
-    let av: string | number, bv: string | number;
-    if (sortKey === "title") { av = a.title.toLowerCase(); bv = b.title.toLowerCase(); }
-    else if (sortKey === "publishedAt") { av = a.publishedAt ?? ""; bv = b.publishedAt ?? ""; }
-    else { av = a[sortKey]; bv = b[sortKey]; }
-    if (av < bv) return sortDir === "asc" ? -1 : 1;
-    if (av > bv) return sortDir === "asc" ? 1 : -1;
-    return 0;
-  }) : [];
+  const sortedPosts = data ? [...data.topPosts]
+    .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      let av: string | number, bv: string | number;
+      if (sortKey === "title") { av = a.title.toLowerCase(); bv = b.title.toLowerCase(); }
+      else if (sortKey === "publishedAt") { av = a.publishedAt ?? ""; bv = b.publishedAt ?? ""; }
+      else { av = a[sortKey]; bv = b[sortKey]; }
+      if (av < bv) return sortDir === "asc" ? -1 : 1;
+      if (av > bv) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    }) : [];
+
+  const totalPages = Math.ceil(sortedPosts.length / PAGE_SIZE);
+  const pagedPosts = sortedPosts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const card: CSSProperties = { background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.5rem" };
   const secLabel: CSSProperties = { margin: "0 0 1.25rem", fontFamily: "Inter,sans-serif", fontSize: "0.7rem", fontWeight: 700, color: "#0d1f3c", letterSpacing: "0.12em", textTransform: "uppercase" };
@@ -322,40 +331,107 @@ export default function AnalyticsPage() {
             <div style={card}><p style={secLabel}>Publishing Activity</p><BarChart data={data.postsByMonth} /></div>
           </div>
 
-          <div style={{ ...card, marginBottom: "1.5rem", overflowX: "auto" }}>
-            <p style={secLabel}>All Posts by Views</p>
+          <div style={{ ...card, marginBottom: "1.5rem" }}>
+            {/* Table header row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem", gap: "1rem", flexWrap: "wrap" }}>
+              <p style={{ ...secLabel, margin: 0 }}>All Posts by Views</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <input
+                  type="text"
+                  placeholder="Search posts…"
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1); }}
+                  style={{
+                    fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#0d1f3c",
+                    border: "1px solid rgba(13,31,60,0.12)", borderRadius: 6,
+                    padding: "0.4rem 0.75rem", outline: "none", background: "#f5f0e8",
+                    width: 180,
+                  }}
+                />
+                <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
+                  {sortedPosts.length} post{sortedPosts.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </div>
+
             {data.topPosts.length === 0 ? (
               <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#8fa3b1" }}>No views yet — readers need to spend 5+ seconds on a post.</p>
+            ) : sortedPosts.length === 0 ? (
+              <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#8fa3b1" }}>No posts match &ldquo;{search}&rdquo;.</p>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
-                <thead>
-                  <tr>
-                    <TH col="title">Post</TH>
-                    <TH col="views">Views</TH>
-                    <TH col="readingTime">Read time</TH>
-                    <TH col="publishedAt">Published</TH>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedPosts.map((p, i) => (
-                    <tr key={p.id} style={{ borderBottom: i < sortedPosts.length-1 ? "1px solid rgba(13,31,60,0.06)" : "none" }} className="tr-hover">
-                      <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", maxWidth: 300 }}>
-                        <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer"
-                          style={{ fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#0d1f3c", textDecoration: "none", fontWeight: 500, lineHeight: 1.4, display: "block" }}>
-                          {p.title}
-                        </a>
-                      </td>
-                      <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", whiteSpace: "nowrap" }}>
-                        <span style={{ fontFamily: "Inter,sans-serif", fontSize: "1.1rem", fontWeight: 800, color: "#0d1f3c" }}>{p.views.toLocaleString()}</span>
-                      </td>
-                      <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{p.readingTime} min</td>
-                      <td style={{ padding: "0.85rem 0 0.85rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
-                        {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
+                    <thead>
+                      <tr>
+                        <TH col="title">Post</TH>
+                        <TH col="views">Views</TH>
+                        <TH col="readingTime">Read time</TH>
+                        <TH col="publishedAt">Published</TH>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedPosts.map((p, i) => (
+                        <tr key={p.id} style={{ borderBottom: i < pagedPosts.length - 1 ? "1px solid rgba(13,31,60,0.06)" : "none" }} className="tr-hover">
+                          <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", maxWidth: 300 }}>
+                            <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer"
+                              style={{ fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#0d1f3c", textDecoration: "none", fontWeight: 500, lineHeight: 1.4, display: "block" }}>
+                              {p.title}
+                            </a>
+                          </td>
+                          <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", whiteSpace: "nowrap" }}>
+                            <span style={{ fontFamily: "Inter,sans-serif", fontSize: "1.1rem", fontWeight: 800, color: "#0d1f3c" }}>{p.views.toLocaleString()}</span>
+                          </td>
+                          <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{p.readingTime} min</td>
+                          <td style={{ padding: "0.85rem 0 0.85rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
+                            {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "1.25rem", paddingTop: "1rem", borderTop: "1px solid rgba(13,31,60,0.06)" }}>
+                    <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
+                      Page {page} of {totalPages}
+                    </span>
+                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                      <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{
+                        fontFamily: "Inter,sans-serif", fontSize: "0.78rem", fontWeight: 600,
+                        padding: "0.35rem 0.85rem", borderRadius: 6, border: "1px solid rgba(13,31,60,0.12)",
+                        background: page === 1 ? "transparent" : "#fff", color: page === 1 ? "#c8d0d6" : "#0d1f3c",
+                        cursor: page === 1 ? "default" : "pointer",
+                      }}>← Prev</button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
+                        .reduce<(number | "…")[]>((acc, n, idx, arr) => {
+                          if (idx > 0 && n - (arr[idx - 1] as number) > 1) acc.push("…");
+                          acc.push(n);
+                          return acc;
+                        }, [])
+                        .map((n, i) => n === "…"
+                          ? <span key={`e${i}`} style={{ padding: "0.35rem 0.5rem", fontFamily: "Inter,sans-serif", fontSize: "0.78rem", color: "#8fa3b1" }}>…</span>
+                          : <button key={n} onClick={() => setPage(n as number)} style={{
+                            fontFamily: "Inter,sans-serif", fontSize: "0.78rem", fontWeight: 600,
+                            padding: "0.35rem 0.75rem", borderRadius: 6,
+                            border: "1px solid " + (page === n ? "#0d1f3c" : "rgba(13,31,60,0.12)"),
+                            background: page === n ? "#0d1f3c" : "#fff",
+                            color: page === n ? "#fff" : "#0d1f3c", cursor: "pointer",
+                          }}>{n}</button>
+                        )}
+                      <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{
+                        fontFamily: "Inter,sans-serif", fontSize: "0.78rem", fontWeight: 600,
+                        padding: "0.35rem 0.85rem", borderRadius: 6, border: "1px solid rgba(13,31,60,0.12)",
+                        background: page === totalPages ? "transparent" : "#fff", color: page === totalPages ? "#c8d0d6" : "#0d1f3c",
+                        cursor: page === totalPages ? "default" : "pointer",
+                      }}>Next →</button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
