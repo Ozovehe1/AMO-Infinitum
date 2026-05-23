@@ -1,5 +1,5 @@
 import { prisma } from "./db";
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { stripHtml } from "./utils";
 
 
@@ -65,6 +65,12 @@ export async function generatePostAudio(
   }
 
   try {
+    // Delete old blob before uploading new one
+    const existing = await prisma.siteSettings.findUnique({ where: { key: `audio_${slug}` } });
+    if (existing?.value) {
+      try { await del(existing.value); } catch { /* blob may already be gone */ }
+    }
+
     const { url } = await put(`tts/${slug}-${Date.now()}.mp3`, new Blob([combined], { type: "audio/mpeg" }), {
       access:          "private",
       contentType:     "audio/mpeg",

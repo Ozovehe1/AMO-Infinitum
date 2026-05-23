@@ -93,7 +93,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   revalidatePath("/");
   revalidatePath(`/blog/${post.slug}`);
 
-  if (wasPublished && process.env.TRIGGER_SECRET_KEY) {
+  if (post.published && process.env.TRIGGER_SECRET_KEY) {
     try {
       await tasks.trigger("generate-post-audio", { slug: post.slug, title: post.title, content: post.content });
     } catch { /* Trigger.dev not configured */ }
