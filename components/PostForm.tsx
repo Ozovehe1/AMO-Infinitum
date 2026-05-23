@@ -527,7 +527,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               fontSize: "0.875rem", fontWeight: 700,
               cursor: "pointer", letterSpacing: "0.02em",
             }}
-          >Continue</button>
+          >Next</button>
         </div>
 
         {/* ── Toolbar ─────────────────────────────── */}
