@@ -115,10 +115,11 @@ body {
 }
 
 .prose-amo img {
+  display: block;
   border-radius: 4px;
   max-width: 100%;
   height: auto;
-  margin: 2em 0;
+  margin: 2em auto;
 }
 
 .prose-amo code {

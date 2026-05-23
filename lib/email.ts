@@ -10,7 +10,7 @@ function absoluteUrl(url: string | null | undefined): string {
 
 function toEmailHtml(html: string): string {
   // Make relative image src attributes absolute so email clients can load them
-  html = html.replace(/(<img[^>]*\s)src="(\/[^"]*)"/gi, `$1src="${SITE}$2"`);
+  html = html.replace(/(<img\b[^>]*?)src="(\/[^"]*)"/gi, `$1src="${SITE}$2"`);
   return html
     .replace(/ (class|id|data-[a-z-]+)="[^"]*"/gi, "")
     .replace(/<h[1-2]([^>]*)>/gi, '<h2$1 style="margin:0 0 20px;font-family:Georgia,\'Times New Roman\',serif;font-size:26px;font-weight:700;color:#fffef9;line-height:1.3;">')
@@ -23,7 +23,7 @@ function toEmailHtml(html: string): string {
     .replace(/<ul([^>]*)>/gi, '<ul$1 style="margin:0 0 22px;padding-left:28px;color:#c8d8e4;">')
     .replace(/<ol([^>]*)>/gi, '<ol$1 style="margin:0 0 22px;padding-left:28px;color:#c8d8e4;">')
     .replace(/<li([^>]*)>/gi, '<li$1 style="margin:0 0 10px;font-size:17px;line-height:1.8;">')
-    .replace(/<a([^>]*href="[^"]*")([^>]*)>/gi, '<a$1$2 style="color:#c8a97e;text-decoration:underline;">')
+    .replace(/<a([^>]*href="[^"]*")([^>]*)>/gi, '<a$1$2 target="_blank" style="color:#c8a97e;text-decoration:underline;">')
     .replace(/<hr([^>]*)>/gi, '<hr$1 style="border:none;border-top:1px solid rgba(200,169,126,0.2);margin:32px 0;">')
     .replace(/<code([^>]*)>/gi, '<code$1 style="font-family:monospace;font-size:14px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:3px;color:#c8d8e4;">')
     .replace(/<pre([^>]*)>/gi, '<pre$1 style="background:rgba(255,255,255,0.06);padding:20px;border-radius:6px;overflow-x:auto;margin:0 0 22px;font-size:14px;color:#c8d8e4;">')
