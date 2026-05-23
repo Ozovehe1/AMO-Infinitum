@@ -101,17 +101,32 @@ function StatCard({ label, value, sub, sparkValues, trend }: {
   );
 }
 
+/* ── Smart Y-axis ticks ── */
+function computeYAxis(dataMax: number): { ticks: number[]; axisMax: number } {
+  if (dataMax <= 0) return { ticks: [0, 1], axisMax: 1 };
+  if (dataMax <= 5) {
+    return { ticks: Array.from({ length: dataMax + 1 }, (_, i) => i), axisMax: dataMax };
+  }
+  const rawStep = dataMax / 4;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const step = ([1, 2, 5, 10].map(s => s * magnitude).find(s => s >= rawStep)) ?? magnitude * 10;
+  const axisMax = Math.ceil(dataMax / step) * step;
+  const ticks: number[] = [];
+  for (let v = 0; v <= axisMax + step * 0.01; v += step) ticks.push(Math.round(v));
+  return { ticks, axisMax };
+}
+
 function LineChart({ data }: { data: Record<string, number> }) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
   const values = Object.values(data);
-  const max = Math.max(...values, 1);
   const allZero = values.every(v => v === 0);
+  const { ticks: yTicks, axisMax } = computeYAxis(Math.max(...values, 0));
   const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const pts = values.map((v, i) => ({
     x: labels.length <= 1 ? PAD.l + iW / 2 : PAD.l + (i / (labels.length - 1)) * iW,
-    y: PAD.t + (1 - v / max) * iH,
+    y: PAD.t + (1 - v / axisMax) * iH,
   }));
   const lineD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
   const areaD = pts.length > 0 ? `${lineD} L${pts[pts.length-1].x.toFixed(1)},${(PAD.t+iH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD.t+iH).toFixed(1)} Z` : "";
@@ -131,12 +146,16 @@ function LineChart({ data }: { data: Record<string, number> }) {
           <stop offset="100%" stopColor="#c8a97e" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {[0, 0.25, 0.5, 0.75, 1].map(f => (
-        <g key={f}>
-          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke={f===0||f===1 ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
-          <text x={PAD.l-6} y={PAD.t+(1-f)*iH+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{Math.round(max*f)}</text>
-        </g>
-      ))}
+      {yTicks.map((v, i) => {
+        const y = PAD.t + (1 - v / axisMax) * iH;
+        const isEdge = i === 0 || i === yTicks.length - 1;
+        return (
+          <g key={v}>
+            <line x1={PAD.l} x2={W-PAD.r} y1={y} y2={y} stroke={isEdge ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
+            <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{v}</text>
+          </g>
+        );
+      })}
       <path d={areaD} fill="url(#lgSub)" />
       <path d={lineD} fill="none" stroke="#c8a97e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       {tipIdx !== null && <line x1={pts[tipIdx].x} x2={pts[tipIdx].x} y1={PAD.t} y2={PAD.t+iH} stroke="#c8a97e" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="3 3" />}
@@ -176,8 +195,8 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period" }: {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
   const values = Object.values(data);
-  const max = Math.max(...values, 1);
   const allZero = values.every(v => v === 0);
+  const { ticks: yTicks, axisMax } = computeYAxis(Math.max(...values, 0));
   const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const slot = iW / labels.length;
@@ -189,14 +208,18 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period" }: {
   );
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible", display: "block" }}>
-      {[0, 0.25, 0.5, 0.75, 1].map(f => (
-        <g key={f}>
-          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke={f===0||f===1 ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
-          <text x={PAD.l-6} y={PAD.t+(1-f)*iH+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{Math.round(max*f)}</text>
-        </g>
-      ))}
+      {yTicks.map((v, i) => {
+        const y = PAD.t + (1 - v / axisMax) * iH;
+        const isEdge = i === 0 || i === yTicks.length - 1;
+        return (
+          <g key={v}>
+            <line x1={PAD.l} x2={W-PAD.r} y1={y} y2={y} stroke={isEdge ? "rgba(13,31,60,0.1)" : "rgba(13,31,60,0.05)"} strokeWidth="1" />
+            <text x={PAD.l-6} y={y+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{v}</text>
+          </g>
+        );
+      })}
       {values.map((v, i) => {
-        const barH = (v / max) * iH;
+        const barH = (v / axisMax) * iH;
         const cx = PAD.l + i * slot + slot / 2;
         const bx = cx - barW / 2;
         const by = PAD.t + iH - barH;
