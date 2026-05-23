@@ -47,6 +47,11 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
         <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c8a97e" }}>
           {message}
         </p>
+        {state === "sent" && (
+          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
+            Don't see it? Check your spam folder.
+          </p>
+        )}
       </div>
     );
   }
