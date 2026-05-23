@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     const headers: Record<string, string> = {
       "Content-Type": "audio/mpeg",
       "Accept-Ranges": "bytes",
-      "Cache-Control": "public, max-age=86400",
+      "Cache-Control": "public, max-age=31536000, immutable",
     };
 
     // Forward Content-Length and Content-Range so browser knows file size / duration
