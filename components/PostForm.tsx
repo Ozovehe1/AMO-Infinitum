@@ -145,25 +145,40 @@ export default function PostForm({ post }: { post?: PostData }) {
   // Load AI chat + session history on mount
   useEffect(() => {
     const pid = postId ?? "new";
-    // Current active chat lives in localStorage (ephemeral working state is fine here)
+    // localStorage is the fast-access layer for the active chat
+    let restoredFromLocal = false;
     try {
       const chat = localStorage.getItem(`ai-chat-${pid}`);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (chat) setAiMessages(JSON.parse(chat));
+      if (chat) { setAiMessages(JSON.parse(chat)); restoredFromLocal = true; }
     } catch { /* ignore */ }
-    // Archived sessions come from the DB — permanent, only the author can delete them
+    // Archived sessions + DB backup of active chat
     fetch(`/api/ai/history?postId=${pid}`)
       .then(r => r.json())
-      .then(d => { if (Array.isArray(d.sessions)) setAiSessions(d.sessions); })
+      .then(d => {
+        if (Array.isArray(d.sessions)) setAiSessions(d.sessions);
+        // If localStorage was empty (cleared / different device), restore from DB backup
+        if (!restoredFromLocal && Array.isArray(d.current) && d.current.length > 0) {
+          setAiMessages(d.current);
+        }
+      })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist current chat to localStorage
+  // Persist current chat — localStorage for speed, DB for durability
   useEffect(() => {
     const key = `ai-chat-${postId ?? "new"}`;
-    if (aiMessages.length > 0) localStorage.setItem(key, JSON.stringify(aiMessages));
-    else localStorage.removeItem(key);
+    if (aiMessages.length > 0) {
+      localStorage.setItem(key, JSON.stringify(aiMessages));
+      // Fire-and-forget DB backup so chat survives browser clears and device switches
+      fetch("/api/ai/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: postId ?? "new", current: aiMessages }),
+      }).catch(() => {});
+    } else {
+      localStorage.removeItem(key);
+    }
   }, [aiMessages, postId]);
 
   // ── Session management ────────────────────────────────────
@@ -181,7 +196,12 @@ export default function PostForm({ post }: { post?: PostData }) {
     const preview = msgs.find(m => m.role === "user")?.content.slice(0, 90) ?? "Conversation";
     const session: ChatSession = { id: Date.now().toString(), createdAt: Date.now(), preview, messages: msgs };
     const updated = [session, ...sessions].slice(0, 30);
-    persistSessions(updated, pid);
+    // Save archived sessions and clear the active-chat DB backup in one request
+    fetch("/api/ai/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: pid ?? "new", sessions: updated, current: [] }),
+    }).catch(() => {});
     return updated;
   };
 
