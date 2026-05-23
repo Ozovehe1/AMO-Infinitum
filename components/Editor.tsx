@@ -1,5 +1,6 @@
 "use client";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -146,6 +147,20 @@ export default function Editor({
   if (compact) {
     return (
       <div>
+        <BubbleMenu editor={editor}           style={{ display: "flex", background: "#0d1f3c", borderRadius: 7, boxShadow: "0 4px 16px rgba(0,0,0,0.28)", padding: "3px 4px", gap: 2 }}>
+          {[
+            { label: "B",    title: "Bold",          style: { fontWeight: 700 },                        active: editor.isActive("bold"),      action: () => editor.chain().focus().toggleBold().run() },
+            { label: "I",    title: "Italic",         style: { fontStyle: "italic" },                    active: editor.isActive("italic"),    action: () => editor.chain().focus().toggleItalic().run() },
+            { label: "U",    title: "Underline",      style: { textDecoration: "underline" },            active: editor.isActive("underline"), action: () => editor.chain().focus().toggleUnderline().run() },
+            { label: "Stk",  title: "Strikethrough",  style: { textDecoration: "line-through" },         active: editor.isActive("strike"),    action: () => editor.chain().focus().toggleStrike().run() },
+            { label: "Mark", title: "Highlight",      style: {},                                         active: editor.isActive("highlight"), action: () => editor.chain().focus().toggleHighlight().run() },
+          ].map(({ label, title, style, active, action }) => (
+            <button key={title} onPointerDown={e => { e.preventDefault(); action(); }} title={title}
+              style={{ height: 30, minWidth: 30, padding: "0 6px", background: active ? "#2d7d9a" : "transparent", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 500, ...style }}>
+              {label}
+            </button>
+          ))}
+        </BubbleMenu>
         <div style={{ padding: "0 16px 80px", minHeight: 240 }}>
           <EditorContent editor={editor} />
         </div>
@@ -263,6 +278,22 @@ export default function Editor({
             style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem 0.25rem", fontSize: "1rem", cursor: "pointer", flexShrink: 0 }}>✕</button>
         </div>
       )}
+
+      <BubbleMenu editor={editor}         style={{ display: "flex", background: "#0d1f3c", borderRadius: 7, boxShadow: "0 4px 16px rgba(0,0,0,0.28)", padding: "3px 4px", gap: 2 }}>
+        {[
+          { label: "B",    title: "Bold",          style: { fontWeight: 700 } as React.CSSProperties,                        active: editor.isActive("bold"),      action: () => editor.chain().focus().toggleBold().run() },
+          { label: "I",    title: "Italic",         style: { fontStyle: "italic" } as React.CSSProperties,                    active: editor.isActive("italic"),    action: () => editor.chain().focus().toggleItalic().run() },
+          { label: "U",    title: "Underline",      style: { textDecoration: "underline" } as React.CSSProperties,            active: editor.isActive("underline"), action: () => editor.chain().focus().toggleUnderline().run() },
+          { label: "Stk",  title: "Strikethrough",  style: { textDecoration: "line-through" } as React.CSSProperties,         active: editor.isActive("strike"),    action: () => editor.chain().focus().toggleStrike().run() },
+          { label: "Mark", title: "Highlight",      style: {} as React.CSSProperties,                                         active: editor.isActive("highlight"), action: () => editor.chain().focus().toggleHighlight().run() },
+          { label: "Link", title: "Link",            style: {} as React.CSSProperties,                                         active: editor.isActive("link"),      action: openLinkBar },
+        ].map(({ label, title, style, active, action }) => (
+          <button key={title} onPointerDown={e => { e.preventDefault(); action(); }} title={title}
+            style={{ height: 30, minWidth: 30, padding: "0 6px", background: active ? "#2d7d9a" : "transparent", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", fontWeight: 500, ...style }}>
+            {label}
+          </button>
+        ))}
+      </BubbleMenu>
 
       <div style={{ padding: "1.25rem 1rem", minHeight: 280 }}>
         <EditorContent editor={editor} />
