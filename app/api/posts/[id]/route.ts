@@ -21,6 +21,8 @@ async function notifySubscribers(title: string, slug: string, excerpt: string, c
 
 type Params = { params: Promise<{ id: string }> };
 
+export const maxDuration = 30;
+
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const postId = parseInt(id);
