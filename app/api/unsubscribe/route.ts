@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+const base = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+
+async function unsubscribe(token: string | null) {
+  if (!token) return false;
+  await prisma.subscriber.deleteMany({ where: { token } });
+  return true;
+}
+
+// Clicked link in email
 export async function GET(req: NextRequest) {
   const token = new URL(req.url).searchParams.get("token");
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+  const ok = await unsubscribe(token);
+  return NextResponse.redirect(`${base}/?sub=${ok ? "unsubscribed" : "invalid"}`);
+}
 
-  if (!token) return NextResponse.redirect(`${base}/?sub=invalid`);
-
-  await prisma.subscriber.deleteMany({ where: { token } });
-
-  return NextResponse.redirect(`${base}/?sub=unsubscribed`);
+// Gmail / Apple Mail one-click unsubscribe (List-Unsubscribe-Post header)
+export async function POST(req: NextRequest) {
+  const token = new URL(req.url).searchParams.get("token");
+  await unsubscribe(token);
+  return new NextResponse(null, { status: 200 });
 }
