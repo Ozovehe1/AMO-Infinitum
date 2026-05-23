@@ -98,6 +98,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
   revalidatePath(`/blog/${post.slug}`);
 
   if (post.published && process.env.TRIGGER_SECRET_KEY) {
+    // Remove current audio entry so the player hides while new audio generates
+    await prisma.siteSettings.deleteMany({ where: { key: `audio_${post.slug}` } });
     try {
       await tasks.trigger("generate-post-audio", { slug: post.slug, title: post.title, content: post.content });
     } catch { /* Trigger.dev not configured */ }
