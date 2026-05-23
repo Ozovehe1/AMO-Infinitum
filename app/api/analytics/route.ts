@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   // Build cumulative subscriber totals per month end
   const newByMonth = buildMonthBuckets(monthCount);
   for (const sub of allSubscribers) {
-    const key = format(sub.createdAt, "MMM yy");
+    const key = format(sub.createdAt, "MMM ''yy");
     if (newByMonth[key] !== undefined) newByMonth[key]++;
   }
   let running = subscribersAtStart;
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
   const postsByMonth = buildMonthBuckets(monthCount);
   for (const post of allPosts) {
     if (!post.publishedAt) continue;
-    const key = format(post.publishedAt, "MMM yy");
+    const key = format(post.publishedAt, "MMM ''yy");
     if (postsByMonth[key] !== undefined) postsByMonth[key]++;
   }
 
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 function buildMonthBuckets(count: number): Record<string, number> {
   const buckets: Record<string, number> = {};
   for (let i = count - 1; i >= 0; i--) {
-    buckets[format(startOfMonth(subMonths(new Date(), i)), "MMM yy")] = 0;
+    buckets[format(startOfMonth(subMonths(new Date(), i)), "MMM ''yy")] = 0;
   }
   return buckets;
 }
