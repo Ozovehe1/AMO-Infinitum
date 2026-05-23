@@ -217,7 +217,8 @@ function LineChart({ data }: { data: Record<string, number> }) {
         let prevVisible: string | null = null;
         return labels.map((l, i) => {
           const isFirst = i === 0;
-          const isLast = i === labels.length - 1;
+          // Force last label only when it won't crowd the previous one
+          const isLast = i === labels.length - 1 && (labels.length - 1) % step >= Math.ceil(step / 2);
           if (!isFirst && !isLast && i % step !== 0) return null;
           const display = getDisplayLabel(l, prevVisible);
           prevVisible = l;
@@ -305,7 +306,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
           : Math.min(zeroY + barH + 8, H - 48);
         const step = getLabelStep(labels.length);
         const isFirst = i === 0;
-        const isLast = i === labels.length - 1;
+        const isLast = i === labels.length - 1 && (labels.length - 1) % step >= Math.ceil(step / 2);
         const showLabel = isFirst || isLast || i % step === 0;
         const prevVisibleLabel = showLabel ? (i >= step ? labels[i - step] : null) : null;
         const tipLabel = allowNegative
