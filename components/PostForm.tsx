@@ -1202,8 +1202,8 @@ export default function PostForm({ post }: { post?: PostData }) {
 
       <style>{`
         .mobile-write-wrap  { display: none; }
-        .desktop-write-wrap { display: block; transition: padding-right 0.25s ease; }
-        .desktop-write-wrap.ai-open { padding-right: min(380px, 35vw); max-width: none !important; }
+        .desktop-write-wrap { display: block; transition: margin-right 0.25s ease; }
+        .desktop-write-wrap.ai-open { margin-right: min(380px, 35vw); }
         .desktop-ai-panel   { display: flex; }
         @media (max-width: 768px) {
           .mobile-write-wrap  { display: flex !important; }
