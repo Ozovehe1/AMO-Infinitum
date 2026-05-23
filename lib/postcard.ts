@@ -111,8 +111,16 @@ export async function makePostcardBlob({
 
   const gap    = excerptLines.length > 0 ? Math.round(H * 0.022) : 0;
   const blockH = titleLines.length * TITLE_LINE_H + gap + excerptLines.length * EXCERPT_LINE_H;
-  // Bottom-anchor the text above the rule; clamp so it never rises above minTy.
-  let ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
+  // With a cover photo: bottom-anchor text above the rule (reads over darkened photo).
+  // Without a cover: vertically center the text block between the brand row and the rule.
+  let ty: number;
+  if (img) {
+    ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
+  } else {
+    const topBound    = Math.round(H * 0.22);
+    const bottomBound = ruleY - Math.round(H * 0.025);
+    ty = Math.max(topBound, Math.round((topBound + bottomBound - blockH) / 2));
+  }
 
   // Title
   ctx.fillStyle    = "#ffffff";
