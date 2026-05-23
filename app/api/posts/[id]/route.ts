@@ -58,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   let slug = existing.slug;
-  if (title !== existing.title) {
+  if (title !== existing.title && !existing.published) {
     const baseSlug = slugify(title);
     slug = baseSlug;
     let count = 0;
