@@ -3,7 +3,14 @@ import nodemailer from "nodemailer";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
 const FROM = `AMO Infinitum <${process.env.GMAIL_USER || "amoinfinitum@gmail.com"}>`;
 
+function absoluteUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  return url.startsWith("/") ? `${SITE}${url}` : url;
+}
+
 function toEmailHtml(html: string): string {
+  // Make relative image src attributes absolute so email clients can load them
+  html = html.replace(/(<img[^>]*\s)src="(\/[^"]*)"/gi, `$1src="${SITE}$2"`);
   return html
     .replace(/ (class|id|data-[a-z-]+)="[^"]*"/gi, "")
     .replace(/<h[1-2]([^>]*)>/gi, '<h2$1 style="margin:0 0 20px;font-family:Georgia,\'Times New Roman\',serif;font-size:26px;font-weight:700;color:#fffef9;line-height:1.3;">')
@@ -132,8 +139,8 @@ export async function sendNewPostNotifications(
 
     const coverRow = post.coverImage
       ? `<tr><td style="background:#0d1f3c;padding:0;line-height:0;">
-           <img src="${post.coverImage}" alt="${post.title}" width="640"
-                style="width:100%;max-width:640px;height:320px;object-fit:cover;display:block;">
+           <img src="${absoluteUrl(post.coverImage)}" alt="${post.title}" width="640"
+                style="width:100%;max-width:640px;height:auto;display:block;">
          </td></tr>`
       : "";
 
