@@ -10,10 +10,12 @@ export async function GET(req: NextRequest) {
   const range = (req.nextUrl.searchParams.get("range") || "3m") as "1m" | "3m" | "6m" | "12m";
   const monthCount = range === "1m" ? 1 : range === "3m" ? 3 : range === "6m" ? 6 : 12;
   const since = subMonths(new Date(), monthCount);
+  const prevSince = subMonths(new Date(), monthCount * 2);
 
   const [
     totalSubscribers,
     newSubscribers,
+    prevNewSubscribers,
     pendingSubscribers,
     allSubscribers,
     totalViews,
@@ -23,13 +25,14 @@ export async function GET(req: NextRequest) {
   ] = await Promise.all([
     prisma.subscriber.count({ where: { verified: true } }),
     prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since } } }),
+    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since } } }),
     prisma.subscriber.count({ where: { verified: false } }),
     prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: since } }, select: { createdAt: true } }),
     prisma.post.aggregate({ where: { published: true }, _sum: { views: true } }),
     prisma.post.findMany({
       where: { published: true },
       orderBy: { views: "desc" },
-      take: 5,
+      take: 10,
       select: { id: true, title: true, slug: true, views: true, publishedAt: true, readingTime: true },
     }),
     prisma.post.findMany({
@@ -60,6 +63,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     totalSubscribers,
     newSubscribers,
+    prevNewSubscribers,
     pendingSubscribers,
     totalViews: totalViews._sum.views ?? 0,
     totalPublished: await prisma.post.count({ where: { published: true } }),

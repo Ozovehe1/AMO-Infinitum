@@ -1,15 +1,28 @@
 "use client";
 import { useState, useEffect } from "react";
+import type { CSSProperties } from "react";
 
 type Range = "1m" | "3m" | "6m" | "12m";
+type SortKey = "views" | "readingTime" | "publishedAt" | "title";
+type SortDir = "asc" | "desc";
+
+interface TopPost {
+  id: number;
+  title: string;
+  slug: string;
+  views: number;
+  publishedAt: string | null;
+  readingTime: number;
+}
 
 interface AnalyticsData {
   totalSubscribers: number;
   newSubscribers: number;
+  prevNewSubscribers: number;
   pendingSubscribers: number;
   totalViews: number;
   totalPublished: number;
-  topPosts: { id: number; title: string; slug: string; views: number; publishedAt: string | null; readingTime: number }[];
+  topPosts: TopPost[];
   subscribersByMonth: Record<string, number>;
   postsByMonth: Record<string, number>;
   categories: { name: string; color: string; count: number }[];
@@ -22,85 +35,183 @@ const RANGES: { label: string; value: Range }[] = [
   { label: "12M", value: "12m" },
 ];
 
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+function Skeleton({ h = 40, r = 10 }: { h?: number; r?: number }) {
   return (
-    <div style={{ background: "#0d1f3c", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 10, padding: "1.25rem 1.5rem" }}>
-      <p style={{ margin: "0 0 4px", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1", letterSpacing: "0.1em", textTransform: "uppercase" }}>{label}</p>
-      <p style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: "2rem", fontWeight: 700, color: "#fffef9", lineHeight: 1 }}>{value}</p>
-      {sub && <p style={{ margin: "4px 0 0", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#c8a97e" }}>{sub}</p>}
+    <>
+      <div style={{
+        height: h, borderRadius: r,
+        background: "linear-gradient(90deg,#ede7dc 25%,#f5efe4 50%,#ede7dc 75%)",
+        backgroundSize: "600px 100%",
+        animation: "amo-shimmer 1.5s infinite linear",
+      }} />
+      <style>{`@keyframes amo-shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}`}</style>
+    </>
+  );
+}
+
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length < 2) return <div style={{ width: 72, height: 28 }} />;
+  const max = Math.max(...values, 1);
+  const allZero = values.every(v => v === 0);
+  const W = 72, H = 28;
+  const pts = values.map((v, i) => ({
+    x: (i / (values.length - 1)) * W,
+    y: H - (v / max) * (H - 4) - 2,
+  }));
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block", flexShrink: 0 }}>
+      {allZero
+        ? <line x1="0" y1={H / 2} x2={W} y2={H / 2} stroke="rgba(13,31,60,0.12)" strokeWidth="1.5" />
+        : <path d={d} fill="none" stroke="#c8a97e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
+    </svg>
+  );
+}
+
+function TrendBadge({ curr, prev }: { curr: number; prev: number }) {
+  if (prev === 0 && curr === 0) return <span style={{ fontSize: "0.72rem", color: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>no prior data</span>;
+  if (prev === 0) return <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#4a9e7a", fontFamily: "Inter,sans-serif" }}>↑ new growth</span>;
+  const pct = Math.round(((curr - prev) / prev) * 100);
+  const up = pct >= 0;
+  return (
+    <span style={{ fontSize: "0.72rem", fontWeight: 700, color: up ? "#4a9e7a" : "#e05c5c", fontFamily: "Inter,sans-serif" }}>
+      {up ? "↑" : "↓"} {Math.abs(pct)}% vs prev period
+    </span>
+  );
+}
+
+function StatCard({ label, value, sub, sparkValues, trend }: {
+  label: string; value: string | number; sub?: string;
+  sparkValues?: number[]; trend?: { curr: number; prev: number };
+}) {
+  return (
+    <div style={{ background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.68rem", color: "#8fa3b1", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>{label}</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+        <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "2.25rem", fontWeight: 800, color: "#0d1f3c", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</p>
+        {sparkValues && <Sparkline values={sparkValues} />}
+      </div>
+      <div style={{ minHeight: 18, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        {trend ? <TrendBadge curr={trend.curr} prev={trend.prev} /> : null}
+        {sub && <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>{sub}</span>}
+      </div>
     </div>
   );
 }
 
 function LineChart({ data }: { data: Record<string, number> }) {
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
   const values = Object.values(data);
   const max = Math.max(...values, 1);
-  const W = 500, H = 120, PAD = { t: 10, r: 10, b: 28, l: 28 };
-  const innerW = W - PAD.l - PAD.r;
-  const innerH = H - PAD.t - PAD.b;
+  const allZero = values.every(v => v === 0);
+  const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
+  const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const pts = values.map((v, i) => ({
-    x: PAD.l + (i / Math.max(labels.length - 1, 1)) * innerW,
-    y: PAD.t + (1 - v / max) * innerH,
+    x: labels.length <= 1 ? PAD.l + iW / 2 : PAD.l + (i / (labels.length - 1)) * iW,
+    y: PAD.t + (1 - v / max) * iH,
   }));
-  const pathD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const areaD = `${pathD} L${pts[pts.length - 1].x.toFixed(1)},${(PAD.t + innerH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD.t + innerH).toFixed(1)} Z`;
-
+  const lineD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const areaD = pts.length > 0 ? `${lineD} L${pts[pts.length-1].x.toFixed(1)},${(PAD.t+iH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD.t+iH).toFixed(1)} Z` : "";
+  if (allZero) return (
+    <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>No subscriber signups this period</p>
+    </div>
+  );
+  const tipIdx = activeIdx;
+  const tipX = tipIdx !== null ? Math.min(Math.max(pts[tipIdx].x, PAD.l + 38), W - PAD.r - 38) : 0;
+  const tipY = tipIdx !== null ? Math.max(4, pts[tipIdx].y - 52) : 0;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible", display: "block" }}>
       <defs>
-        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c8a97e" stopOpacity="0.25" />
+        <linearGradient id="lgSub" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#c8a97e" stopOpacity="0.2" />
           <stop offset="100%" stopColor="#c8a97e" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {/* Grid lines */}
       {[0, 0.5, 1].map(f => (
-        <line key={f} x1={PAD.l} x2={W - PAD.r} y1={PAD.t + (1 - f) * innerH} y2={PAD.t + (1 - f) * innerH}
-          stroke="rgba(200,169,126,0.08)" strokeWidth="1" />
+        <g key={f}>
+          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke="rgba(13,31,60,0.06)" strokeWidth="1" />
+          <text x={PAD.l-6} y={PAD.t+(1-f)*iH+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{Math.round(max*f)}</text>
+        </g>
       ))}
-      {/* Area fill */}
-      <path d={areaD} fill="url(#lineGrad)" />
-      {/* Line */}
-      <path d={pathD} fill="none" stroke="#c8a97e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      {/* Dots */}
+      <path d={areaD} fill="url(#lgSub)" />
+      <path d={lineD} fill="none" stroke="#c8a97e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {tipIdx !== null && <line x1={pts[tipIdx].x} x2={pts[tipIdx].x} y1={PAD.t} y2={PAD.t+iH} stroke="#c8a97e" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="3 3" />}
       {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#c8a97e" />
+        <circle key={i} cx={p.x} cy={p.y} r={tipIdx===i ? 5.5 : 3.5} fill={tipIdx===i ? "#fff" : "#c8a97e"} stroke="#c8a97e" strokeWidth={tipIdx===i ? 2.5 : 0} />
       ))}
-      {/* X labels */}
-      {labels.map((l, i) => (
-        <text key={i} x={pts[i].x} y={H - 4} textAnchor="middle"
-          style={{ fontSize: 9, fill: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>{l}</text>
-      ))}
+      {labels.map((l, i) => {
+        const every = labels.length > 8 ? 3 : labels.length > 5 ? 2 : 1;
+        if (i % every !== 0) return null;
+        return <text key={i} x={pts[i].x} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: tipIdx===i ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: tipIdx===i ? "bold" : "normal" }}>{l}</text>;
+      })}
+      {tipIdx !== null && (
+        <g style={{ pointerEvents: "none" }}>
+          <rect x={tipX-38} y={tipY} width={76} height={36} rx={5} fill="#0d1f3c" />
+          <text x={tipX} y={tipY+13} textAnchor="middle" style={{ fontSize: 9, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>{labels[tipIdx]}</text>
+          <text x={tipX} y={tipY+28} textAnchor="middle" style={{ fontSize: 13, fill: "#c8a97e", fontFamily: "Inter,sans-serif", fontWeight: "bold" }}>{values[tipIdx].toLocaleString()}</text>
+        </g>
+      )}
+      <rect x={PAD.l} y={PAD.t} width={iW} height={iH} fill="transparent" style={{ cursor: "crosshair" }}
+        onMouseMove={e => {
+          const svg = (e.currentTarget as SVGElement).closest("svg")!;
+          const rect = svg.getBoundingClientRect();
+          const svgX = ((e.clientX - rect.left) / rect.width) * W;
+          setActiveIdx(Math.max(0, Math.min(labels.length-1, Math.round(((svgX-PAD.l)/iW)*(labels.length-1)))));
+        }}
+        onMouseLeave={() => setActiveIdx(null)}
+      />
     </svg>
   );
 }
 
 function BarChart({ data }: { data: Record<string, number> }) {
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
   const values = Object.values(data);
   const max = Math.max(...values, 1);
-  const W = 500, H = 120, PAD = { t: 10, r: 10, b: 28, l: 28 };
-  const innerW = W - PAD.l - PAD.r;
-  const innerH = H - PAD.t - PAD.b;
-  const barW = Math.max(4, (innerW / labels.length) * 0.6);
-  const gap = innerW / labels.length;
-
+  const allZero = values.every(v => v === 0);
+  const W = 480, H = 160, PAD = { t: 20, r: 14, b: 36, l: 34 };
+  const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
+  const slot = iW / labels.length;
+  const barW = Math.max(6, slot * 0.55);
+  if (allZero) return (
+    <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>No posts published this period</p>
+    </div>
+  );
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible", display: "block" }}>
       {[0, 0.5, 1].map(f => (
-        <line key={f} x1={PAD.l} x2={W - PAD.r} y1={PAD.t + (1 - f) * innerH} y2={PAD.t + (1 - f) * innerH}
-          stroke="rgba(200,169,126,0.08)" strokeWidth="1" />
+        <g key={f}>
+          <line x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*iH} y2={PAD.t+(1-f)*iH} stroke="rgba(13,31,60,0.06)" strokeWidth="1" />
+          <text x={PAD.l-6} y={PAD.t+(1-f)*iH+4} textAnchor="end" style={{ fontSize: 9, fill: "#aab8c2", fontFamily: "Inter,sans-serif" }}>{Math.round(max*f)}</text>
+        </g>
       ))}
       {values.map((v, i) => {
-        const barH = (v / max) * innerH;
-        const x = PAD.l + i * gap + gap / 2 - barW / 2;
-        const y = PAD.t + innerH - barH;
+        const barH = (v / max) * iH;
+        const cx = PAD.l + i * slot + slot / 2;
+        const bx = cx - barW / 2;
+        const by = PAD.t + iH - barH;
+        const isActive = activeIdx === i;
+        const tipX = Math.min(Math.max(cx, PAD.l+38), W-PAD.r-38);
+        const tipY = Math.max(4, by - 52);
+        const showLabel = labels.length <= 8 || i % 2 === 0;
         return (
           <g key={i}>
-            <rect x={x} y={y} width={barW} height={barH} rx="2" fill="#c8a97e" opacity="0.8" />
-            <text x={x + barW / 2} y={H - 4} textAnchor="middle"
-              style={{ fontSize: 9, fill: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>{labels[i]}</text>
+            <rect x={bx} y={by} width={barW} height={Math.max(barH, 0)} rx={3}
+              fill={isActive ? "#b8966a" : "#c8a97e"} opacity={isActive ? 1 : 0.8}
+              style={{ cursor: "default", transition: "opacity 0.1s,fill 0.1s" }}
+              onMouseEnter={() => setActiveIdx(i)} onMouseLeave={() => setActiveIdx(null)} />
+            {showLabel && <text x={cx} y={H-8} textAnchor="middle" style={{ fontSize: 9, fill: isActive ? "#0d1f3c" : "#aab8c2", fontFamily: "Inter,sans-serif", fontWeight: isActive ? "bold" : "normal" }}>{labels[i]}</text>}
+            {isActive && v > 0 && (
+              <g style={{ pointerEvents: "none" }}>
+                <rect x={tipX-38} y={tipY} width={76} height={36} rx={5} fill="#0d1f3c" />
+                <text x={tipX} y={tipY+13} textAnchor="middle" style={{ fontSize: 9, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>{labels[i]}</text>
+                <text x={tipX} y={tipY+28} textAnchor="middle" style={{ fontSize: 13, fill: "#c8a97e", fontFamily: "Inter,sans-serif", fontWeight: "bold" }}>{v} post{v!==1?"s":""}</text>
+              </g>
+            )}
           </g>
         );
       })}
@@ -112,34 +223,71 @@ export default function AnalyticsPage() {
   const [range, setRange] = useState<Range>("3m");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("views");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   useEffect(() => {
     setLoading(true);
     fetch(`/api/analytics?range=${range}`)
       .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
+      .then(d => {
+        setData(d);
+        setLoading(false);
+        setUpdatedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+      })
       .catch(() => setLoading(false));
   }, [range]);
 
-  const cardStyle: React.CSSProperties = { background: "#0d1f3c", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 10, padding: "1.5rem" };
-  const sectionTitle: React.CSSProperties = { margin: "0 0 1rem", fontFamily: "'Playfair Display', serif", fontSize: "1rem", fontWeight: 700, color: "#fffef9" };
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir(key === "title" ? "asc" : "desc"); }
+  };
+
+  const sortedPosts = data ? [...data.topPosts].sort((a, b) => {
+    let av: string | number, bv: string | number;
+    if (sortKey === "title") { av = a.title.toLowerCase(); bv = b.title.toLowerCase(); }
+    else if (sortKey === "publishedAt") { av = a.publishedAt ?? ""; bv = b.publishedAt ?? ""; }
+    else { av = a[sortKey]; bv = b[sortKey]; }
+    if (av < bv) return sortDir === "asc" ? -1 : 1;
+    if (av > bv) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  }) : [];
+
+  const card: CSSProperties = { background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.5rem" };
+  const secLabel: CSSProperties = { margin: "0 0 1.25rem", fontFamily: "Inter,sans-serif", fontSize: "0.7rem", fontWeight: 700, color: "#0d1f3c", letterSpacing: "0.12em", textTransform: "uppercase" };
+
+  const TH = ({ col, children }: { col: SortKey; children: React.ReactNode }) => (
+    <th onClick={() => handleSort(col)} style={{
+      textAlign: "left", padding: "0 0.75rem 0.75rem 0",
+      fontFamily: "Inter,sans-serif", fontSize: "0.68rem",
+      color: sortKey === col ? "#0d1f3c" : "#8fa3b1",
+      letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700,
+      borderBottom: "2px solid rgba(13,31,60,0.08)", cursor: "pointer", userSelect: "none", whiteSpace: "nowrap",
+    }}>
+      {children}{sortKey === col ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
+    </th>
+  );
+
+  const sparkSubs = data ? Object.values(data.subscribersByMonth) : [];
+  const sparkPosts = data ? Object.values(data.postsByMonth) : [];
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 900, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
+    <div style={{ padding: "2rem 2rem 4rem", maxWidth: 980, margin: "0 auto" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
         <div>
-          <h1 style={{ margin: "0 0 4px", fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 700, color: "#fffef9" }}>Analytics</h1>
-          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1" }}>Your blog at a glance</p>
+          <h1 style={{ margin: "0 0 4px", fontFamily: "Inter,sans-serif", fontSize: "1.5rem", fontWeight: 800, color: "#0d1f3c", letterSpacing: "-0.02em" }}>Analytics</h1>
+          <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.78rem", color: "#8fa3b1" }}>
+            {updatedAt ? `Updated at ${updatedAt}` : "Your blog at a glance"}
+          </p>
         </div>
-        {/* Range selector */}
-        <div style={{ display: "flex", gap: "0.35rem", background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "4px" }}>
+        <div style={{ display: "flex", gap: "0.25rem", background: "rgba(13,31,60,0.07)", borderRadius: 8, padding: "4px" }}>
           {RANGES.map(r => (
             <button key={r.value} onClick={() => setRange(r.value)} style={{
-              background: range === r.value ? "#c8a97e" : "transparent",
-              color: range === r.value ? "#0d1f3c" : "#8fa3b1",
-              border: "none", borderRadius: 6, padding: "5px 14px",
-              fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 600,
+              background: range === r.value ? "#0d1f3c" : "transparent",
+              color: range === r.value ? "#fff" : "#8fa3b1",
+              border: "none", borderRadius: 5, padding: "5px 16px",
+              fontFamily: "Inter,sans-serif", fontSize: "0.78rem", fontWeight: 600,
               cursor: "pointer", transition: "all 0.15s",
             }}>{r.label}</button>
           ))}
@@ -147,54 +295,63 @@ export default function AnalyticsPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "4rem", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.875rem" }}>Loading…</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: "1rem" }}>
+            {[0,1,2,3].map(i => <Skeleton key={i} h={116} />)}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }} className="charts-grid">
+            <Skeleton h={240} /><Skeleton h={240} />
+          </div>
+          <Skeleton h={320} /><Skeleton h={180} />
+        </div>
       ) : !data ? (
-        <div style={{ textAlign: "center", padding: "4rem", color: "#e07070", fontFamily: "Inter, sans-serif", fontSize: "0.875rem" }}>Failed to load analytics.</div>
+        <div style={{ textAlign: "center", padding: "4rem", color: "#e05c5c", fontFamily: "Inter,sans-serif", fontSize: "0.875rem" }}>Failed to load analytics.</div>
       ) : (
         <>
-          {/* Summary cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "1.75rem" }}>
-            <StatCard label="Subscribers" value={data.totalSubscribers} sub={`+${data.newSubscribers} this period`} />
-            <StatCard label="Pending" value={data.pendingSubscribers} sub="awaiting confirmation" />
-            <StatCard label="Total Views" value={data.totalViews.toLocaleString()} sub="all time" />
-            <StatCard label="Published Posts" value={data.totalPublished} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+            <StatCard label="Subscribers" value={data.totalSubscribers.toLocaleString()}
+              sub={data.pendingSubscribers > 0 ? `${data.pendingSubscribers} pending` : "verified"} sparkValues={sparkSubs} />
+            <StatCard label="New this period" value={data.newSubscribers.toLocaleString()}
+              sparkValues={sparkSubs} trend={{ curr: data.newSubscribers, prev: data.prevNewSubscribers }} />
+            <StatCard label="Total Views" value={data.totalViews.toLocaleString()} sub="all time" sparkValues={sparkPosts} />
+            <StatCard label="Posts Published" value={data.totalPublished.toLocaleString()} sub="all time" sparkValues={sparkPosts} />
           </div>
 
-          {/* Charts row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.75rem" }}>
-            <div style={cardStyle}>
-              <p style={sectionTitle}>Subscriber Growth</p>
-              <LineChart data={data.subscribersByMonth} />
-            </div>
-            <div style={cardStyle}>
-              <p style={sectionTitle}>Publishing Activity</p>
-              <BarChart data={data.postsByMonth} />
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }} className="charts-grid">
+            <div style={card}><p style={secLabel}>Subscriber Growth</p><LineChart data={data.subscribersByMonth} /></div>
+            <div style={card}><p style={secLabel}>Publishing Activity</p><BarChart data={data.postsByMonth} /></div>
           </div>
 
-          {/* Top posts */}
-          <div style={{ ...cardStyle, marginBottom: "1.75rem" }}>
-            <p style={sectionTitle}>Top Posts by Views</p>
+          <div style={{ ...card, marginBottom: "1.5rem", overflowX: "auto" }}>
+            <p style={secLabel}>Top Posts by Views</p>
             {data.topPosts.length === 0 ? (
-              <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1" }}>No views recorded yet — readers need to spend 5+ seconds on a post.</p>
+              <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#8fa3b1" }}>No views yet — readers need to spend 5+ seconds on a post.</p>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
                 <thead>
                   <tr>
-                    {["Post", "Views", "Read time", "Published"].map(h => (
-                      <th key={h} style={{ textAlign: "left", padding: "0 0.75rem 0.75rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid rgba(200,169,126,0.1)", fontWeight: 600 }}>{h}</th>
-                    ))}
+                    <TH col="title">Post</TH>
+                    <TH col="views">Views</TH>
+                    <TH col="readingTime">Read time</TH>
+                    <TH col="publishedAt">Published</TH>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.topPosts.map((p, i) => (
-                    <tr key={p.id} style={{ borderBottom: i < data.topPosts.length - 1 ? "1px solid rgba(200,169,126,0.07)" : "none" }}>
-                      <td style={{ padding: "0.75rem 0.75rem 0.75rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#fffef9", maxWidth: 260 }}>
-                        <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer" style={{ color: "#fffef9", textDecoration: "none" }}>{p.title}</a>
+                  {sortedPosts.map((p, i) => (
+                    <tr key={p.id} style={{ borderBottom: i < sortedPosts.length-1 ? "1px solid rgba(13,31,60,0.06)" : "none" }} className="tr-hover">
+                      <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", maxWidth: 300 }}>
+                        <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer"
+                          style={{ fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#0d1f3c", textDecoration: "none", fontWeight: 500, lineHeight: 1.4, display: "block" }}>
+                          {p.title}
+                        </a>
                       </td>
-                      <td style={{ padding: "0.75rem 0.75rem 0.75rem 0", fontFamily: "'Playfair Display', serif", fontSize: "1rem", fontWeight: 700, color: "#c8a97e", whiteSpace: "nowrap" }}>{p.views.toLocaleString()}</td>
-                      <td style={{ padding: "0.75rem 0.75rem 0.75rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{p.readingTime} min</td>
-                      <td style={{ padding: "0.75rem 0 0.75rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}</td>
+                      <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", whiteSpace: "nowrap" }}>
+                        <span style={{ fontFamily: "Inter,sans-serif", fontSize: "1.1rem", fontWeight: 800, color: "#0d1f3c" }}>{p.views.toLocaleString()}</span>
+                      </td>
+                      <td style={{ padding: "0.85rem 0.75rem 0.85rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{p.readingTime} min</td>
+                      <td style={{ padding: "0.85rem 0 0.85rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
+                        {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -202,23 +359,25 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          {/* Categories */}
-          <div style={cardStyle}>
-            <p style={sectionTitle}>Posts by Category</p>
-            {data.categories.length === 0 ? (
-              <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1" }}>No categories yet.</p>
+          <div style={card}>
+            <p style={secLabel}>Posts by Category</p>
+            {data.categories.filter(c => c.count > 0).length === 0 ? (
+              <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#8fa3b1" }}>No categories yet.</p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {data.categories.filter(c => c.count > 0).sort((a, b) => b.count - a.count).map(c => {
                   const maxCount = Math.max(...data.categories.map(x => x.count), 1);
                   return (
                     <div key={c.name}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#fffef9" }}>{c.name}</span>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1" }}>{c.count} post{c.count !== 1 ? "s" : ""}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
+                          <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.85rem", color: "#0d1f3c", fontWeight: 500 }}>{c.name}</span>
+                        </div>
+                        <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", fontWeight: 600 }}>{c.count} post{c.count!==1?"s":""}</span>
                       </div>
-                      <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3 }}>
-                        <div style={{ height: "100%", width: `${(c.count / maxCount) * 100}%`, background: c.color, borderRadius: 3, transition: "width 0.4s ease" }} />
+                      <div style={{ height: 8, background: "rgba(13,31,60,0.06)", borderRadius: 4 }}>
+                        <div style={{ height: "100%", width: `${(c.count/maxCount)*100}%`, background: c.color, borderRadius: 4, transition: "width 0.5s ease" }} />
                       </div>
                     </div>
                   );
@@ -228,6 +387,10 @@ export default function AnalyticsPage() {
           </div>
         </>
       )}
+      <style>{`
+        .tr-hover:hover td { background: rgba(13,31,60,0.02); }
+        @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
     </div>
   );
 }
