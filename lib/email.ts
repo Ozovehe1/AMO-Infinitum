@@ -11,6 +11,18 @@ function absoluteUrl(url: string | null | undefined): string {
 function toEmailHtml(html: string): string {
   // Make relative image src attributes absolute so email clients can load them
   html = html.replace(/(<img\b[^>]*?)src="(\/[^"]*)"/gi, `$1src="${SITE}$2"`);
+
+  // Replace YouTube iframes (blocked by all email clients) with a clickable thumbnail
+  html = html.replace(
+    /<div[^>]*data-youtube-video[^>]*>[\s\S]*?<iframe[^>]*src="[^"]*\/embed\/([a-zA-Z0-9_-]{11})[^"]*"[\s\S]*?<\/iframe>[\s\S]*?<\/div>/gi,
+    (_, videoId) =>
+      `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px;width:100%;border-radius:6px;overflow:hidden;">` +
+      `<tr><td><a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" style="display:block;text-decoration:none;">` +
+      `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="Watch on YouTube" width="640" style="width:100%;max-width:100%;height:auto;display:block;">` +
+      `<div style="background:#0d1f3c;padding:10px 16px;text-align:center;border-top:1px solid rgba(200,169,126,0.2);">` +
+      `<span style="color:#c8a97e;font-family:Arial,sans-serif;font-size:13px;font-weight:600;">&#9654; Watch on YouTube</span>` +
+      `</div></a></td></tr></table>`
+  );
   return html
     .replace(/ (class|id|data-[a-z-]+)="[^"]*"/gi, "")
     .replace(/<h[1-2]([^>]*)>/gi, '<h2$1 style="margin:0 0 20px;font-family:Georgia,\'Times New Roman\',serif;font-size:26px;font-weight:700;color:#fffef9;line-height:1.3;">')
