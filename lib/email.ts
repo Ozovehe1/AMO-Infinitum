@@ -5,31 +5,21 @@ const FROM = `AMO Infinitum <${process.env.GMAIL_USER || "amoinfinitum@gmail.com
 
 function toEmailHtml(html: string): string {
   return html
-    // Strip class, id, data-* attributes from all tags
     .replace(/ (class|id|data-[a-z-]+)="[^"]*"/gi, "")
-    // Headings → styled
-    .replace(/<h[1-2]([^>]*)>/gi, '<h2$1 style="margin:0 0 16px;font-family:Georgia,\'Times New Roman\',serif;font-size:20px;font-weight:700;color:#fffef9;line-height:1.35;">')
-    .replace(/<h[3-6]([^>]*)>/gi, '<h3$1 style="margin:0 0 14px;font-family:Georgia,\'Times New Roman\',serif;font-size:17px;font-weight:700;color:#fffef9;line-height:1.4;">')
-    // Paragraphs
-    .replace(/<p([^>]*)>/gi, '<p$1 style="margin:0 0 18px;font-size:15px;color:#c8d8e4;line-height:1.8;">')
-    // Inline formatting
+    .replace(/<h[1-2]([^>]*)>/gi, '<h2$1 style="margin:0 0 20px;font-family:Georgia,\'Times New Roman\',serif;font-size:26px;font-weight:700;color:#fffef9;line-height:1.3;">')
+    .replace(/<h[3-6]([^>]*)>/gi, '<h3$1 style="margin:0 0 16px;font-family:Georgia,\'Times New Roman\',serif;font-size:20px;font-weight:700;color:#fffef9;line-height:1.35;">')
+    .replace(/<p([^>]*)>/gi, '<p$1 style="margin:0 0 22px;font-size:17px;color:#c8d8e4;line-height:1.85;">')
     .replace(/<strong([^>]*)>/gi, '<strong$1 style="color:#fffef9;font-weight:700;">')
     .replace(/<em([^>]*)>/gi, '<em$1 style="font-style:italic;">')
     .replace(/<u([^>]*)>/gi, '<u$1 style="text-decoration:underline;">')
-    // Blockquote
-    .replace(/<blockquote([^>]*)>/gi, '<blockquote$1 style="margin:0 0 18px;padding:12px 16px;border-left:3px solid #c8a97e;font-style:italic;color:#8fa3b1;">')
-    // Lists
-    .replace(/<ul([^>]*)>/gi, '<ul$1 style="margin:0 0 18px;padding-left:24px;color:#c8d8e4;">')
-    .replace(/<ol([^>]*)>/gi, '<ol$1 style="margin:0 0 18px;padding-left:24px;color:#c8d8e4;">')
-    .replace(/<li([^>]*)>/gi, '<li$1 style="margin:0 0 8px;font-size:15px;line-height:1.7;">')
-    // Links
+    .replace(/<blockquote([^>]*)>/gi, '<blockquote$1 style="margin:0 0 22px;padding:16px 20px;border-left:3px solid #c8a97e;font-style:italic;color:#8fa3b1;font-size:17px;">')
+    .replace(/<ul([^>]*)>/gi, '<ul$1 style="margin:0 0 22px;padding-left:28px;color:#c8d8e4;">')
+    .replace(/<ol([^>]*)>/gi, '<ol$1 style="margin:0 0 22px;padding-left:28px;color:#c8d8e4;">')
+    .replace(/<li([^>]*)>/gi, '<li$1 style="margin:0 0 10px;font-size:17px;line-height:1.8;">')
     .replace(/<a([^>]*href="[^"]*")([^>]*)>/gi, '<a$1$2 style="color:#c8a97e;text-decoration:underline;">')
-    // HR divider
-    .replace(/<hr([^>]*)>/gi, '<hr$1 style="border:none;border-top:1px solid rgba(200,169,126,0.2);margin:24px 0;">')
-    // Code
-    .replace(/<code([^>]*)>/gi, '<code$1 style="font-family:monospace;font-size:13px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:3px;color:#c8d8e4;">')
-    .replace(/<pre([^>]*)>/gi, '<pre$1 style="background:rgba(255,255,255,0.06);padding:16px;border-radius:6px;overflow-x:auto;margin:0 0 18px;font-size:13px;color:#c8d8e4;">')
-    // Remove images (too complex for email without re-hosting)
+    .replace(/<hr([^>]*)>/gi, '<hr$1 style="border:none;border-top:1px solid rgba(200,169,126,0.2);margin:32px 0;">')
+    .replace(/<code([^>]*)>/gi, '<code$1 style="font-family:monospace;font-size:14px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:3px;color:#c8d8e4;">')
+    .replace(/<pre([^>]*)>/gi, '<pre$1 style="background:rgba(255,255,255,0.06);padding:20px;border-radius:6px;overflow-x:auto;margin:0 0 22px;font-size:14px;color:#c8d8e4;">')
     .replace(/<img[^>]*>/gi, "");
 }
 
@@ -63,21 +53,21 @@ function baseLayout(body: string, footer: string) {
   <meta name="color-scheme" content="light dark">
   <title>AMO Infinitum</title>
 </head>
-<body style="margin:0;padding:0;background:#f5f0e8;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:17px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:32px 16px;">
     <tr><td align="center">
-      <table role="presentation" width="100%" style="max-width:560px;">
+      <table role="presentation" width="100%" style="max-width:640px;">
 
         <!-- Header -->
-        <tr><td style="background:#0d1f3c;border-radius:8px 8px 0 0;padding:28px 40px 20px;text-align:center;border-bottom:2px solid #c8a97e;">
-          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:600;color:#c8a97e;letter-spacing:0.02em;">
+        <tr><td style="background:#0d1f3c;border-radius:8px 8px 0 0;padding:32px 48px 24px;text-align:center;border-bottom:2px solid #c8a97e;">
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#c8a97e;letter-spacing:0.02em;">
             AMO <em style="color:#fffef9;font-style:italic;">Infinitum</em>
           </p>
-          <p style="margin:5px 0 0;font-size:11px;color:#8fa3b1;letter-spacing:0.1em;text-transform:uppercase;">On the infinitudes of life</p>
+          <p style="margin:6px 0 0;font-size:12px;color:#8fa3b1;letter-spacing:0.1em;text-transform:uppercase;">On the infinitudes of life</p>
         </td></tr>
 
         <!-- Body -->
-        <tr><td style="background:#0d1f3c;padding:32px 40px;">${body}</td></tr>
+        <tr><td style="background:#0d1f3c;padding:40px 48px;">${body}</td></tr>
 
         <!-- Footer -->
         <tr><td style="background:#091629;border-radius:0 0 8px 8px;padding:20px 40px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
