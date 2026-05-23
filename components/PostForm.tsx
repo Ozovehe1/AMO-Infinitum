@@ -848,22 +848,6 @@ export default function PostForm({ post }: { post?: PostData }) {
             {mobileEditor?.storage.characterCount.words() ?? 0} words
           </span>
 
-          {/* Post settings — opens publish/categories/cover sheet */}
-          <button
-            onClick={() => setSheetOpen(true)}
-            style={{
-              background: "rgba(13,31,60,0.06)",
-              border: "1px solid rgba(13,31,60,0.12)",
-              borderRadius: 20,
-              padding: "5px 14px",
-              display: "flex", alignItems: "center", gap: "0.35rem",
-              fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 600,
-              color: "#0d1f3c", cursor: "pointer",
-              letterSpacing: "0.01em",
-            }}
-          >
-            <span style={{ fontSize: "0.85rem" }}>⚙</span> Post Settings
-          </button>
         </div>
 
         {/* Body image hidden input */}
