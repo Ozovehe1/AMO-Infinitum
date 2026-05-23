@@ -68,7 +68,7 @@ function baseLayout(body: string, footer: string) {
         </td></tr>
 
         <!-- Body -->
-        <tr><td style="background:#0d1f3c;padding:40px 48px;">${body}</td></tr>
+        <tr><td style="background:#0d1f3c;padding:40px 24px;">${body}</td></tr>
 
         <!-- Footer -->
         <tr><td style="background:#091629;border-radius:0 0 8px 8px;padding:20px 40px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
@@ -156,7 +156,7 @@ export async function sendNewPostNotifications(
       <table role="presentation" width="100%" style="max-width:640px;">
 
         <!-- Header -->
-        <tr><td style="background:#0d1f3c;border-radius:${post.coverImage ? "8px 8px 0 0" : "8px 8px 0 0"};padding:32px 48px 24px;text-align:center;border-bottom:2px solid #c8a97e;">
+        <tr><td style="background:#0d1f3c;border-radius:8px 8px 0 0;padding:32px 24px 24px;text-align:center;border-bottom:2px solid #c8a97e;">
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#c8a97e;letter-spacing:0.02em;">
             AMO <em style="color:#fffef9;font-style:italic;">Infinitum</em>
           </p>
@@ -167,7 +167,7 @@ export async function sendNewPostNotifications(
         ${coverRow}
 
         <!-- Body -->
-        <tr><td style="background:#0d1f3c;padding:40px 48px;">
+        <tr><td style="background:#0d1f3c;padding:40px 24px;">
           <p style="margin:0 0 10px;font-size:11px;color:#8fa3b1;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">New essay</p>
           <h2 style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;color:#fffef9;line-height:1.3;">
             ${post.title}
@@ -184,7 +184,7 @@ export async function sendNewPostNotifications(
         </td></tr>
 
         <!-- Footer -->
-        <tr><td style="background:#091629;border-radius:0 0 8px 8px;padding:20px 48px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
+        <tr><td style="background:#091629;border-radius:0 0 8px 8px;padding:20px 24px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
           <p style="margin:0 0 10px;font-size:12px;color:#8fa3b1;line-height:1.6;">
             You received this because you subscribed to AMO Infinitum.
           </p>
