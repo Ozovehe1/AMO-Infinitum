@@ -78,7 +78,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   ]);
 
   const audioUrl = audioRow?.value
-    ? `/api/tts?slug=${slug}&v=${post.updatedAt.getTime()}`
+    ? `/api/tts?slug=${slug}&v=${audioRow.value.match(/-(\d+)\.mp3$/)?.[1] ?? "0"}`
     : null;
 
   const date = formatDate(post.publishedAt || post.createdAt);
