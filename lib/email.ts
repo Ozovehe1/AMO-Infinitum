@@ -20,7 +20,8 @@ function toEmailHtml(html: string): string {
     .replace(/<hr([^>]*)>/gi, '<hr$1 style="border:none;border-top:1px solid rgba(200,169,126,0.2);margin:32px 0;">')
     .replace(/<code([^>]*)>/gi, '<code$1 style="font-family:monospace;font-size:14px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:3px;color:#c8d8e4;">')
     .replace(/<pre([^>]*)>/gi, '<pre$1 style="background:rgba(255,255,255,0.06);padding:20px;border-radius:6px;overflow-x:auto;margin:0 0 22px;font-size:14px;color:#c8d8e4;">')
-    .replace(/<img[^>]*>/gi, "");
+    .replace(/<img([^>]*src="[^"]*")([^>]*)>/gi,
+      '<img$1$2 style="width:100%;max-width:100%;height:auto;display:block;margin:0 0 22px;border-radius:4px;">');
 }
 
 function transporter() {
@@ -129,43 +130,75 @@ export async function sendNewPostNotifications(
   for (const sub of subscribers) {
     const unsubUrl = `${SITE}/api/unsubscribe?token=${sub.token}`;
 
-    const coverBlock = post.coverImage
-      ? `<div style="margin:0 0 28px;border-radius:4px;overflow:hidden;">
-           <img src="${post.coverImage}" alt="" width="480"
-                style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:4px;">
-         </div>`
+    const coverRow = post.coverImage
+      ? `<tr><td style="background:#0d1f3c;padding:0;line-height:0;">
+           <img src="${post.coverImage}" alt="${post.title}" width="640"
+                style="width:100%;max-width:640px;height:320px;object-fit:cover;display:block;">
+         </td></tr>`
       : "";
 
     const contentBlock = post.content
       ? `<div style="margin:0 0 32px;">${toEmailHtml(post.content)}</div>`
       : post.excerpt
-        ? `<p style="font-size:15px;color:#c8d8e4;line-height:1.8;margin:0 0 32px;">${post.excerpt}</p>`
+        ? `<p style="font-size:17px;color:#c8d8e4;line-height:1.85;margin:0 0 32px;">${post.excerpt}</p>`
         : "";
 
-    const html = baseLayout(
-      `${coverBlock}
-      <p style="margin:0 0 10px;font-size:11px;color:#8fa3b1;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">New essay</p>
-      <h2 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#fffef9;line-height:1.35;">
-        ${post.title}
-      </h2>
-      ${contentBlock}
-      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
-        <tr><td style="background:#c8a97e;border-radius:5px;">
-          <a href="${postUrl}"
-             style="display:inline-block;padding:13px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#0d1f3c;text-decoration:none;letter-spacing:0.02em;">
-            View on the blog &rarr;
-          </a>
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${post.title} — AMO Infinitum</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" style="max-width:640px;">
+
+        <!-- Header -->
+        <tr><td style="background:#0d1f3c;border-radius:${post.coverImage ? "8px 8px 0 0" : "8px 8px 0 0"};padding:32px 48px 24px;text-align:center;border-bottom:2px solid #c8a97e;">
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:600;color:#c8a97e;letter-spacing:0.02em;">
+            AMO <em style="color:#fffef9;font-style:italic;">Infinitum</em>
+          </p>
+          <p style="margin:6px 0 0;font-size:12px;color:#8fa3b1;letter-spacing:0.1em;text-transform:uppercase;">On the infinitudes of life</p>
         </td></tr>
-      </table>`,
-      `<p style="margin:0 0 10px;font-size:12px;color:#8fa3b1;line-height:1.6;">
-        You received this because you subscribed to AMO Infinitum.
-      </p>
-      <p style="margin:0;font-size:12px;">
-        <a href="${unsubUrl}" style="color:#c8a97e;text-decoration:underline;font-weight:600;">Unsubscribe</a>
-        &nbsp;&nbsp;·&nbsp;&nbsp;
-        <a href="${SITE}" style="color:#8fa3b1;text-decoration:underline;">Visit the blog</a>
-      </p>`
-    );
+
+        <!-- Cover image full-width -->
+        ${coverRow}
+
+        <!-- Body -->
+        <tr><td style="background:#0d1f3c;padding:40px 48px;">
+          <p style="margin:0 0 10px;font-size:11px;color:#8fa3b1;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">New essay</p>
+          <h2 style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;color:#fffef9;line-height:1.3;">
+            ${post.title}
+          </h2>
+          ${contentBlock}
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
+            <tr><td style="background:#c8a97e;border-radius:5px;">
+              <a href="${postUrl}"
+                 style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:16px;font-weight:700;color:#0d1f3c;text-decoration:none;letter-spacing:0.02em;">
+                View on the blog &rarr;
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="background:#091629;border-radius:0 0 8px 8px;padding:20px 48px;border-top:1px solid rgba(200,169,126,0.15);text-align:center;">
+          <p style="margin:0 0 10px;font-size:12px;color:#8fa3b1;line-height:1.6;">
+            You received this because you subscribed to AMO Infinitum.
+          </p>
+          <p style="margin:0;font-size:12px;">
+            <a href="${unsubUrl}" style="color:#c8a97e;text-decoration:underline;font-weight:600;">Unsubscribe</a>
+            &nbsp;&nbsp;·&nbsp;&nbsp;
+            <a href="${SITE}" style="color:#8fa3b1;text-decoration:underline;">Visit the blog</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
 
     const text = `${post.title}\n\n${post.excerpt || ""}\n\nRead the full essay:\n${postUrl}\n\n---\nYou received this because you subscribed to AMO Infinitum.\nUnsubscribe: ${unsubUrl}`;
 
