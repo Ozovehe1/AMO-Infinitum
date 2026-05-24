@@ -151,8 +151,6 @@ function computeYAxisRange(dataMin: number, dataMax: number): { ticks: number[];
   return { ticks, axisMin, axisMax };
 }
 
-/* Bare SVG — no wrapper div. Chrome mobile computes height correctly from
-   the viewBox aspect ratio when the SVG is a normal block element. */
 function LineChart({ data }: { data: Record<string, number> }) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const labels = Object.keys(data);
@@ -171,9 +169,11 @@ function LineChart({ data }: { data: Record<string, number> }) {
     : "";
 
   if (allZero) return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
-      <text x={W / 2} y={H / 2} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 11, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>No subscribers yet</text>
-    </svg>
+    <div style={{ overflowX: "auto" }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+        <text x={W / 2} y={H / 2} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 11, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>No subscribers yet</text>
+      </svg>
+    </div>
   );
 
   const ti = activeIdx;
@@ -181,7 +181,8 @@ function LineChart({ data }: { data: Record<string, number> }) {
   const tipY = ti !== null ? Math.max(4, pts[ti].y - 52) : 0;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block", overflow: "hidden" }}>
+    <div style={{ overflowX: "auto" }}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
       <defs>
         <linearGradient id="lgSub" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#c8a97e" stopOpacity="0.2" />
@@ -235,6 +236,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
         onMouseLeave={() => setActiveIdx(null)}
       />
     </svg>
+    </div>
   );
 }
 
@@ -256,13 +258,16 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
   const zeroY = PAD.t + (1 - (0 - axisMin) / totalRange) * iH;
 
   if (allZero) return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
-      <text x={W / 2} y={H / 2} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 11, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>{emptyMsg}</text>
-    </svg>
+    <div style={{ overflowX: "auto" }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+        <text x={W / 2} y={H / 2} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 11, fill: "#8fa3b1", fontFamily: "Inter,sans-serif" }}>{emptyMsg}</text>
+      </svg>
+    </div>
   );
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block", overflow: "hidden" }}>
+    <div style={{ overflowX: "auto" }}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
       {ticks.map((v, i) => {
         const y = PAD.t + (1 - (v - axisMin) / totalRange) * iH;
         const isZero = v === 0 && allowNegative && axisMin < 0;
@@ -312,6 +317,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
         );
       })}
     </svg>
+    </div>
   );
 }
 
