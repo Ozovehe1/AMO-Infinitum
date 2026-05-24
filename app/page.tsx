@@ -48,6 +48,17 @@ export default async function Home({
   ]);
 
   const totalPages = Math.ceil(total / limit);
+
+  function getPaginationPages(current: number, tot: number): (number | "…")[] {
+    const set = new Set([1, Math.max(1, current - 1), current, Math.min(tot, current + 1), tot]);
+    const sorted = Array.from(set).sort((a, b) => a - b);
+    const result: (number | "…")[] = [];
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push("…");
+      result.push(sorted[i]);
+    }
+    return result;
+  }
   const featuredExcerpt = featured
     ? featured.excerpt || truncate(featured.content, 200)
     : "";
@@ -208,21 +219,38 @@ export default async function Home({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "4rem" }}>
-              {page > 1 && (
-                <Link href={`/?${category ? `category=${category}&` : ""}page=${page - 1}`} style={{ padding: "0.5rem 1.25rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.375rem", marginTop: "4rem", flexWrap: "wrap" }}>
+              {/* Prev */}
+              {page > 1 ? (
+                <Link href={`/?${category ? `category=${category}&` : ""}page=${page - 1}`} style={{ padding: "0.5rem 1rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
                   ← Prev
                 </Link>
+              ) : (
+                <span style={{ padding: "0.5rem 1rem", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 4, color: "rgba(13,31,60,0.3)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", userSelect: "none" }}>
+                  ← Prev
+                </span>
               )}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <Link key={p} href={`/?${category ? `category=${category}&` : ""}page=${p}`} style={{ padding: "0.5rem 0.875rem", border: "1px solid " + (p === page ? "#2d7d9a" : "rgba(13,31,60,0.2)"), background: p === page ? "#2d7d9a" : "transparent", borderRadius: 4, textDecoration: "none", color: p === page ? "#fff" : "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
-                  {p}
-                </Link>
-              ))}
-              {page < totalPages && (
-                <Link href={`/?${category ? `category=${category}&` : ""}page=${page + 1}`} style={{ padding: "0.5rem 1.25rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
+
+              {/* Page numbers with ellipsis */}
+              {getPaginationPages(page, totalPages).map((p, i) =>
+                p === "…" ? (
+                  <span key={`ellipsis-${i}`} style={{ padding: "0.5rem 0.25rem", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", userSelect: "none" }}>…</span>
+                ) : (
+                  <Link key={p} href={`/?${category ? `category=${category}&` : ""}page=${p}`} style={{ padding: "0.5rem 0.875rem", border: "1px solid " + (p === page ? "#2d7d9a" : "rgba(13,31,60,0.2)"), background: p === page ? "#2d7d9a" : "transparent", borderRadius: 4, textDecoration: "none", color: p === page ? "#fff" : "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: p === page ? 600 : 400 }}>
+                    {p}
+                  </Link>
+                )
+              )}
+
+              {/* Next */}
+              {page < totalPages ? (
+                <Link href={`/?${category ? `category=${category}&` : ""}page=${page + 1}`} style={{ padding: "0.5rem 1rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
                   Next →
                 </Link>
+              ) : (
+                <span style={{ padding: "0.5rem 1rem", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 4, color: "rgba(13,31,60,0.3)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", userSelect: "none" }}>
+                  Next →
+                </span>
               )}
             </div>
           )}
