@@ -88,7 +88,7 @@ function StatCard({ label, value, sub, sparkValues, trend }: {
   sparkValues?: number[]; trend?: { curr: number; prev: number };
 }) {
   return (
-    <div style={{ background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: 0, overflow: "hidden" }}>
+    <div style={{ background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: 0 }}>
       <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.68rem", color: "#8fa3b1", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>{label}</p>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
         <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "2.25rem", fontWeight: 800, color: "#0d1f3c", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</p>
