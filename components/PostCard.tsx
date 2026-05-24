@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate, firstSentence } from "@/lib/utils";
 
 interface Category {
   category: { id: number; name: string; slug: string; color: string };
@@ -25,7 +25,7 @@ interface PostCardProps {
 
 export default function PostCard({ post, featured = false }: PostCardProps) {
   const date = formatDate(post.publishedAt || post.createdAt);
-  const excerpt = post.excerpt || truncate(post.content, 160);
+  const excerpt = post.excerpt || firstSentence(post.content);
   const cats = post.categories.map(c => c.category);
 
   if (featured) {
@@ -42,9 +42,14 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
         }}
           className="post-card-hover"
         >
-          {post.coverImage && (
+          {post.coverImage ? (
             <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#1a4a5c" }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="post-card-img" />
+            </div>
+          ) : (
+            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#0d1f3c", position: "relative", display: "flex", alignItems: "flex-end", padding: "1.25rem 1.5rem" }}>
+              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
+              <span style={{ position: "relative", fontFamily: "Inter, sans-serif", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.22em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>AMO Infinitum</span>
             </div>
           )}
           <div style={{ padding: "1.5rem" }}>
@@ -114,9 +119,14 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
               <span>{post.readingTime} min read</span>
             </div>
           </div>
-          {post.coverImage && (
+          {post.coverImage ? (
             <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#1a4a5c" }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ) : (
+            <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#0d1f3c", position: "relative" }}>
+              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 60%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 55%)" }} />
+              <span style={{ position: "absolute", bottom: 6, left: 7, fontFamily: "Inter, sans-serif", fontSize: "0.48rem", fontWeight: 700, letterSpacing: "0.18em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>AMO</span>
             </div>
           )}
         </div>

@@ -32,3 +32,9 @@ export function truncate(text: string, length: number): string {
   if (plain.length <= length) return plain;
   return plain.slice(0, length).trimEnd() + "…";
 }
+
+export function firstSentence(text: string): string {
+  const plain = stripHtml(text);
+  const match = plain.match(/^.+?[.!?](?:\s|$)/);
+  return match ? match[0].trim() : truncate(plain, 200);
+}
