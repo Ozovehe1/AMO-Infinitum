@@ -423,7 +423,7 @@ export default function AnalyticsPage() {
 
       {loading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: "1rem" }}>
+          <div className="stats-grid">
             {[0,1,2,3].map(i => <Skeleton key={i} h={116} />)}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }} className="charts-grid">
@@ -435,7 +435,7 @@ export default function AnalyticsPage() {
         <div style={{ textAlign: "center", padding: "4rem", color: "#e05c5c", fontFamily: "Inter,sans-serif", fontSize: "0.875rem" }}>Failed to load analytics.</div>
       ) : (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+          <div className="stats-grid" style={{ marginBottom: "1.5rem" }}>
             <StatCard label="Subscribers" value={data.totalSubscribers.toLocaleString()}
               sub={data.pendingSubscribers > 0 ? `${data.pendingSubscribers} pending` : "verified"} sparkValues={sparkSubs} />
             <StatCard label="New this period" value={data.newSubscribers.toLocaleString()}
@@ -594,6 +594,9 @@ export default function AnalyticsPage() {
         </>
       )}
       <style>{`
+        .stats-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 540px)  { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1000px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
         .tr-hover:hover td { background: rgba(13,31,60,0.02); }
         @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr !important; } }
       `}</style>
