@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate, truncate, firstSentence } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -118,7 +118,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         </article>
 
         {/* Share buttons */}
-        <ShareButtons title={post.title} slug={post.slug} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} />
+        <ShareButtons title={post.title} slug={post.slug} excerpt={post.excerpt || firstSentence(post.content)} coverImage={post.coverImage || undefined} />
 
         {/* Category tags */}
         {post.categories.length > 0 && (

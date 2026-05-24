@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
 import { makePostcardBlob } from "@/lib/postcard";
+import { firstSentence } from "@/lib/utils";
 function timeSince(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
   if (s < 10) return "just now";
@@ -1385,7 +1386,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const [downloading, setDownloading] = useState(false);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
   const postUrl = `${origin}/blog/${slug}`;
-  const preview = excerpt || content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+  const preview = excerpt || firstSentence(content);
 
   const shareText = preview || title;
 
