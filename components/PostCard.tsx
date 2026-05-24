@@ -39,22 +39,55 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
           transition: "transform 0.25s, box-shadow 0.25s",
           cursor: "pointer",
           borderTop: "3px solid #c8a97e",
+          display: "flex",
+          flexDirection: "column",
         }}
           className="post-card-hover"
         >
           {post.coverImage ? (
-            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#1a4a5c" }}>
+            /* ── Real cover image ── */
+            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#1a4a5c", flexShrink: 0 }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="post-card-img" />
             </div>
           ) : (
-            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#0d1f3c", position: "relative", display: "flex", alignItems: "flex-end", padding: "1.25rem 1.5rem" }}>
+            /* ── Branded generated cover — shows title + excerpt, adaptive height ── */
+            <div style={{
+              background: "#0d1f3c",
+              position: "relative",
+              minHeight: 200,
+              display: "flex",
+              flexDirection: "column",
+              padding: "1.25rem 1.5rem 1rem",
+              gap: "0.625rem",
+              flexShrink: 0,
+            }}>
               <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
-              <span style={{ position: "relative", fontFamily: "Inter, sans-serif", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.22em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>AMO Infinitum</span>
+              {/* Brand row */}
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.2em", color: "rgba(200,169,126,0.8)", textTransform: "uppercase" }}>AMO INFINITUM</span>
+              </div>
+              {/* Title */}
+              <h2 style={{ position: "relative", fontFamily: "'Playfair Display', serif", fontSize: "1.3rem", fontWeight: 600, color: "#fffef9", lineHeight: 1.25, margin: 0, wordBreak: "break-word" }}>
+                {post.title}
+              </h2>
+              {/* Excerpt — clamped at 4 lines so grid rows stay reasonable */}
+              {excerpt && (
+                <p style={{ position: "relative", color: "rgba(200,169,126,0.72)", fontSize: "0.875rem", lineHeight: 1.6, margin: 0, fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {excerpt}
+                </p>
+              )}
+              {/* Bottom rule */}
+              <div style={{ position: "relative", marginTop: "auto", paddingTop: "0.75rem" }}>
+                <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+              </div>
             </div>
           )}
-          <div style={{ padding: "1.5rem" }}>
+
+          {/* ── Card footer ── */}
+          <div style={{ padding: post.coverImage ? "1.5rem" : "0.875rem 1.5rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "0.5rem" }}>
             {cats.length > 0 && (
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.6rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 {cats.map(c => (
                   <span key={c.id} style={{ background: c.color + "18", color: c.color, border: `1px solid ${c.color}30`, borderRadius: 20, padding: "0.15rem 0.75rem", fontSize: "0.68rem", fontFamily: "Inter, sans-serif", letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500 }}>
                     {c.name}
@@ -62,13 +95,18 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
                 ))}
               </div>
             )}
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.25, margin: "0 0 0.6rem", wordBreak: "break-word" }}>
-              {post.title}
-            </h2>
-            <p style={{ color: "#3a5068", fontSize: "0.92rem", lineHeight: 1.65, margin: "0 0 1rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
-              {excerpt}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            {/* Title + excerpt only for posts that have a real cover image */}
+            {post.coverImage && (
+              <>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.25, margin: "0.1rem 0 0", wordBreak: "break-word" }}>
+                  {post.title}
+                </h2>
+                <p style={{ color: "#3a5068", fontSize: "0.92rem", lineHeight: 1.65, margin: 0, fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {excerpt}
+                </p>
+              </>
+            )}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#8fa3b1", fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
                 <span>{date}</span>
                 <span>·</span>
