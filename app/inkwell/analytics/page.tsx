@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 import AdminNav from "@/components/AdminNav";
 
@@ -169,17 +169,6 @@ function computeYAxisRange(dataMin: number, dataMax: number): { ticks: number[];
 
 function LineChart({ data }: { data: Record<string, number> }) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [wrapH, setWrapH] = useState(0);
-  useLayoutEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const measure = () => setWrapH(Math.round(el.offsetWidth * 160 / 480));
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
   const labels = Object.keys(data);
   const values = Object.values(data);
   const allZero = values.every(v => v === 0);
@@ -201,8 +190,8 @@ function LineChart({ data }: { data: Record<string, number> }) {
   const tipX = tipIdx !== null ? Math.min(Math.max(pts[tipIdx].x, PAD.l + 38), W - PAD.r - 38) : 0;
   const tipY = tipIdx !== null ? Math.max(4, pts[tipIdx].y - 52) : 0;
   return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%", height: wrapH || H, overflow: "hidden" }}>
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
+    <div style={{ display: "grid", width: "100%", aspectRatio: `${W} / ${H}` }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ display: "block", width: "100%", height: "100%", overflow: "hidden" }}>
       <defs>
         <linearGradient id="lgSub" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#c8a97e" stopOpacity="0.2" />
@@ -266,17 +255,6 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
   allowNegative?: boolean;
 }) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [wrapH, setWrapH] = useState(0);
-  useLayoutEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const measure = () => setWrapH(Math.round(el.offsetWidth * 160 / 480));
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
   const labels = Object.keys(data);
   const values = Object.values(data);
   const allZero = values.every(v => v === 0);
@@ -301,8 +279,8 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
   );
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%", height: wrapH || H, overflow: "hidden" }}>
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
+    <div style={{ display: "grid", width: "100%", aspectRatio: `${W} / ${H}` }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ display: "block", width: "100%", height: "100%", overflow: "hidden" }}>
       {ticks.map((v, i) => {
         const y = PAD.t + (1 - (v - axisMin) / totalRange) * iH;
         const isZero = v === 0 && allowNegative && axisMin < 0;
@@ -461,7 +439,7 @@ export default function AnalyticsPage() {
         <div style={{ textAlign: "center", padding: "4rem", color: "#e05c5c", fontFamily: "Inter,sans-serif", fontSize: "0.875rem" }}>Failed to load analytics.</div>
       ) : (
         <>
-          <div className="stats-grid" style={{ marginBottom: "1.5rem" }}>
+          <div className="stats-grid" style={{ marginBottom: "1.5rem", position: "relative", zIndex: 1 }}>
             <StatCard label="Subscribers" value={data.totalSubscribers.toLocaleString()}
               sub={data.pendingSubscribers > 0 ? `${data.pendingSubscribers} pending` : "verified"} sparkValues={sparkSubs} />
             <StatCard label="New this period" value={data.newSubscribers.toLocaleString()}
