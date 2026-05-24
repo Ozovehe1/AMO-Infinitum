@@ -190,7 +190,8 @@ function LineChart({ data }: { data: Record<string, number> }) {
   const tipX = tipIdx !== null ? Math.min(Math.max(pts[tipIdx].x, PAD.l + 38), W - PAD.r - 38) : 0;
   const tipY = tipIdx !== null ? Math.max(4, pts[tipIdx].y - 52) : 0;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "hidden", display: "block" }}>
+    <div style={{ position: "relative", paddingTop: "33.3333%", overflow: "hidden" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible" }}>
       <defs>
         <linearGradient id="lgSub" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#c8a97e" stopOpacity="0.2" />
@@ -243,6 +244,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
         onMouseLeave={() => setActiveIdx(null)}
       />
     </svg>
+    </div>
   );
 }
 
@@ -277,7 +279,8 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
   );
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "hidden", display: "block" }}>
+    <div style={{ position: "relative", paddingTop: "33.3333%", overflow: "hidden" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible" }}>
       {ticks.map((v, i) => {
         const y = PAD.t + (1 - (v - axisMin) / totalRange) * iH;
         const isZero = v === 0 && allowNegative && axisMin < 0;
@@ -331,6 +334,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -378,7 +382,7 @@ export default function AnalyticsPage() {
   const totalPages = Math.ceil(sortedPosts.length / PAGE_SIZE);
   const pagedPosts = sortedPosts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const card: CSSProperties = { background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.5rem", overflow: "hidden" };
+  const card: CSSProperties = { background: "#fff", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 12, padding: "1.5rem" };
   const secLabel: CSSProperties = { margin: "0 0 1.25rem", fontFamily: "Inter,sans-serif", fontSize: "0.7rem", fontWeight: 700, color: "#0d1f3c", letterSpacing: "0.12em", textTransform: "uppercase" };
 
   const TH = ({ col, children }: { col: SortKey; children: React.ReactNode }) => (
