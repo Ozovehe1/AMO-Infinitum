@@ -190,7 +190,8 @@ function LineChart({ data }: { data: Record<string, number> }) {
   const tipX = tipIdx !== null ? Math.min(Math.max(pts[tipIdx].x, PAD.l + 38), W - PAD.r - 38) : 0;
   const tipY = tipIdx !== null ? Math.max(4, pts[tipIdx].y - 52) : 0;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", aspectRatio: `${W} / ${H}`, display: "block", overflow: "hidden" }}>
+    <div style={{ overflow: "hidden" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ width: "100%", height: "auto", display: "block" }}>
       <defs>
         <linearGradient id="lgSub" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#c8a97e" stopOpacity="0.2" />
@@ -243,6 +244,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
         onMouseLeave={() => setActiveIdx(null)}
       />
     </svg>
+    </div>
   );
 }
 
@@ -277,7 +279,8 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
   );
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", aspectRatio: `${W} / ${H}`, display: "block", overflow: "hidden" }}>
+    <div style={{ overflow: "hidden" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ width: "100%", height: "auto", display: "block" }}>
       {ticks.map((v, i) => {
         const y = PAD.t + (1 - (v - axisMin) / totalRange) * iH;
         const isZero = v === 0 && allowNegative && axisMin < 0;
@@ -331,6 +334,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
         );
       })}
     </svg>
+    </div>
   );
 }
 
