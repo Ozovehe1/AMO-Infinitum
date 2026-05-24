@@ -1474,7 +1474,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
                   </div>
                   <div>
                     <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
-                    {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{preview}</p>}
+                    {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: "0 0 12px", overflow: "hidden" }}>{preview}</p>}
                     <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                   </div>
                 </div>

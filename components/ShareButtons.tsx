@@ -141,7 +141,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
                         </div>
                         <div>
                           <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
-                          {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                          {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.5, margin: "0 0 12px", overflow: "hidden" }}>{excerpt}</p>}
                           <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                         </div>
                       </div>
