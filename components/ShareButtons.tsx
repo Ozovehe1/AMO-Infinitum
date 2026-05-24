@@ -113,28 +113,38 @@ export default function ShareButtons({ title, slug, excerpt, coverImage }: Share
 
                 {/* Inline CSS preview card */}
                 <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
-                  <div style={{ position: "relative", background: "#0d1f3c", width: "100%", overflow: "hidden",
-                    aspectRatio: coverImage ? "auto" : "1200/630" }}>
-                    {coverImage ? (
+                  {coverImage ? (
+                    /* ── With cover image — overlay layout ── */
+                    <div style={{ position: "relative", background: "#0d1f3c", width: "100%", overflow: "hidden" }}>
                       <img src={coverImage} alt="" style={{ display: "block", width: "100%", height: "auto" }} />
-                    ) : null}
-                    {/* Gradient — matches canvas: opaque at 10% from top so text at 40% is readable */}
-                    <div style={{ position: coverImage ? "absolute" : "relative", inset: 0,
-                      background: coverImage
-                        ? "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0.50) 65%, transparent 85%)"
-                        : "linear-gradient(to top, rgba(13,31,60,0.6) 0%, transparent 100%)" }} />
-                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
-                        <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0.50) 65%, transparent 85%)" }} />
+                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
+                          <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                        </div>
+                        <div>
+                          <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
+                          {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                          <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                        </div>
                       </div>
-                      <div>
-                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
-                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                    </div>
+                  ) : (
+                    /* ── No cover — adaptive height, content sizes the card ── */
+                    <div style={{ background: "#0d1f3c", width: "100%", overflow: "hidden", position: "relative", minHeight: 220, display: "flex", flexDirection: "column", padding: "clamp(14px,4%,28px) clamp(16px,5%,40px)", gap: "0.625rem" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#0d1f3c", flexShrink: 0 }}>A</div>
+                        <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(12px,3vw,16px)", fontWeight: 700, color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                      </div>
+                      <h2 style={{ position: "relative", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(20px,5vw,30px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: 0 }}>{title}</h2>
+                      {excerpt && <p style={{ position: "relative", fontFamily: "Georgia, serif", fontSize: "clamp(14px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                      <div style={{ position: "relative", marginTop: "auto", paddingTop: "0.75rem" }}>
                         <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
                       </div>
                     </div>
-                  </div>
+                  )}
                 </a>
 
                 <div style={{ padding: "0.875rem 1.5rem 2.5rem" }}>
