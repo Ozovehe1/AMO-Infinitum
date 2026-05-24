@@ -15,9 +15,7 @@ export async function GET(req: NextRequest) {
   ).catch(() => null);
   const fontData = (fontRes && fontRes.ok) ? await fontRes.arrayBuffer() : null;
 
-  const shortExcerpt = excerpt.length > 160
-    ? excerpt.slice(0, 160).trimEnd() + "…"
-    : excerpt;
+  const shortExcerpt = excerpt;
 
   const imageResponse = new ImageResponse(
     (
