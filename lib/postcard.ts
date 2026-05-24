@@ -9,9 +9,6 @@ export async function makePostcardBlob({
   excerpt?: string;
   coverImage?: string;
 }): Promise<Blob> {
-  const canvas = document.createElement("canvas");
-  const ctx    = canvas.getContext("2d")!;
-
   let img: HTMLImageElement | null = null;
 
   if (coverImage) {
@@ -23,50 +20,189 @@ export async function makePostcardBlob({
     } catch { /* fall through to navy fallback */ }
   }
 
-  if (img) {
-    const maxDim = 1200;
-    const scale  = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
-    canvas.width  = Math.round(img.naturalWidth  * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d")!;
 
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return img
+    ? drawWithCover(canvas, ctx, img, title, excerpt)
+    : drawBranded(canvas, ctx, title, excerpt);
+}
 
-    // Gradient: darkens quickly from 10% so title at ~29% sits on ~54% opacity,
-    // and excerpt below that is on 70%+ opacity — both readable in white.
-    const grad = ctx.createLinearGradient(0, canvas.height * 0.10, 0, canvas.height);
-    grad.addColorStop(0,    "rgba(0,0,0,0)");
-    grad.addColorStop(0.15, "rgba(0,0,0,0.50)");
-    grad.addColorStop(0.50, "rgba(0,0,0,0.75)");
-    grad.addColorStop(1,    "rgba(0,0,0,0.92)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  } else {
-    canvas.width  = 1200;
-    canvas.height = 630;
+// ── Cover-photo card (canvas sized to photo) ─────────────────────────────────
 
-    ctx.fillStyle = "#0d1f3c";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function drawWithCover(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  title: string,
+  excerpt?: string,
+): Promise<Blob> {
+  const maxDim = 1200;
+  const scale  = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+  canvas.width  = Math.round(img.naturalWidth  * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
 
-    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, "rgba(13,31,60,0.0)");
-    grad.addColorStop(1, "rgba(13,31,60,0.6)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const grad = ctx.createLinearGradient(0, canvas.height * 0.10, 0, canvas.height);
+  grad.addColorStop(0,    "rgba(0,0,0,0)");
+  grad.addColorStop(0.15, "rgba(0,0,0,0.50)");
+  grad.addColorStop(0.50, "rgba(0,0,0,0.75)");
+  grad.addColorStop(1,    "rgba(0,0,0,0.92)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const W   = canvas.width;
   const H   = canvas.height;
   const PAD = Math.round(W * PAD_RATIO);
 
-  // AMO badge (top-left) — large enough to read clearly in any share thumbnail
+  drawBadge(ctx, W, H, PAD, /* onCover */ true);
+
+  const ruleY = H - Math.round(H * 0.09);
+  ctx.fillStyle = "#c8a97e";
+  ctx.fillRect(PAD, ruleY, Math.round(W * 0.04), Math.round(H * 0.005));
+
+  const titleSize    = Math.round(W * (title.length > 60 ? 0.044 : 0.055));
+  const TITLE_LINE_H = Math.round(titleSize * 1.22);
+  const excerptSize  = Math.round(W * 0.040);
+  const EXCERPT_LINE_H = Math.round(excerptSize * 1.48);
+
+  ctx.font = `bold ${titleSize}px serif`;
+  const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);
+
+  let excerptLines: string[] = [];
+  if (excerpt) {
+    ctx.font = `${excerptSize}px sans-serif`;
+    const minTy       = Math.round(H * 0.28);
+    const gap         = Math.round(H * 0.022);
+    const maxBlockH   = ruleY - Math.round(H * 0.025) - minTy;
+    const titleBlock  = titleLines.length * TITLE_LINE_H + gap;
+    const excerptRoom = Math.max(0, maxBlockH - titleBlock);
+    const maxLines    = Math.min(8, Math.max(1, Math.floor(excerptRoom / EXCERPT_LINE_H)));
+    excerptLines = wrapText(ctx, excerpt, W - PAD * 2, maxLines);
+  }
+
+  const gap    = excerptLines.length > 0 ? Math.round(H * 0.022) : 0;
+  const blockH = titleLines.length * TITLE_LINE_H + gap + excerptLines.length * EXCERPT_LINE_H;
+  let ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
+
+  ctx.fillStyle    = "#ffffff";
+  ctx.font         = `bold ${titleSize}px serif`;
+  ctx.textAlign    = "left";
+  ctx.textBaseline = "top";
+  for (const line of titleLines) { ctx.fillText(line, PAD, ty); ty += TITLE_LINE_H; }
+
+  if (excerptLines.length > 0) {
+    ty += gap;
+    ctx.fillStyle = "rgba(255,255,255,0.88)";
+    ctx.font = `${excerptSize}px sans-serif`;
+    for (const line of excerptLines) { ctx.fillText(line, PAD, ty); ty += EXCERPT_LINE_H; }
+  }
+
+  return canvasToBlob(canvas);
+}
+
+// ── Branded navy card (dynamic height — grows to fit full excerpt) ─────────────
+
+function drawBranded(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  title: string,
+  excerpt?: string,
+): Promise<Blob> {
+  const W   = 1200;
+  const PAD = Math.round(W * PAD_RATIO);
+
+  const titleSize    = Math.round(W * (title.length > 60 ? 0.040 : 0.048));
+  const TITLE_LINE_H = Math.round(titleSize * 1.22);
+  const excerptSize  = Math.round(W * 0.028);
+  const EXCERPT_LINE_H = Math.round(excerptSize * 1.5);
+
+  // Measure text before committing canvas height
+  const mc = document.createElement("canvas").getContext("2d")!;
+  mc.font = `bold ${titleSize}px serif`;
+  const titleLines = wrapText(mc, title, W - PAD * 2, 4);
+
+  let excerptLines: string[] = [];
+  if (excerpt) {
+    mc.font = `${excerptSize}px sans-serif`;
+    excerptLines = wrapText(mc, excerpt, W - PAD * 2, 999); // no practical limit
+  }
+
+  const BADGE_AREA = 100;
+  const TEXT_GAP   = 20;
+  const RULE_PAD   = 40;
+
+  const textH =
+    titleLines.length * TITLE_LINE_H +
+    (excerptLines.length > 0 ? TEXT_GAP + excerptLines.length * EXCERPT_LINE_H : 0);
+
+  const H = Math.max(630, BADGE_AREA + textH + RULE_PAD);
+
+  canvas.width  = W;
+  canvas.height = H;
+
+  // Background
+  ctx.fillStyle = "#0d1f3c";
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial accents
+  const r1 = ctx.createRadialGradient(W * 0.8, H * 0.2, 0, W * 0.8, H * 0.2, W * 0.45);
+  r1.addColorStop(0, "rgba(45,125,154,0.40)");
+  r1.addColorStop(1, "rgba(45,125,154,0)");
+  ctx.fillStyle = r1;
+  ctx.fillRect(0, 0, W, H);
+
+  const r2 = ctx.createRadialGradient(W * 0.15, H * 0.85, 0, W * 0.15, H * 0.85, W * 0.4);
+  r2.addColorStop(0, "rgba(200,169,126,0.25)");
+  r2.addColorStop(1, "rgba(200,169,126,0)");
+  ctx.fillStyle = r2;
+  ctx.fillRect(0, 0, W, H);
+
+  drawBadge(ctx, W, H, PAD, /* onCover */ false);
+
+  // Text block
+  let ty = BADGE_AREA;
+
+  ctx.fillStyle    = "#ffffff";
+  ctx.font         = `bold ${titleSize}px serif`;
+  ctx.textAlign    = "left";
+  ctx.textBaseline = "top";
+  for (const line of titleLines) { ctx.fillText(line, PAD, ty); ty += TITLE_LINE_H; }
+
+  if (excerptLines.length > 0) {
+    ty += TEXT_GAP;
+    ctx.fillStyle = "rgba(200,169,126,0.85)";
+    ctx.font = `${excerptSize}px sans-serif`;
+    for (const line of excerptLines) { ctx.fillText(line, PAD, ty); ty += EXCERPT_LINE_H; }
+  }
+
+  // Gold rule
+  ctx.fillStyle = "#c8a97e";
+  ctx.fillRect(PAD, ty + 16, Math.round(W * 0.04), 4);
+
+  return canvasToBlob(canvas);
+}
+
+// ── Shared helpers ────────────────────────────────────────────────────────────
+
+function drawBadge(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  PAD: number,
+  onCover: boolean,
+) {
   const badgeR = Math.round(W * 0.030);
   const bx     = PAD + badgeR;
-  const by     = Math.round(H * 0.10);
+  const by     = onCover ? Math.round(H * 0.10) : 55;
+
   ctx.beginPath();
   ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
   ctx.fillStyle = "#c8a97e";
   ctx.fill();
-  ctx.fillStyle    = img ? "#000" : "#0d1f3c";
+
+  ctx.fillStyle    = onCover ? "#000" : "#0d1f3c";
   ctx.font         = `bold ${Math.round(badgeR * 1.1)}px sans-serif`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
@@ -77,76 +213,13 @@ export async function makePostcardBlob({
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
   ctx.fillText("AMO INFINITUM", bx + badgeR + Math.round(W * 0.016), by);
+}
 
-  // Gold rule near the bottom
-  const ruleY = H - Math.round(H * 0.09);
-  ctx.fillStyle = "#c8a97e";
-  ctx.fillRect(PAD, ruleY, Math.round(W * 0.04), Math.round(H * 0.005));
-
-  // Text sizes — excerpt is 56% of canvas width (large enough to fill ≥1/3 of card)
-  const titleSize    = Math.round(W * (title.length > 60 ? 0.044 : 0.055));
-  const TITLE_LINE_H = Math.round(titleSize * 1.22);
-  const excerptSize  = Math.round(W * 0.056);
-  const EXCERPT_LINE_H = Math.round(excerptSize * 1.48);
-
-  ctx.font = `bold ${titleSize}px serif`;
-  const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);
-
-  let excerptLines: string[] = [];
-  if (excerpt) {
-    ctx.font = `${excerptSize}px sans-serif`;
-
-    // minTy is the highest the text block may start (H*0.28 = gradient ~54% opacity,
-    // enough for large bold white title). Compute how many excerpt lines fit between
-    // minTy and the rule so the block never overflows.
-    const minTy       = Math.round(H * 0.28);
-    const gap         = Math.round(H * 0.022);
-    const maxBlockH   = ruleY - Math.round(H * 0.025) - minTy;
-    const titleBlock  = titleLines.length * TITLE_LINE_H + gap;
-    const excerptRoom = Math.max(0, maxBlockH - titleBlock);
-    const maxLines    = Math.min(5, Math.max(1, Math.floor(excerptRoom / EXCERPT_LINE_H)));
-
-    excerptLines = wrapText(ctx, excerpt, W - PAD * 2, maxLines);
-  }
-
-  const gap    = excerptLines.length > 0 ? Math.round(H * 0.022) : 0;
-  const blockH = titleLines.length * TITLE_LINE_H + gap + excerptLines.length * EXCERPT_LINE_H;
-  // With a cover photo: bottom-anchor text above the rule (reads over darkened photo).
-  // Without a cover: vertically center the text block between the brand row and the rule.
-  let ty: number;
-  if (img) {
-    ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
-  } else {
-    const topBound    = Math.round(H * 0.22);
-    const bottomBound = ruleY - Math.round(H * 0.025);
-    ty = Math.max(topBound, Math.round((topBound + bottomBound - blockH) / 2));
-  }
-
-  // Title
-  ctx.fillStyle    = "#ffffff";
-  ctx.font         = `bold ${titleSize}px serif`;
-  ctx.textAlign    = "left";
-  ctx.textBaseline = "top";
-  for (const line of titleLines) {
-    ctx.fillText(line, PAD, ty);
-    ty += TITLE_LINE_H;
-  }
-
-  // Excerpt — slightly dimmer than title to create visual hierarchy
-  if (excerptLines.length > 0) {
-    ty += gap;
-    ctx.fillStyle = "rgba(255,255,255,0.88)";
-    ctx.font      = `${excerptSize}px sans-serif`;
-    for (const line of excerptLines) {
-      ctx.fillText(line, PAD, ty);
-      ty += EXCERPT_LINE_H;
-    }
-  }
-
+function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
-      "image/png"
+      "image/png",
     );
   });
 }
@@ -165,7 +238,7 @@ function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
-  maxLines: number
+  maxLines: number,
 ): string[] {
   const words = text.split(" ");
   const lines: string[] = [];
@@ -177,6 +250,7 @@ function wrapText(
       lines.push(current);
       current = word;
       if (lines.length >= maxLines) {
+        // Truncate only when the limit is genuinely hit
         let last = lines[maxLines - 1];
         while (ctx.measureText(`${last}…`).width > maxWidth && last.length > 0) {
           last = last.slice(0, -1);
