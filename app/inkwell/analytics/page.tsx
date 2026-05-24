@@ -400,7 +400,7 @@ export default function AnalyticsPage() {
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
-    <div style={{ padding: "2rem 2rem 4rem", maxWidth: 980, margin: "0 auto" }}>
+    <div style={{ maxWidth: 980, width: "100%", paddingBottom: "4rem" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
         <div>
           <h1 style={{ margin: "0 0 4px", fontFamily: "Inter,sans-serif", fontSize: "1.5rem", fontWeight: 800, color: "#0d1f3c", letterSpacing: "-0.02em" }}>Analytics</h1>
