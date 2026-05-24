@@ -50,36 +50,27 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="post-card-img" />
             </div>
           ) : (
-            /* ── Branded generated cover — shows title + excerpt, adaptive height ── */
-            <div style={{
-              background: "#0d1f3c",
-              position: "relative",
-              minHeight: 200,
-              display: "flex",
-              flexDirection: "column",
-              padding: "1.25rem 1.5rem 1rem",
-              gap: "0.625rem",
-              flexShrink: 0,
-            }}>
+            /* ── Branded generated cover — same 16/9 ratio as real cover image ── */
+            <div style={{ aspectRatio: "16/9", background: "#0d1f3c", position: "relative", overflow: "hidden", flexShrink: 0 }}>
               <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
-              {/* Brand row */}
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.2em", color: "rgba(200,169,126,0.8)", textTransform: "uppercase" }}>AMO INFINITUM</span>
-              </div>
-              {/* Title */}
-              <h2 style={{ position: "relative", fontFamily: "'Playfair Display', serif", fontSize: "1.3rem", fontWeight: 600, color: "#fffef9", lineHeight: 1.25, margin: 0, wordBreak: "break-word" }}>
-                {post.title}
-              </h2>
-              {/* Excerpt — clamped at 4 lines so grid rows stay reasonable */}
-              {excerpt && (
-                <p style={{ position: "relative", color: "rgba(200,169,126,0.72)", fontSize: "0.875rem", lineHeight: 1.6, margin: 0, fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {excerpt}
-                </p>
-              )}
-              {/* Bottom rule */}
-              <div style={{ position: "relative", marginTop: "auto", paddingTop: "0.75rem" }}>
-                <div style={{ width: 28, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 1.25rem" }}>
+                {/* Brand row */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.18em", color: "rgba(200,169,126,0.8)", textTransform: "uppercase" }}>AMO INFINITUM</span>
+                </div>
+                {/* Title + excerpt + rule */}
+                <div>
+                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 600, color: "#fffef9", lineHeight: 1.25, margin: "0 0 0.35rem", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {post.title}
+                  </h2>
+                  {excerpt && (
+                    <p style={{ color: "rgba(200,169,126,0.75)", fontSize: "0.75rem", lineHeight: 1.5, margin: "0 0 0.5rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      {excerpt}
+                    </p>
+                  )}
+                  <div style={{ width: 22, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                </div>
               </div>
             </div>
           )}

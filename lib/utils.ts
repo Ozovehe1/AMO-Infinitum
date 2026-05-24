@@ -36,5 +36,7 @@ export function truncate(text: string, length: number): string {
 export function firstSentence(text: string): string {
   const plain = stripHtml(text);
   const match = plain.match(/^.+?[.!?](?:\s|$)/);
-  return match ? match[0].trim() : truncate(plain, 200);
+  if (match) return match[0].trim();
+  // No sentence-ending punctuation — return first paragraph, no character limit
+  return plain.split(/\n\n/)[0].trim() || plain.trim();
 }

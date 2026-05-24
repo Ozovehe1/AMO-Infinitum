@@ -1464,17 +1464,19 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
                 </div>
               </div>
             ) : (
-              /* ── No cover — adaptive height, content sizes the card ── */
-              <div style={{ width: "100%", background: "#0d1f3c", position: "relative", overflow: "hidden", minHeight: 220, display: "flex", flexDirection: "column", padding: "clamp(14px,4%,28px) clamp(16px,5%,40px)", gap: "0.625rem" }}>
+              /* ── No cover — same 1200/630 ratio, content overlay matches cover style ── */
+              <div style={{ width: "100%", background: "#0d1f3c", position: "relative", overflow: "hidden", aspectRatio: "1200/630" }}>
                 <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
-                <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                  <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
-                </div>
-                <h2 style={{ position: "relative", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: 0 }}>{title}</h2>
-                {preview && <p style={{ position: "relative", fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{preview}</p>}
-                <div style={{ position: "relative", marginTop: "auto", paddingTop: "0.75rem" }}>
-                  <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
+                    <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                  </div>
+                  <div>
+                    <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
+                    {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{preview}</p>}
+                    <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                  </div>
                 </div>
               </div>
             )}
