@@ -593,13 +593,6 @@ export default function AnalyticsPage() {
           </div>
         </>
       )}
-      <style>{`
-        .stats-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        @media (min-width: 540px)  { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1000px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-        .tr-hover:hover td { background: rgba(13,31,60,0.02); }
-        @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr !important; } }
-      `}</style>
     </div>
       </main>
     </div>
