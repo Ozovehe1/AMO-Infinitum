@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
+import AdminNav from "@/components/AdminNav";
 
 type Range = "1m" | "3m" | "6m" | "12m";
 type SortKey = "views" | "readingTime" | "publishedAt" | "title";
@@ -334,7 +335,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
 }
 
 export default function AnalyticsPage() {
-  const [range, setRange] = useState<Range>("3m");
+  const [range, setRange] = useState<Range>("1m");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -396,6 +397,9 @@ export default function AnalyticsPage() {
   const sparkPosts = data ? Object.values(data.postsByMonth) : [];
 
   return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+      <AdminNav />
+      <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
     <div style={{ padding: "2rem 2rem 4rem", maxWidth: 980, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
         <div>
@@ -593,6 +597,8 @@ export default function AnalyticsPage() {
         .tr-hover:hover td { background: rgba(13,31,60,0.02); }
         @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr !important; } }
       `}</style>
+    </div>
+      </main>
     </div>
   );
 }
