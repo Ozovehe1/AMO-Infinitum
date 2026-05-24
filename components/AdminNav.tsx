@@ -6,7 +6,6 @@ import { useState } from "react";
 
 const links = [
   { href: "/inkwell", label: "Dashboard", icon: "⌂" },
-  { href: "/inkwell/analytics", label: "Analytics", icon: "◎" },
   { href: "/inkwell/posts/new", label: "New Post", icon: "✎" },
   { href: "/inkwell/posts", label: "All Posts", icon: "≡" },
   { href: "/inkwell/categories", label: "Categories", icon: "◈" },
