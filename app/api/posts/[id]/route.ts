@@ -52,7 +52,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (isNaN(postId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const body = await req.json();
-  const { title, content, excerpt, coverImage, published, featured, categoryIds, showUpdatedNotice } = body;
+  const { title, content, excerpt, coverImage, published, featured, categoryIds, showUpdatedNotice, notifySubscribers: shouldNotify } = body;
 
   const existing = await prisma.post.findUnique({ where: { id: postId } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -110,7 +110,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     } catch { /* Trigger.dev not configured */ }
   }
 
-  if (wasPublished) {
+  if (wasPublished && shouldNotify !== false) {
     after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
   }
 

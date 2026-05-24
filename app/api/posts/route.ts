@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { title, content, excerpt, coverImage, published, featured, categoryIds } = body;
+  const { title, content, excerpt, coverImage, published, featured, categoryIds, notifySubscribers: shouldNotify } = body;
 
   if (!title) {
     return NextResponse.json({ error: "Title required" }, { status: 400 });
@@ -103,7 +103,9 @@ export async function POST(req: NextRequest) {
 
   if (post.published) {
     await triggerAudio(post.slug, post.title, post.content);
-    after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
+    if (shouldNotify !== false) {
+      after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
+    }
   }
 
   return NextResponse.json(post, { status: 201 });

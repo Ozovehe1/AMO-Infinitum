@@ -70,6 +70,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [published,          setPublished]          = useState(post?.published || false);
   const [featured,           setFeatured]           = useState(post?.featured || false);
   const [showUpdatedNotice,  setShowUpdatedNotice]  = useState(post?.showUpdatedNotice || false);
+  const [notifySubscribers, setNotifySubscribers] = useState(true);
   const [selectedCats, setSelectedCats] = useState<number[]>(
     post?.categories?.map(c => c.category.id) || []
   );
@@ -305,7 +306,7 @@ export default function PostForm({ post }: { post?: PostData }) {
     if (options.silent) setAutoSaving(true);
     else { setError(""); setSaving(true); }
 
-    const body = { title, content, excerpt, coverImage, published: options.publish ?? published, featured, showUpdatedNotice, categoryIds: selectedCats };
+    const body = { title, content, excerpt, coverImage, published: options.publish ?? published, featured, showUpdatedNotice, categoryIds: selectedCats, notifySubscribers };
     const url    = postId ? `/api/posts/${postId}` : "/api/posts";
     const method = postId ? "PUT" : "POST";
 
@@ -345,7 +346,7 @@ export default function PostForm({ post }: { post?: PostData }) {
       if (options.silent) setAutoSaving(false);
       else setSaving(false);
     }
-  }, [title, content, excerpt, coverImage, published, featured, showUpdatedNotice, selectedCats, postId, router]);
+  }, [title, content, excerpt, coverImage, published, featured, showUpdatedNotice, selectedCats, postId, router, notifySubscribers]);
 
   // Always keep a ref to the latest performSave so the unmount cleanup can use it
   const performSaveRef = useRef(performSave);
@@ -988,7 +989,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
           {/* Sidebar */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", position: "sticky", top: "1.5rem" }}>
-            <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug }} />
+            <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers }} />
             {/* AI toggle */}
             <button
               onClick={() => setAiOpen(o => !o)}
@@ -1169,6 +1170,17 @@ export default function PostForm({ post }: { post?: PostData }) {
                 <div style={{ background: "#e0707018", border: "1px solid #e0707030", color: "#c04040", borderRadius: 8, padding: "0.75rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>{error}</div>
               )}
 
+              {/* Notify subscribers toggle — only relevant on first publish */}
+              {!published && (
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
+                  <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 18, height: 18, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
+                  <div>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Notify subscribers</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Send email to subscribers on publish</span>
+                  </div>
+                </label>
+              )}
+
               {/* Publish actions */}
               <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", paddingTop: "0.25rem" }}>
                 <button onClick={() => save(true)} disabled={saving} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 12, padding: "1rem", fontFamily: "Inter, sans-serif", fontSize: "1rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
@@ -1244,9 +1256,10 @@ interface SettingsProps {
   selectedCats: number[]; toggleCat: (id: number) => void;
   inputStyle: React.CSSProperties; labelStyle: React.CSSProperties;
   postSlug?: string;
+  notifySubscribers: boolean; setNotifySubscribers: (v: boolean) => void;
 }
 
-function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug }: SettingsProps) {
+function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers }: SettingsProps) {
   return (
     <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 10, overflow: "hidden" }}>
       <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid rgba(13,31,60,0.07)", background: "#f5f0e8" }}>
@@ -1275,6 +1288,17 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
             <div>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Show readers the edit date</span>
+            </div>
+          </label>
+        )}
+
+        {/* Notify subscribers toggle — only relevant on first publish */}
+        {!published && (
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", cursor: "pointer" }}>
+            <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
+            <div>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Notify subscribers</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Send email on publish</span>
             </div>
           </label>
         )}
