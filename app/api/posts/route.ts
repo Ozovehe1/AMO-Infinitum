@@ -15,12 +15,12 @@ async function triggerAudio(slug: string, title: string, content: string) {
   } catch { /* Trigger.dev not configured — audio skipped */ }
 }
 
-async function notifySubscribers(title: string, slug: string, excerpt: string, coverImage: string | null, content: string) {
+async function notifySubscribers(userId: number, title: string, slug: string, excerpt: string, coverImage: string | null, content: string) {
   const hasBrevo = !!(process.env.BREVO_SMTP_LOGIN && process.env.BREVO_SMTP_PASSWORD);
   const hasGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
   if (!hasBrevo && !hasGmail) return;
   const subscribers = await prisma.subscriber.findMany({
-    where: { verified: true, unsubscribedAt: null },
+    where: { userId, verified: true, unsubscribedAt: null },
     select: { email: true, token: true },
   });
   if (subscribers.length === 0) return;
@@ -34,21 +34,31 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get("category");
   const admin = searchParams.get("admin") === "true";
   const search = searchParams.get("search") || "";
+  const username = searchParams.get("username");
 
   const session = admin ? await getAdminSession() : null;
   const isAdmin = !!session;
 
+  // Determine which user's posts to return
+  let userId: number | undefined;
+  if (isAdmin && session) {
+    userId = session.userId;
+  } else if (username) {
+    const user = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+    if (!user) return NextResponse.json({ posts: [], total: 0, page, limit, pages: 0 });
+    userId = user.id;
+  }
+
   const where: Record<string, unknown> = {};
+  if (userId !== undefined) where.userId = userId;
   if (!isAdmin) where.published = true;
   if (category) where.categories = { some: { category: { slug: category } } };
-  if (search) where.title = { contains: search };
+  if (search) where.title = { contains: search, mode: "insensitive" };
 
   const [posts, total] = await Promise.all([
     prisma.post.findMany({
       where,
-      include: {
-        categories: { include: { category: true } },
-      },
+      include: { categories: { include: { category: true } } },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
@@ -66,17 +76,16 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { title, content, excerpt, coverImage, published, featured, categoryIds, notifySubscribers: shouldNotify } = body;
 
-  if (!title) {
-    return NextResponse.json({ error: "Title required" }, { status: 400 });
-  }
+  if (!title) return NextResponse.json({ error: "Title required" }, { status: 400 });
   if (published && (!content || content === "<p></p>")) {
     return NextResponse.json({ error: "Content required to publish" }, { status: 400 });
   }
 
+  const { userId } = session;
   const baseSlug = slugify(title) || "post";
   let slug = baseSlug;
   let count = 0;
-  while (await prisma.post.findUnique({ where: { slug } })) {
+  while (await prisma.post.findUnique({ where: { userId_slug: { userId, slug } } })) {
     count++;
     slug = `${baseSlug}-${count}`;
   }
@@ -85,6 +94,7 @@ export async function POST(req: NextRequest) {
 
   const post = await prisma.post.create({
     data: {
+      userId,
       title,
       slug,
       content,
@@ -104,7 +114,7 @@ export async function POST(req: NextRequest) {
   if (post.published) {
     await triggerAudio(post.slug, post.title, post.content);
     if (shouldNotify !== false) {
-      after(() => notifySubscribers(post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
+      after(() => notifySubscribers(userId, post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
     }
   }
 

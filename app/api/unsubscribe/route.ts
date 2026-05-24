@@ -4,22 +4,26 @@ import { prisma } from "@/lib/db";
 const base = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
 
 async function unsubscribe(token: string | null) {
-  if (!token) return false;
-  const result = await prisma.subscriber.updateMany({
-    where: { token, unsubscribedAt: null },
+  if (!token) return null;
+  const subscriber = await prisma.subscriber.findUnique({
+    where: { token },
+    include: { user: { select: { username: true } } },
+  });
+  if (!subscriber || subscriber.unsubscribedAt) return subscriber;
+  await prisma.subscriber.update({
+    where: { token },
     data: { unsubscribedAt: new Date() },
   });
-  return result.count > 0;
+  return subscriber;
 }
 
-// Clicked link in email
 export async function GET(req: NextRequest) {
   const token = new URL(req.url).searchParams.get("token");
-  const ok = await unsubscribe(token);
-  return NextResponse.redirect(`${base}/?sub=${ok ? "unsubscribed" : "invalid"}`);
+  const sub = await unsubscribe(token);
+  if (!sub) return NextResponse.redirect(`${base}/?sub=invalid`);
+  return NextResponse.redirect(`${base}/${sub.user.username}?sub=unsubscribed`);
 }
 
-// Gmail / Apple Mail one-click unsubscribe (List-Unsubscribe-Post header)
 export async function POST(req: NextRequest) {
   const token = new URL(req.url).searchParams.get("token");
   await unsubscribe(token);

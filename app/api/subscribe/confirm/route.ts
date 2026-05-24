@@ -7,12 +7,16 @@ export async function GET(req: NextRequest) {
 
   if (!token) return NextResponse.redirect(`${base}/?sub=invalid`);
 
-  const subscriber = await prisma.subscriber.findUnique({ where: { token } });
+  const subscriber = await prisma.subscriber.findUnique({
+    where: { token },
+    include: { user: { select: { username: true } } },
+  });
   if (!subscriber) return NextResponse.redirect(`${base}/?sub=invalid`);
 
   if (!subscriber.verified) {
     await prisma.subscriber.update({ where: { token }, data: { verified: true } });
   }
 
-  return NextResponse.redirect(`${base}/?sub=confirmed`);
+  const blogBase = `${base}/${subscriber.user.username}`;
+  return NextResponse.redirect(`${blogBase}?sub=confirmed`);
 }
