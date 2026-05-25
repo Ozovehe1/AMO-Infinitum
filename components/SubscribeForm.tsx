@@ -31,7 +31,7 @@ export default function SubscribeForm({ dark = false, username, siteName }: { da
   };
 
   const textColor  = dark ? "#fffef9" : "#0d1f3c";
-  const subColor   = dark ? "#8fa3b1" : "#3a5068";
+  const subColor   = dark ? "rgba(255,254,249,0.55)" : "#3a5068";
   const inputBg    = dark ? "rgba(255,254,249,0.06)" : "#fffef9";
   const inputBorder = dark ? "rgba(200,169,126,0.25)" : "rgba(13,31,60,0.18)";
 
@@ -48,7 +48,7 @@ export default function SubscribeForm({ dark = false, username, siteName }: { da
           {message}
         </p>
         {state === "sent" && (
-          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
+          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: subColor }}>
             Don&apos;t see it? Check your spam folder.
           </p>
         )}
