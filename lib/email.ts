@@ -101,7 +101,7 @@ function baseLayout(body: string, footer: string) {
 }
 
 export async function sendVerificationEmail(email: string, username: string, token: string) {
-  const verifyUrl = `${SITE}/verify-email?token=${token}`;
+  const verifyUrl = `${SITE}/api/auth/verify-email?token=${token}`;
   const html = baseLayout(
     `<p style="margin:0 0 8px;font-size:13px;color:#8fa3b1;letter-spacing:0.08em;text-transform:uppercase;">Welcome to AMO Infinitum</p>
      <h2 style="margin:0 0 20px;font-family:Georgia,serif;font-size:26px;font-weight:700;color:#fffef9;line-height:1.3;">Verify your email</h2>
