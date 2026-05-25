@@ -16,7 +16,7 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
   );
 }
 
-function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () => void; onDone: () => void }) {
+function DeleteModal({ user, onClose, onDone, onUnauth }: { user: UserStat; onClose: () => void; onDone: () => void; onUnauth: () => void }) {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,6 +25,7 @@ function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () =>
     if (confirm !== `@${user.username}`) { setError("Username doesn't match"); return; }
     setLoading(true);
     const res = await fetch(`/api/manager/user/${user.id}`, { method: "DELETE" });
+    if (res.status === 401) { onUnauth(); return; }
     if (!res.ok) { setError((await res.json()).error || "Failed to delete"); setLoading(false); return; }
     onDone();
   };
@@ -67,7 +68,7 @@ function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () =>
   );
 }
 
-function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) {
+function EmailModal({ user, onClose, onUnauth }: { user: UserStat; onClose: () => void; onUnauth: () => void }) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,7 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subject: subject.trim(), message: message.trim() }),
     });
+    if (res.status === 401) { onUnauth(); return; }
     if (!res.ok) { setError((await res.json()).error || "Failed to send"); setLoading(false); return; }
     setSent(true);
   };
@@ -169,7 +171,7 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
 }
 
 export default function BlogsPage() {
-  const { stats, refresh } = useManager();
+  const { stats, refresh, logout } = useManager();
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<UserStat | null>(null);
   const [emailTarget, setEmailTarget] = useState<UserStat | null>(null);
@@ -271,10 +273,11 @@ export default function BlogsPage() {
           user={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onDone={async () => { await refresh(); setDeleteTarget(null); }}
+          onUnauth={() => { setDeleteTarget(null); logout(); }}
         />
       )}
       {emailTarget && (
-        <EmailModal user={emailTarget} onClose={() => setEmailTarget(null)} />
+        <EmailModal user={emailTarget} onClose={() => setEmailTarget(null)} onUnauth={() => { setEmailTarget(null); logout(); }} />
       )}
     </div>
   );

@@ -178,14 +178,25 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     setAuthed(false); setStats(null);
   }, []);
 
-  // Auto-logout when tab is closed or user navigates away from site
+  // Auto-logout on tab close; re-verify session when tab regains visibility
   useEffect(() => {
     if (!authed) return;
     const onUnload = () => {
       navigator.sendBeacon("/api/manager/auth", new Blob([JSON.stringify({ action: "logout" })], { type: "application/json" }));
     };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetch("/api/manager/stats")
+          .then(r => { if (!r.ok) { setAuthed(false); setStats(null); } })
+          .catch(() => {});
+      }
+    };
     window.addEventListener("beforeunload", onUnload);
-    return () => window.removeEventListener("beforeunload", onUnload);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [authed]);
 
   const refresh = useCallback(async () => {
