@@ -11,12 +11,28 @@ async function notifySubscribers(userId: number, title: string, slug: string, ex
   const hasBrevo = !!(process.env.BREVO_SMTP_LOGIN && process.env.BREVO_SMTP_PASSWORD);
   const hasGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
   if (!hasBrevo && !hasGmail) return;
-  const subscribers = await prisma.subscriber.findMany({
-    where: { userId, verified: true, unsubscribedAt: null },
-    select: { email: true, token: true },
-  });
-  if (subscribers.length === 0) return;
-  await sendNewPostNotifications(subscribers, { title, slug, excerpt, coverImage, content });
+  const [subscribers, user, settingsRows] = await Promise.all([
+    prisma.subscriber.findMany({
+      where: { userId, verified: true, unsubscribedAt: null },
+      select: { email: true, token: true },
+    }),
+    prisma.user.findUnique({ where: { id: userId }, select: { username: true } }),
+    prisma.siteSettings.findMany({
+      where: { userId, key: { in: ["site_name", "site_tagline", "color_accent"] } },
+      select: { key: true, value: true },
+    }),
+  ]);
+  if (subscribers.length === 0 || !user) return;
+  const s = Object.fromEntries(settingsRows.map(r => [r.key, r.value]));
+  const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
+  const brand = {
+    siteName: s.site_name || user.username,
+    tagline: s.site_tagline || "",
+    colorAccent: s.color_accent || "#c8a97e",
+    username: user.username,
+    blogUrl: `${SITE}/${user.username}`,
+  };
+  await sendNewPostNotifications(subscribers, { title, slug, excerpt, coverImage, content }, brand);
 }
 
 type Params = { params: Promise<{ id: string }> };
