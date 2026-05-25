@@ -234,8 +234,12 @@ export default function BlogsPage() {
                       </td>
                       <td style={{ padding: "1rem 1.25rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <div style={{ width: 6, height: 6, borderRadius: "50%", background: u.onboarded ? "#4a9e7a" : "#c8943a" }} />
-                          <span style={{ color: u.onboarded ? "#4a9e7a" : "#c8943a", fontSize: "0.75rem" }}>{u.onboarded ? "Active" : "Pending"}</span>
+                          {!u.emailVerified
+                            ? <><div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f87171" }} /><span style={{ color: "#f87171", fontSize: "0.75rem" }}>Unverified</span></>
+                            : u.onboarded
+                            ? <><div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4a9e7a" }} /><span style={{ color: "#4a9e7a", fontSize: "0.75rem" }}>Active</span></>
+                            : <><div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} /><span style={{ color: "#f59e0b", fontSize: "0.75rem" }}>Pending setup</span></>
+                          }
                         </div>
                       </td>
                       <td style={{ padding: "1rem 1.25rem", color: u.posts > 0 ? "#fffef9" : "rgba(143,163,177,0.3)", fontWeight: u.posts > 0 ? 600 : 400 }}>{u.posts}</td>

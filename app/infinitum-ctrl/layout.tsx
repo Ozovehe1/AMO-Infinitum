@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export interface UserStat {
   id: number; username: string; email: string; role: string;
-  onboarded: boolean; createdAt: string; posts: number; subscribers: number;
+  onboarded: boolean; emailVerified: boolean; createdAt: string; posts: number; subscribers: number;
 }
 export interface RecentPost {
   id: number; title: string; slug: string;
