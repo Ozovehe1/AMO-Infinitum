@@ -9,6 +9,7 @@ export interface BlogBrand {
   colorAccent: string;
   username: string;
   blogUrl: string;
+  confirmMessage?: string; // custom body text for subscription confirmation email
 }
 
 function absoluteUrl(url: string | null | undefined): string {
@@ -161,7 +162,7 @@ export async function sendConfirmationEmail(email: string, token: string, brand:
       You're almost in.
     </h2>
     <p style="margin:0 0 6px;font-size:15px;color:#c8d8e4;line-height:1.7;">
-      Just one click to confirm your subscription to <strong style="color:#fffef9;">${brand.siteName}</strong> — and new posts will arrive straight in your inbox.
+      ${brand.confirmMessage || `Just one click to confirm your subscription to <strong style="color:#fffef9;">${brand.siteName}</strong> — and new posts will arrive straight in your inbox.`}
     </p>
     <p style="margin:0 0 28px;font-size:14px;color:#7a90a0;line-height:1.6;">
       If you didn't subscribe, you can safely ignore this.

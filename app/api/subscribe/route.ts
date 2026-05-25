@@ -7,7 +7,7 @@ const COOLDOWN_MS = 60 * 1000;
 
 async function getBlogBrand(userId: number, username: string): Promise<BlogBrand> {
   const rows = await prisma.siteSettings.findMany({
-    where: { userId, key: { in: ["site_name", "site_tagline", "color_accent"] } },
+    where: { userId, key: { in: ["site_name", "site_tagline", "color_accent", "sub_confirm_message"] } },
     select: { key: true, value: true },
   });
   const s = Object.fromEntries(rows.map(r => [r.key, r.value]));
@@ -17,6 +17,7 @@ async function getBlogBrand(userId: number, username: string): Promise<BlogBrand
     colorAccent: s.color_accent || "#c8a97e",
     username,
     blogUrl: `${SITE}/${username}`,
+    confirmMessage: s.sub_confirm_message || "",
   };
 }
 

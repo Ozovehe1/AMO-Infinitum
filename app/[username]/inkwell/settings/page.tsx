@@ -13,6 +13,7 @@ export default function SettingsPage() {
     site_name: "", site_tagline: "", site_hero_quote: "",
     color_primary: "#0d1f3c", color_accent: "#c8a97e", color_bg: "#f5f0e8",
     twitter_handle: "", footer_tagline: "", footer_copy: "",
+    sub_confirm_message: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -109,6 +110,42 @@ export default function SettingsPage() {
                 <div><label style={labelStyle}>Footer Tagline</label><input value={form.footer_tagline} onChange={e => setForm(f => ({ ...f, footer_tagline: e.target.value }))} style={inputStyle} /></div>
                 <div><label style={labelStyle}>Footer Copyright</label><input value={form.footer_copy} onChange={e => setForm(f => ({ ...f, footer_copy: e.target.value }))} style={inputStyle} /></div>
                 <div><label style={labelStyle}>Twitter / X Handle</label><input value={form.twitter_handle} onChange={e => setForm(f => ({ ...f, twitter_handle: e.target.value }))} placeholder="@yourhandle" style={inputStyle} /></div>
+              </div>
+            </div>
+
+            {/* Subscribers */}
+            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
+              <div style={{ marginBottom: "1rem" }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 0.25rem" }}>Subscribers</h3>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", margin: 0, lineHeight: 1.5 }}>
+                  This message appears in the confirmation email sent when someone subscribes to your blog.
+                </p>
+              </div>
+              <div>
+                <label style={labelStyle}>Confirmation Email Message</label>
+                <textarea
+                  value={form.sub_confirm_message}
+                  onChange={e => setForm(f => ({ ...f, sub_confirm_message: e.target.value }))}
+                  placeholder={`Just one click to confirm your subscription to ${form.site_name || "your blog"} — and new posts will arrive straight in your inbox.`}
+                  rows={4}
+                  style={{ ...inputStyle, resize: "vertical", lineHeight: 1.65, minHeight: 90 }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.4rem" }}>
+                  <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1", margin: 0 }}>
+                    Leave blank to use the default message. Plain text only — no HTML.
+                  </p>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: form.sub_confirm_message.length > 300 ? "#e07070" : "#8fa3b1" }}>
+                    {form.sub_confirm_message.length}/300
+                  </span>
+                </div>
+                {form.sub_confirm_message.length > 0 && (
+                  <div style={{ marginTop: "0.875rem", background: "#f5f0e8", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 6, padding: "0.875rem 1rem" }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 0.4rem" }}>Preview</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#3a5068", margin: 0, lineHeight: 1.65 }}>
+                      {form.sub_confirm_message}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

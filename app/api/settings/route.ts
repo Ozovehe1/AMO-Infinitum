@@ -16,6 +16,7 @@ const DEFAULTS: Record<string, string> = {
   footer_copy: "",
   about_hero_subtitle: "A space that holds everything — every question, every silence, every thought that refuses to be filed neatly away.",
   about_body: `<p><em>Amo</em> means love. <em>Infinitum</em> means without end. This blog is exactly that — a love that keeps going, for ideas, for language, for the texture of living.</p>`,
+  sub_confirm_message: "",
 };
 
 export async function GET(req: NextRequest) {
