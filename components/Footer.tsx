@@ -13,7 +13,7 @@ export default function Footer({ username, theme }: Props) {
   return (
     <footer style={{ background: primary, borderTop: `1px solid ${accent}1f`, padding: "3rem 1.5rem 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto 2.5rem", padding: "2rem", background: `${accent}0f`, border: `1px solid ${accent}26`, borderRadius: 6 }}>
-        <SubscribeForm dark username={username} />
+        <SubscribeForm dark username={username} siteName={theme.siteName} />
       </div>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>

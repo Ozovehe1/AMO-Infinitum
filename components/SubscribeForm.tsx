@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type State = "idle" | "loading" | "sent" | "already" | "cooldown" | "error";
 
-export default function SubscribeForm({ dark = false, username }: { dark?: boolean; username: string }) {
+export default function SubscribeForm({ dark = false, username, siteName }: { dark?: boolean; username: string; siteName?: string }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<State>("idle");
 
@@ -62,7 +62,7 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
         Stay in the loop
       </p>
       <p style={{ margin: "0 0 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: subColor, lineHeight: 1.6 }}>
-        New essays delivered straight to your inbox.
+        {siteName ? `New posts from ${siteName}, delivered straight to your inbox.` : "New posts delivered straight to your inbox."}
       </p>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <input
