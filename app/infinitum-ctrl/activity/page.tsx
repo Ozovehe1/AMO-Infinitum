@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { useManager } from "../layout";
+import { useManager, MGR } from "../layout";
 
 function fmt(date: string | null) {
   if (!date) return "—";
@@ -44,8 +44,8 @@ export default function ActivityPage() {
       {/* Header */}
       <div style={{ padding: "2.5rem 2.5rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
-          <p style={{ margin: "0 0 0.3rem", color: "rgba(200,169,126,0.45)", fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Feed</p>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: 0, fontWeight: 600, letterSpacing: "-0.01em" }}>Activity</h1>
+          <p style={{ margin: "0 0 0.3rem", color: MGR.textDim, fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Feed</p>
+          <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: MGR.text, margin: 0, fontWeight: 700, letterSpacing: "-0.03em" }}>Activity</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem" }}>{posts.length} posts</span>
@@ -78,14 +78,14 @@ export default function ActivityPage() {
               }}>
                 {/* Timeline dot */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", flexShrink: 0, paddingTop: "0.15rem" }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#c8a97e", opacity: 0.6, flexShrink: 0 }} />
-                  {i < posts.length - 1 && <div style={{ width: 1, height: "100%", background: "rgba(200,169,126,0.1)", flexShrink: 0, minHeight: 24 }} />}
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: MGR.accent, opacity: 0.6, flexShrink: 0 }} />
+                  {i < posts.length - 1 && <div style={{ width: 1, height: "100%", background: MGR.dimBorder, flexShrink: 0, minHeight: 24 }} />}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem", marginBottom: "0.35rem", flexWrap: "wrap" }}>
                     <a href={`${siteUrl}/${p.user.username}`} target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#c8a97e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>
+                      style={{ color: MGR.accent, fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>
                       @{p.user.username}
                     </a>
                     <span style={{ color: "rgba(143,163,177,0.25)", fontSize: "0.65rem" }}>published</span>

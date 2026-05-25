@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useManager } from "./layout";
+import { useManager, MGR } from "./layout";
 
 function useCountUp(target: number, duration = 1100) {
   const [val, setVal] = useState(0);
@@ -63,14 +63,14 @@ export default function ManagerOverview() {
     <div className="mgr-fade">
       {/* Page header */}
       <div style={{ padding: "2.5rem 2.5rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-        <p style={{ margin: "0 0 0.3rem", color: "rgba(200,169,126,0.45)", fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Dashboard</p>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: 0, fontWeight: 600, letterSpacing: "-0.01em" }}>Overview</h1>
+        <p style={{ margin: "0 0 0.3rem", color: MGR.textDim, fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Dashboard</p>
+        <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: MGR.text, margin: 0, fontWeight: 700, letterSpacing: "-0.03em" }}>Overview</h1>
       </div>
 
       <div style={{ padding: "2rem 2.5rem" }}>
         {/* Stats grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "2.5rem" }}>
-          <StatCard label="Total Blogs" value={stats.totalUsers} sub={`${onboarded} fully active`} accent="#c8a97e" />
+          <StatCard label="Total Blogs" value={stats.totalUsers} sub={`${onboarded} fully active`} accent={MGR.accent} />
           <StatCard label="Published Posts" value={stats.totalPosts} sub={`avg ${avgPosts} per blog`} accent="#4a9e8e" />
           <StatCard label="Subscribers" value={stats.totalSubscribers} sub="confirmed readers" accent="#7c6fff" />
           <StatCard label="Setup Complete" value={completionPct} suffix="%" sub={`${onboarded} of ${stats.users.length} onboarded`} accent="#e08060" />
@@ -82,7 +82,7 @@ export default function ManagerOverview() {
           <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
             <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ color: "#fffef9", fontSize: "0.88rem", fontWeight: 600 }}>Top Writers</span>
-              <Link href="/infinitum-ctrl/blogs" style={{ color: "rgba(200,169,126,0.5)", fontSize: "0.68rem", letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase" }}>See all →</Link>
+              <Link href="/infinitum-ctrl/blogs" style={{ color: MGR.accent, fontSize: "0.68rem", letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase", opacity: 0.65 }}>See all →</Link>
             </div>
             <div>
               {topWriters.length === 0 && (
@@ -94,11 +94,11 @@ export default function ManagerOverview() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: "#fffef9", fontSize: "0.83rem", fontWeight: 500, marginBottom: "0.35rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{u.username}</div>
                     <div style={{ height: 2, background: "rgba(255,255,255,0.04)", borderRadius: 1, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${(u.posts / maxPosts) * 100}%`, background: "linear-gradient(90deg, #c8a97e, #c8a97e88)", borderRadius: 1, transition: "width 0.7s ease" }} />
+                      <div style={{ height: "100%", width: `${(u.posts / maxPosts) * 100}%`, background: `linear-gradient(90deg, ${MGR.accent}, ${MGR.accent}88)`, borderRadius: 1, transition: "width 0.7s ease" }} />
                     </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div style={{ color: "#c8a97e", fontSize: "0.82rem", fontWeight: 700 }}>{u.posts}</div>
+                    <div style={{ color: MGR.accent, fontSize: "0.82rem", fontWeight: 700 }}>{u.posts}</div>
                     <div style={{ color: "rgba(143,163,177,0.3)", fontSize: "0.62rem" }}>{u.subscribers} readers</div>
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export default function ManagerOverview() {
           <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
             <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ color: "#fffef9", fontSize: "0.88rem", fontWeight: 600 }}>Latest Posts</span>
-              <Link href="/infinitum-ctrl/activity" style={{ color: "rgba(200,169,126,0.5)", fontSize: "0.68rem", letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase" }}>Full feed →</Link>
+              <Link href="/infinitum-ctrl/activity" style={{ color: MGR.accent, fontSize: "0.68rem", letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase", opacity: 0.65 }}>Full feed →</Link>
             </div>
             <div>
               {stats.recentPosts.length === 0 && (
@@ -121,7 +121,7 @@ export default function ManagerOverview() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: "#fffef9", fontSize: "0.82rem", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "0.25rem" }}>{p.title}</div>
                     <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
-                      <span style={{ color: "#c8a97e", fontSize: "0.68rem", fontWeight: 600 }}>@{p.user.username}</span>
+                      <span style={{ color: MGR.accent, fontSize: "0.68rem", fontWeight: 600 }}>@{p.user.username}</span>
                       <span style={{ color: "rgba(143,163,177,0.2)" }}>·</span>
                       <span style={{ color: "rgba(143,163,177,0.38)", fontSize: "0.68rem" }}>{timeAgo(p.publishedAt)}</span>
                       {p.views > 0 && <><span style={{ color: "rgba(143,163,177,0.2)" }}>·</span><span style={{ color: "rgba(143,163,177,0.38)", fontSize: "0.68rem" }}>{p.views} views</span></>}

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { useManager, UserStat } from "../layout";
+import { useManager, UserStat, MGR } from "../layout";
 
 function fmt(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -35,7 +35,7 @@ function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () =>
         <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(224,112,112,0.1)", border: "1px solid rgba(224,112,112,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e07070" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </div>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.25rem", color: "#fffef9", margin: "0 0 0.5rem", fontWeight: 600 }}>Delete @{user.username}</h2>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.1rem", color: MGR.text, margin: "0 0 0.5rem", fontWeight: 700, letterSpacing: "-0.02em" }}>Delete @{user.username}</h2>
         <p style={{ color: "rgba(143,163,177,0.6)", fontSize: "0.84rem", lineHeight: 1.6, margin: "0 0 0.5rem" }}>
           This will permanently delete their blog, all posts, categories, subscribers, and settings. This cannot be undone.
         </p>
@@ -97,7 +97,7 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
             </div>
             <p style={{ color: "#4a9e7a", fontFamily: "'Playfair Display', serif", fontSize: "1.25rem", margin: "0 0 0.5rem" }}>Email sent</p>
             <p style={{ color: "rgba(143,163,177,0.5)", fontSize: "0.82rem", margin: "0 0 2rem" }}>Delivered to <strong style={{ color: "#fffef9" }}>{user.email}</strong></p>
-            <button onClick={onClose} style={{ background: "#c8a97e", color: "#050b14", border: "none", borderRadius: 8, padding: "0.75rem 2rem", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer" }}>Done</button>
+            <button onClick={onClose} style={{ background: MGR.accent2, color: "#fff", border: "none", borderRadius: 8, padding: "0.75rem 2rem", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer" }}>Done</button>
           </div>
         ) : (
           <>
@@ -151,7 +151,7 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
                   Discard
                 </button>
                 <button onClick={send} disabled={loading || !canSend}
-                  style={{ padding: "0.6rem 1.25rem", background: canSend ? "#c8a97e" : "rgba(200,169,126,0.2)", color: canSend ? "#050b14" : "rgba(200,169,126,0.4)", border: "none", borderRadius: 7, fontSize: "0.82rem", fontWeight: 700, cursor: canSend && !loading ? "pointer" : "default", display: "flex", alignItems: "center", gap: "0.4rem", transition: "all 0.15s" }}>
+                  style={{ padding: "0.6rem 1.25rem", background: canSend ? MGR.accent2 : MGR.dim, color: canSend ? "#fff" : MGR.textDim, border: "none", borderRadius: 7, fontSize: "0.82rem", fontWeight: 700, cursor: canSend && !loading ? "pointer" : "default", display: "flex", alignItems: "center", gap: "0.4rem", transition: "all 0.15s" }}>
                   {loading ? "Sending…" : (
                     <>
                       Send
@@ -187,8 +187,8 @@ export default function BlogsPage() {
       {/* Header */}
       <div style={{ padding: "2.5rem 2.5rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
-          <p style={{ margin: "0 0 0.3rem", color: "rgba(200,169,126,0.45)", fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Manage</p>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: 0, fontWeight: 600, letterSpacing: "-0.01em" }}>All Blogs</h1>
+          <p style={{ margin: "0 0 0.3rem", color: MGR.textDim, fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Manage</p>
+          <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: MGR.text, margin: 0, fontWeight: 700, letterSpacing: "-0.03em" }}>All Blogs</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem" }}>{stats?.totalUsers ?? 0} total</span>
@@ -226,7 +226,7 @@ export default function BlogsPage() {
                       </td>
                       <td style={{ padding: "1rem 1.25rem", color: "rgba(143,163,177,0.45)", fontSize: "0.78rem" }}>{u.email}</td>
                       <td style={{ padding: "1rem 1.25rem" }}>
-                        <span style={{ display: "inline-block", background: u.role === "owner" ? "rgba(200,169,126,0.1)" : "rgba(255,255,255,0.04)", color: u.role === "owner" ? "#c8a97e" : "rgba(143,163,177,0.55)", borderRadius: 4, padding: "0.18rem 0.6rem", fontSize: "0.6rem", letterSpacing: "0.06em", fontWeight: 600, textTransform: "uppercase" }}>
+                        <span style={{ display: "inline-block", background: u.role === "owner" ? MGR.dim : "rgba(255,255,255,0.04)", color: u.role === "owner" ? MGR.accent : "rgba(143,163,177,0.55)", borderRadius: 4, padding: "0.18rem 0.6rem", fontSize: "0.6rem", letterSpacing: "0.06em", fontWeight: 600, textTransform: "uppercase" }}>
                           {u.role}
                         </span>
                       </td>
@@ -246,7 +246,7 @@ export default function BlogsPage() {
                             View ↗
                           </a>
                           <button onClick={() => setEmailTarget(u)}
-                            style={{ color: "#c8a97e", fontSize: "0.72rem", background: "rgba(200,169,126,0.07)", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 6, padding: "0.3rem 0.6rem", cursor: "pointer", transition: "all 0.12s" }} className="mgr-btn">
+                            style={{ color: MGR.accent, fontSize: "0.72rem", background: MGR.dim, border: `1px solid ${MGR.dimBorder}`, borderRadius: 6, padding: "0.3rem 0.6rem", cursor: "pointer", transition: "all 0.12s" }} className="mgr-btn">
                             Email
                           </button>
                           {u.role !== "owner" && (
