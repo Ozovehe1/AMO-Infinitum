@@ -74,8 +74,10 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
+  const canSend = subject.trim().length > 0 && message.trim().length > 0;
+
   const send = async () => {
-    if (!subject.trim() || !message.trim()) { setError("Subject and message are required"); return; }
+    if (!canSend) return;
     setLoading(true); setError("");
     const res = await fetch(`/api/manager/email/${user.id}`, {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -86,43 +88,83 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
   };
 
   return (
-    <Modal onClose={onClose}>
-      {sent ? (
-        <div style={{ textAlign: "center", padding: "1rem 0" }}>
-          <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>✓</div>
-          <p style={{ color: "#4a9e7a", fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", margin: "0 0 0.5rem" }}>Email sent</p>
-          <p style={{ color: "rgba(143,163,177,0.5)", fontSize: "0.82rem", margin: "0 0 1.5rem" }}>Delivered to {user.email}</p>
-          <button onClick={onClose} style={{ background: "#c8a97e", color: "#050b14", border: "none", borderRadius: 8, padding: "0.7rem 1.5rem", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer" }}>Done</button>
-        </div>
-      ) : (
-        <>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", color: "#fffef9", margin: "0 0 0.4rem", fontWeight: 600 }}>Message @{user.username}</h2>
-          <p style={{ color: "rgba(143,163,177,0.4)", fontSize: "0.78rem", margin: "0 0 1.5rem" }}>To: {user.email}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <div>
-              <label style={{ display: "block", color: "rgba(143,163,177,0.45)", fontSize: "0.62rem", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "0.5rem" }}>Subject</label>
-              <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Message subject…" autoFocus
-                style={{ width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 8, padding: "0.8rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none" }} />
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a2d", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, width: "100%", maxWidth: 580, overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "90vh" }}>
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "3rem 2rem" }}>
+            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(74,158,122,0.12)", border: "1px solid rgba(74,158,122,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.25rem" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a9e7a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <div>
-              <label style={{ display: "block", color: "rgba(143,163,177,0.45)", fontSize: "0.62rem", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "0.5rem" }}>Message</label>
-              <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Write your message…" rows={6}
-                style={{ width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 8, padding: "0.8rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", resize: "vertical", lineHeight: 1.65 }} />
-            </div>
-            {error && <p style={{ color: "#e07070", fontSize: "0.78rem", margin: 0 }}>{error}</p>}
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              <button onClick={send} disabled={loading}
-                style={{ flex: 1, background: "#c8a97e", color: "#050b14", border: "none", borderRadius: 8, padding: "0.8rem", fontSize: "0.85rem", fontWeight: 700, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1 }}>
-                {loading ? "Sending…" : "Send Email →"}
-              </button>
-              <button onClick={onClose} style={{ padding: "0.8rem 1.25rem", background: "transparent", color: "rgba(143,163,177,0.5)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, fontSize: "0.85rem", cursor: "pointer" }}>
-                Cancel
-              </button>
-            </div>
+            <p style={{ color: "#4a9e7a", fontFamily: "'Playfair Display', serif", fontSize: "1.25rem", margin: "0 0 0.5rem" }}>Email sent</p>
+            <p style={{ color: "rgba(143,163,177,0.5)", fontSize: "0.82rem", margin: "0 0 2rem" }}>Delivered to <strong style={{ color: "#fffef9" }}>{user.email}</strong></p>
+            <button onClick={onClose} style={{ background: "#c8a97e", color: "#050b14", border: "none", borderRadius: 8, padding: "0.75rem 2rem", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer" }}>Done</button>
           </div>
-        </>
-      )}
-    </Modal>
+        ) : (
+          <>
+            {/* Email compose header */}
+            <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#fffef9", fontSize: "0.88rem", fontWeight: 600 }}>New Message</span>
+              <button onClick={onClose} style={{ background: "transparent", border: "none", color: "rgba(143,163,177,0.45)", fontSize: "1.1rem", cursor: "pointer", lineHeight: 1, padding: "0.2rem" }}>✕</button>
+            </div>
+
+            {/* From / To rows */}
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+              <div style={{ display: "flex", alignItems: "center", padding: "0.7rem 1.5rem", gap: "0.75rem", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem", width: 28, flexShrink: 0 }}>From</span>
+                <span style={{ color: "rgba(143,163,177,0.55)", fontSize: "0.82rem" }}>AMO Infinitum &lt;amoinfinitum@gmail.com&gt;</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", padding: "0.7rem 1.5rem", gap: "0.75rem" }}>
+                <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem", width: 28, flexShrink: 0 }}>To</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: `hsl(${(user.id * 47) % 360}, 35%, 28%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ color: "#fffef9", fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase" }}>{user.username.slice(0, 1)}</span>
+                  </div>
+                  <span style={{ color: "#fffef9", fontSize: "0.82rem" }}>@{user.username}</span>
+                  <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem" }}>&lt;{user.email}&gt;</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Subject */}
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 1.5rem" }}>
+              <input
+                value={subject} onChange={e => setSubject(e.target.value)} placeholder="Subject" autoFocus
+                style={{ width: "100%", boxSizing: "border-box", background: "transparent", border: "none", padding: "0.875rem 0", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "0.92rem", fontWeight: 500, outline: "none" }}
+              />
+            </div>
+
+            {/* Body */}
+            <div style={{ flex: 1, padding: "0 1.5rem", minHeight: 0 }}>
+              <textarea
+                value={message} onChange={e => setMessage(e.target.value)} placeholder="Write your message…"
+                style={{ width: "100%", boxSizing: "border-box", background: "transparent", border: "none", padding: "1rem 0", color: "rgba(255,254,249,0.85)", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", resize: "none", lineHeight: 1.75, height: 200 }}
+              />
+            </div>
+
+            {/* Actions */}
+            <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                {error && <p style={{ color: "#e07070", fontSize: "0.75rem", margin: 0 }}>✕ {error}</p>}
+              </div>
+              <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+                <button onClick={onClose} style={{ padding: "0.6rem 1rem", background: "transparent", color: "rgba(143,163,177,0.45)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 7, fontSize: "0.8rem", cursor: "pointer" }}>
+                  Discard
+                </button>
+                <button onClick={send} disabled={loading || !canSend}
+                  style={{ padding: "0.6rem 1.25rem", background: canSend ? "#c8a97e" : "rgba(200,169,126,0.2)", color: canSend ? "#050b14" : "rgba(200,169,126,0.4)", border: "none", borderRadius: 7, fontSize: "0.82rem", fontWeight: 700, cursor: canSend && !loading ? "pointer" : "default", display: "flex", alignItems: "center", gap: "0.4rem", transition: "all 0.15s" }}>
+                  {loading ? "Sending…" : (
+                    <>
+                      Send
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
