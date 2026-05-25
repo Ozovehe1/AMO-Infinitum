@@ -33,7 +33,7 @@ interface AnalyticsData {
 }
 
 const RANGES: { label: string; value: Range }[] = [
-  { label: "1M", value: "1m" },
+  { label: "30D", value: "1m" },
   { label: "3M", value: "3m" },
   { label: "6M", value: "6m" },
   { label: "12M", value: "12m" },
