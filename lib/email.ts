@@ -43,23 +43,26 @@ function toEmailHtml(html: string): string {
       '<img$1$2 style="width:100%;max-width:100%;height:auto;display:block;margin:0 0 22px;border-radius:4px;">');
 }
 
-function transporter() {
-  if (process.env.BREVO_SMTP_PASSWORD) {
-    return nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.BREVO_SMTP_LOGIN || process.env.GMAIL_USER || "amoinfinitum@gmail.com",
-        pass: process.env.BREVO_SMTP_PASSWORD,
-      },
-    });
-  }
+// Gmail — for all transactional emails (verification, subscription confirm, manager)
+function gmailTransporter() {
   return nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+}
+
+// Brevo — only for bulk post-notification emails to subscribers
+function brevoTransporter() {
+  return nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_LOGIN,
+      pass: process.env.BREVO_SMTP_PASSWORD,
     },
   });
 }
@@ -115,7 +118,7 @@ export async function sendVerificationEmail(email: string, username: string, tok
      <p style="margin:16px 0 0;font-size:13px;color:#8fa3b1;">This link expires in 24 hours. If you didn't create an account, ignore this email.</p>`,
     `<p style="margin:0;font-size:12px;color:#8fa3b1;">AMO Infinitum · A platform for writers</p>`
   );
-  await transporter().sendMail({ from: FROM, to: email, subject: "Verify your email — AMO Infinitum", html });
+  await gmailTransporter().sendMail({ from: FROM, to: email, subject: "Verify your email — AMO Infinitum", html });
 }
 
 export async function sendConfirmationEmail(email: string, token: string) {
@@ -148,7 +151,7 @@ export async function sendConfirmationEmail(email: string, token: string) {
 
   const text = `You're almost in!\n\nConfirm your subscription to AMO Infinitum by visiting:\n${confirmUrl}\n\nIf you didn't subscribe, ignore this email.\n\n— AMO Infinitum\n${SITE}`;
 
-  await transporter().sendMail({
+  await gmailTransporter().sendMail({
     from: FROM,
     to: email,
     subject: "Please confirm your AMO Infinitum subscription",
@@ -162,7 +165,9 @@ export async function sendNewPostNotifications(
   post: { title: string; slug: string; excerpt?: string | null; coverImage?: string | null; content?: string | null }
 ) {
   const postUrl = `${SITE}/blog/${post.slug}`;
-  const t = transporter();
+  const t = process.env.BREVO_SMTP_LOGIN && process.env.BREVO_SMTP_PASSWORD
+    ? brevoTransporter()
+    : gmailTransporter();
 
   for (const sub of subscribers) {
     const unsubUrl = `${SITE}/api/unsubscribe?token=${sub.token}`;
@@ -261,5 +266,5 @@ export async function sendManagerEmail(to: string, subject: string, message: str
      <p style="margin:28px 0 0;font-size:12px;color:#8fa3b1;">This message was sent by the Infinitum platform team.</p>`,
     `<p style="margin:0;font-size:12px;color:#8fa3b1;">AMO Infinitum · A platform for writers</p>`
   );
-  await transporter().sendMail({ from: FROM, to, subject, html });
+  await gmailTransporter().sendMail({ from: FROM, to, subject, html });
 }
