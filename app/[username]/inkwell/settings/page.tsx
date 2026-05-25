@@ -1,6 +1,6 @@
 "use client";
 import AdminNav from "@/components/AdminNav";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const PRESET_COLORS = {
   primary: ["#0d1f3c", "#1a2f4a", "#3d2b1f", "#0d0d0d", "#1a0533"],
@@ -13,10 +13,13 @@ export default function SettingsPage() {
     site_name: "", site_tagline: "", site_hero_quote: "",
     color_primary: "#0d1f3c", color_accent: "#c8a97e", color_bg: "#f5f0e8",
     twitter_handle: "", footer_tagline: "", footer_copy: "",
+    cover_image: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/settings").then(r => r.json()).then(data => {
@@ -33,6 +36,16 @@ export default function SettingsPage() {
       body: JSON.stringify(form),
     });
     setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2500);
+  };
+
+  const uploadCover = async (file: File) => {
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const data = await res.json();
+    if (data.url) setForm(f => ({ ...f, cover_image: data.url }));
+    setUploading(false);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -71,6 +84,34 @@ export default function SettingsPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+
+            {/* Cover Image */}
+            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 1rem" }}>Cover Image</h3>
+              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: "0 0 1rem" }}>Appears as the background on your blog&apos;s hero section.</p>
+
+              {form.cover_image && (
+                <div style={{ position: "relative", marginBottom: "1rem", borderRadius: 6, overflow: "hidden", height: 160 }}>
+                  <img src={form.cover_image} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <button onClick={() => setForm(f => ({ ...f, cover_image: "" }))} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.6)", color: "#fff", border: "none", borderRadius: 4, padding: "0.3rem 0.6rem", fontSize: "0.75rem", cursor: "pointer" }}>
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 6, padding: "0.6rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer" }}>
+                  {uploading ? "Uploading…" : "Upload Image"}
+                </button>
+                <input
+                  value={form.cover_image}
+                  onChange={e => setForm(f => ({ ...f, cover_image: e.target.value }))}
+                  placeholder="Or paste an image URL"
+                  style={{ ...inputStyle, flex: 1, minWidth: 200 }}
+                />
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadCover(f); }} />
+            </div>
 
             {/* Identity */}
             <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
