@@ -253,3 +253,13 @@ export async function sendNewPostNotifications(
     });
   }
 }
+
+export async function sendManagerEmail(to: string, subject: string, message: string) {
+  const html = baseLayout(
+    `<h2 style="margin:0 0 20px;font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fffef9;line-height:1.3;">${subject}</h2>
+     <div style="font-size:16px;color:#c8d8e4;line-height:1.8;white-space:pre-wrap;">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+     <p style="margin:28px 0 0;font-size:12px;color:#8fa3b1;">This message was sent by the Infinitum platform team.</p>`,
+    `<p style="margin:0;font-size:12px;color:#8fa3b1;">AMO Infinitum · A platform for writers</p>`
+  );
+  await transporter().sendMail({ from: FROM, to, subject, html });
+}
