@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { signToken, setAuthCookie } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
@@ -13,5 +14,10 @@ export async function GET(req: NextRequest) {
     data: { emailVerified: true, verifyToken: null },
   });
 
-  return NextResponse.redirect(new URL(`/${user.username}/inkwell/setup?verified=1`, req.url));
+  // Issue session after email confirmed — this is the real login
+  const authToken = signToken({ userId: user.id, username: user.username, role: user.role });
+  const dest = user.onboarded ? `/${user.username}/inkwell` : `/${user.username}/inkwell/setup`;
+  const res = NextResponse.redirect(new URL(dest, req.url));
+  res.cookies.set(setAuthCookie(authToken));
+  return res;
 }

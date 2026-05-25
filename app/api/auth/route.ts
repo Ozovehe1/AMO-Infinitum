@@ -17,6 +17,9 @@ export async function POST(req: NextRequest) {
     if (!valid) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
+    if (!user.emailVerified) {
+      return NextResponse.json({ error: "Please verify your email before logging in. Check your inbox." }, { status: 403 });
+    }
     const token = signToken({ userId: user.id, username: user.username, role: user.role });
     const res = NextResponse.json({ success: true, username: user.username, onboarded: user.onboarded });
     res.cookies.set(setAuthCookie(token));
