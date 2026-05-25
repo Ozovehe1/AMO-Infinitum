@@ -42,7 +42,7 @@ export default function ActivityPage() {
   return (
     <div className="mgr-fade">
       {/* Header */}
-      <div style={{ padding: "2.5rem 2.5rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div className="mgr-header-pad" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "0.75rem" }}>
         <div>
           <p style={{ margin: "0 0 0.3rem", color: MGR.textDim, fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Feed</p>
           <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: MGR.text, margin: 0, fontWeight: 700, letterSpacing: "-0.03em" }}>Activity</h1>
@@ -59,7 +59,7 @@ export default function ActivityPage() {
         </div>
       </div>
 
-      <div style={{ padding: "1.5rem 2.5rem" }}>
+      <div className="mgr-page-pad">
         {posts.length === 0 ? (
           <div style={{ padding: "5rem", textAlign: "center", color: "rgba(143,163,177,0.25)", fontSize: "0.9rem" }}>
             {filterUser !== "all" ? `@${filterUser} hasn't published yet.` : "No published posts yet."}

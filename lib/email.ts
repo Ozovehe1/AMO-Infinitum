@@ -44,13 +44,13 @@ function toEmailHtml(html: string): string {
 }
 
 function transporter() {
-  if (process.env.BREVO_SMTP_LOGIN && process.env.BREVO_SMTP_PASSWORD) {
+  if (process.env.BREVO_SMTP_PASSWORD) {
     return nodemailer.createTransport({
       host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
       auth: {
-        user: process.env.BREVO_SMTP_LOGIN,
+        user: process.env.BREVO_SMTP_LOGIN || process.env.GMAIL_USER,
         pass: process.env.BREVO_SMTP_PASSWORD,
       },
     });

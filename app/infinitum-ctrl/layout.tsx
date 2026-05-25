@@ -216,6 +216,12 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
           .mgr-btn { opacity: 0.65; }
           .mgr-btn:hover { opacity: 1 !important; }
           @media (max-width: 900px) { .mgr-sidebar-wrap { display:none !important; } .mgr-main { margin-left:0 !important; } }
+          .mgr-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2.5rem; }
+          .mgr-two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+          .mgr-page-pad { padding:2rem 2.5rem; }
+          .mgr-header-pad { padding:2.5rem 2.5rem 2rem; }
+          @media (max-width:900px) { .mgr-stat-grid { grid-template-columns:repeat(2,1fr); } .mgr-two-col { grid-template-columns:1fr; } .mgr-page-pad { padding:1.25rem; } .mgr-header-pad { padding:1.5rem 1.25rem 1.25rem; } }
+          @media (max-width:480px) { .mgr-stat-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; } }
         `}</style>
         <div className="mgr-sidebar-wrap"><Sidebar stats={stats} onLogout={doLogout} /></div>
         <main className="mgr-main" style={{ marginLeft: 220, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
