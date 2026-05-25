@@ -50,7 +50,7 @@ function transporter() {
       port: 587,
       secure: false,
       auth: {
-        user: process.env.BREVO_SMTP_LOGIN || process.env.GMAIL_USER,
+        user: process.env.BREVO_SMTP_LOGIN || process.env.GMAIL_USER || "amoinfinitum@gmail.com",
         pass: process.env.BREVO_SMTP_PASSWORD,
       },
     });

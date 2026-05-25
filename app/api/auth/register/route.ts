@@ -37,13 +37,9 @@ export async function POST(req: NextRequest) {
     data: { email, username, passwordHash, role: "user", onboarded: false, emailVerified: false, verifyToken },
   });
 
-  try {
-    await sendVerificationEmail(email, username, verifyToken);
-  } catch (err) {
-    console.error("[register] Failed to send verification email:", err);
-    return NextResponse.json({ error: "Account created but verification email failed. Contact support." }, { status: 201 });
-  }
+  sendVerificationEmail(email, username, verifyToken).catch(err =>
+    console.error("[register] email send failed:", err)
+  );
 
-  // No auth cookie until email is confirmed — user must verify first
   return NextResponse.json({ success: true, username: user.username }, { status: 201 });
 }

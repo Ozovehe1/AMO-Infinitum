@@ -20,10 +20,10 @@ export async function GET() {
       },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.post.count({ where: { published: true, user: { emailVerified: true } } }),
-    prisma.subscriber.count({ where: { verified: true, unsubscribedAt: null, user: { emailVerified: true } } }),
+    prisma.post.count({ where: { published: true, user: { emailVerified: true, onboarded: true } } }),
+    prisma.subscriber.count({ where: { verified: true, unsubscribedAt: null, user: { emailVerified: true, onboarded: true } } }),
     prisma.post.findMany({
-      where: { published: true, user: { emailVerified: true } },
+      where: { published: true, user: { emailVerified: true, onboarded: true } },
       orderBy: { publishedAt: "desc" },
       take: 20,
       select: {
@@ -33,11 +33,11 @@ export async function GET() {
     }),
   ]);
 
-  // Only verified users count as real blogs on the platform
-  const verifiedUsers = users.filter(u => u.emailVerified);
+  // Only verified + onboarded users count as active blogs on the platform
+  const activeBlogs = users.filter(u => u.emailVerified && u.onboarded);
 
   return NextResponse.json({
-    totalUsers: verifiedUsers.length,
+    totalUsers: activeBlogs.length,
     totalPosts,
     totalSubscribers,
     users: users.map(u => ({

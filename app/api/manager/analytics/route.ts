@@ -87,41 +87,41 @@ export async function GET(req: NextRequest) {
     recentlyActive,
   ] = await Promise.all([
     // All-time totals (verified users only)
-    prisma.post.aggregate({ where: { published: true, user: { emailVerified: true } }, _sum: { views: true } }),
-    prisma.subscriber.count({ where: { verified: true, unsubscribedAt: null, user: { emailVerified: true } } }),
-    prisma.post.count({ where: { published: true, user: { emailVerified: true } } }),
-    prisma.user.count({ where: { emailVerified: true } }),
+    prisma.post.aggregate({ where: { published: true, user: { emailVerified: true, onboarded: true } }, _sum: { views: true } }),
+    prisma.subscriber.count({ where: { verified: true, unsubscribedAt: null, user: { emailVerified: true, onboarded: true } } }),
+    prisma.post.count({ where: { published: true, user: { emailVerified: true, onboarded: true } } }),
+    prisma.user.count({ where: { emailVerified: true, onboarded: true } }),
 
     // Current period (verified users only)
     prisma.user.count({ where: { emailVerified: true, createdAt: { gte: since } } }),
-    prisma.post.count({ where: { published: true, publishedAt: { gte: since }, user: { emailVerified: true } } }),
-    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since }, user: { emailVerified: true } } }),
+    prisma.post.count({ where: { published: true, publishedAt: { gte: since }, user: { emailVerified: true, onboarded: true } } }),
+    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since }, user: { emailVerified: true, onboarded: true } } }),
 
     // Previous period (verified users only)
     prisma.user.count({ where: { emailVerified: true, createdAt: { gte: prevSince, lt: since } } }),
-    prisma.post.count({ where: { published: true, publishedAt: { gte: prevSince, lt: since }, user: { emailVerified: true } } }),
-    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since }, user: { emailVerified: true } } }),
+    prisma.post.count({ where: { published: true, publishedAt: { gte: prevSince, lt: since }, user: { emailVerified: true, onboarded: true } } }),
+    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since }, user: { emailVerified: true, onboarded: true } } }),
 
     // Signup timeline (verified only)
     prisma.user.findMany({ where: { emailVerified: true, createdAt: { gte: since } }, select: { createdAt: true } }),
 
     // Posts timeline (verified only)
-    prisma.post.findMany({ where: { published: true, publishedAt: { gte: since }, user: { emailVerified: true } }, select: { publishedAt: true } }),
+    prisma.post.findMany({ where: { published: true, publishedAt: { gte: since }, user: { emailVerified: true, onboarded: true } }, select: { publishedAt: true } }),
 
     // Subscriber running total (verified blogs only)
     prisma.subscriber.count({
       where: {
         verified: true, createdAt: { lt: since },
-        user: { emailVerified: true },
+        user: { emailVerified: true, onboarded: true },
         OR: [{ unsubscribedAt: null }, { unsubscribedAt: { gte: since } }],
       },
     }),
-    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: since }, user: { emailVerified: true } }, select: { createdAt: true } }),
-    prisma.subscriber.findMany({ where: { unsubscribedAt: { not: null, gte: since }, user: { emailVerified: true } }, select: { unsubscribedAt: true } }),
+    prisma.subscriber.findMany({ where: { verified: true, createdAt: { gte: since }, user: { emailVerified: true, onboarded: true } }, select: { createdAt: true } }),
+    prisma.subscriber.findMany({ where: { unsubscribedAt: { not: null, gte: since }, user: { emailVerified: true, onboarded: true } }, select: { unsubscribedAt: true } }),
 
     // Blog rankings: verified users only
     prisma.user.findMany({
-      where: { emailVerified: true },
+      where: { emailVerified: true, onboarded: true },
       select: {
         id: true, username: true,
         _count: {
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
 
     // Top posts (verified blogs only)
     prisma.post.findMany({
-      where: { published: true, user: { emailVerified: true } },
+      where: { published: true, user: { emailVerified: true, onboarded: true } },
       orderBy: { views: "desc" },
       take: 15,
       select: {
@@ -149,11 +149,11 @@ export async function GET(req: NextRequest) {
       },
     }),
 
-    // Active blogs (verified + at least 1 published post)
-    prisma.user.count({ where: { emailVerified: true, posts: { some: { published: true } } } }),
+    // Active blogs (verified + onboarded + at least 1 published post)
+    prisma.user.count({ where: { emailVerified: true, onboarded: true, posts: { some: { published: true } } } }),
 
-    // Recently active (verified + published in last 30 days)
-    prisma.user.count({ where: { emailVerified: true, posts: { some: { published: true, publishedAt: { gte: subDays(new Date(), 30) } } } } }),
+    // Recently active (verified + onboarded + published in last 30 days)
+    prisma.user.count({ where: { emailVerified: true, onboarded: true, posts: { some: { published: true, publishedAt: { gte: subDays(new Date(), 30) } } } } }),
   ]);
 
   // Chart: new signups
