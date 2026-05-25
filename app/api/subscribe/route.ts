@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendConfirmationEmail } from "@/lib/email";
+import { sendConfirmationEmail, type BlogBrand } from "@/lib/email";
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
 const COOLDOWN_MS = 60 * 1000;
+
+async function getBlogBrand(userId: number, username: string): Promise<BlogBrand> {
+  const rows = await prisma.siteSettings.findMany({
+    where: { userId, key: { in: ["site_name", "site_tagline", "color_accent"] } },
+    select: { key: true, value: true },
+  });
+  const s = Object.fromEntries(rows.map(r => [r.key, r.value]));
+  return {
+    siteName: s.site_name || username,
+    tagline: s.site_tagline || "",
+    colorAccent: s.color_accent || "#c8a97e",
+    username,
+    blogUrl: `${SITE}/${username}`,
+  };
+}
 
 export async function POST(req: NextRequest) {
   const { email, name, username } = await req.json().catch(() => ({}));
@@ -50,8 +66,10 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const brand = await getBlogBrand(userId, username);
+
   try {
-    await sendConfirmationEmail(normalised, token);
+    await sendConfirmationEmail(normalised, token, brand);
   } catch (err) {
     console.error("[subscribe] email send failed:", err);
     return NextResponse.json({ error: "Failed to send confirmation email. Please try again." }, { status: 502 });
