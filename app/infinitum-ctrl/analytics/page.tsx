@@ -127,7 +127,9 @@ function BarChart({ data, color = "#c8a97e" }: { data: Record<string, number>; c
       ctx.fillStyle = isAct ? color : color + "bb";
       canvasRR(ctx, bx, by, barW, bH, 3); ctx.fill();
 
-      const showLabel = i === 0 || i === labels.length - 1 || i % step === 0;
+      const lastStepIdx = Math.floor((labels.length - 1) / step) * step;
+      const lastFarEnough = (labels.length - 1) - lastStepIdx >= Math.ceil(step / 2);
+      const showLabel = i === 0 || i % step === 0 || (i === labels.length - 1 && lastFarEnough);
       if (showLabel) {
         const display = getDisplayLabel(labels[i], prevVis);
         prevVis = labels[i];
@@ -210,10 +212,13 @@ function LineChart({ data, color = "#6366f1" }: { data: Record<string, number>; 
     ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke();
 
     const step = labelStep(labels.length);
+    const lastStepIdx2 = Math.floor((labels.length - 1) / step) * step;
+    const lastFarEnough2 = (labels.length - 1) - lastStepIdx2 >= Math.ceil(step / 2);
     let prevVis: string | null = null;
     labels.forEach((l, i) => {
       const isAct = i === hover;
-      if (!isAct && i !== 0 && i !== labels.length - 1 && i % step !== 0) return;
+      const showLast = i === labels.length - 1 && lastFarEnough2;
+      if (!isAct && i !== 0 && !showLast && i % step !== 0) return;
       const display = getDisplayLabel(l, prevVis); prevVis = l;
       ctx.font = isAct ? "bold 9px Inter,sans-serif" : "9px Inter,sans-serif";
       ctx.fillStyle = isAct ? "#0d1f3c" : "#aab8c2";
@@ -286,7 +291,7 @@ const RANGES: { label: string; value: Range }[] = [
 // ── page ──────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
-  const [range, setRange] = useState<Range>("3m");
+  const [range, setRange] = useState<Range>("1m");
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
