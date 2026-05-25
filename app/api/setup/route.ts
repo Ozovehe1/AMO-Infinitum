@@ -101,6 +101,14 @@ The colors must work together as a cohesive, readable system. Test your choices 
     if (!config) return NextResponse.json({ error: "No config" }, { status: 400 });
 
     const { userId } = session;
+
+    const aboutParagraphs = (config.aboutText || "")
+      .split(/\n\n+/)
+      .map((p: string) => p.trim())
+      .filter(Boolean);
+    const aboutHeroSubtitle = aboutParagraphs[0] || "";
+    const aboutBody = aboutParagraphs.map((p: string) => `<p>${p}</p>`).join("\n");
+
     const settingsToSave: { key: string; value: string }[] = [
       { key: "site_name", value: config.siteName || "" },
       { key: "site_tagline", value: config.tagline || "" },
@@ -110,7 +118,8 @@ The colors must work together as a cohesive, readable system. Test your choices 
       { key: "color_accent", value: config.colorAccent || "" },
       { key: "color_bg", value: config.colorBg || "" },
       { key: "footer_tagline", value: config.footerTagline || "" },
-      { key: "about_hero_subtitle", value: config.aboutText || "" },
+      { key: "about_hero_subtitle", value: aboutHeroSubtitle },
+      { key: "about_body", value: aboutBody },
       ...(coverImage ? [{ key: "cover_image", value: coverImage }] : []),
     ];
 
