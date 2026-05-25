@@ -3,13 +3,11 @@ export async function register() {
   if (process.env.NODE_ENV !== "production") return;
 
   const { execFileSync } = await import("child_process");
+  const { join } = await import("path");
 
   // Apply pending migrations
-  execFileSync(
-    process.execPath,
-    ["node_modules/prisma/build/index.js", "migrate", "deploy"],
-    { stdio: "inherit", env: process.env, timeout: 60_000 }
-  );
+  const prismaBin = join(process.cwd(), "node_modules", ".bin", "prisma");
+  execFileSync(prismaBin, ["migrate", "deploy"], { stdio: "inherit", env: process.env, timeout: 60_000 });
   console.log("[startup] Prisma migrations applied");
 
   // Seed owner credentials and platform config
