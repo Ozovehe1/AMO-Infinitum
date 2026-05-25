@@ -50,6 +50,11 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  await sendConfirmationEmail(normalised, token);
+  try {
+    await sendConfirmationEmail(normalised, token);
+  } catch (err) {
+    console.error("[subscribe] email send failed:", err);
+    return NextResponse.json({ error: "Failed to send confirmation email. Please try again." }, { status: 502 });
+  }
   return NextResponse.json({ message: "confirmation_sent" });
 }
