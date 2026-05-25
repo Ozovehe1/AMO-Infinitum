@@ -246,7 +246,7 @@ function SetupInner() {
 
   if (phase === "images") return (
     <div style={wrap}>
-      <div style={{ width: "100%", maxWidth: "min(66vw, 900px)", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 16, padding: "2.5rem" }}>
+      <div style={{ width: "100%", maxWidth: 900, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 16, padding: "2.5rem 2rem" }}>
         <div style={{ marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <span style={{ color: "#c8a97e", fontSize: "1.1rem" }}>⬡</span>
           <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#fffef9", fontSize: "1.5rem", margin: 0 }}>Choose a cover image</h2>
@@ -290,7 +290,7 @@ function SetupInner() {
 
   if (phase === "review" && config) return (
     <div style={wrap}>
-      <div style={{ width: "100%", maxWidth: "min(66vw, 700px)", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 16, padding: "2.5rem" }}>
+      <div style={{ width: "100%", maxWidth: 700, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 16, padding: "2.5rem 2rem" }}>
         <p style={{ color: "#c8a97e", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 0.4rem" }}>Almost there</p>
         <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#fffef9", fontSize: "1.6rem", margin: "0 0 0.5rem" }}>Here&apos;s your blog</h2>
         <p style={{ color: "#3a5068", fontSize: "0.84rem", margin: "0 0 2rem", lineHeight: 1.6 }}>Everything is editable from your Settings page after launch.</p>
@@ -338,11 +338,11 @@ function SetupInner() {
     <div style={wrap}>
       <div style={{
         width: "100%",
-        maxWidth: "min(66vw, 860px)",
+        maxWidth: 860,
         background: "rgba(255,255,255,0.03)",
         border: "1px solid rgba(200,169,126,0.12)",
         borderRadius: 16,
-        padding: "2.5rem 3rem 2rem",
+        padding: "2.5rem 2rem 2rem",
         opacity: animating ? 0 : 1,
         transform: animating ? "translateY(10px)" : "none",
         transition: "opacity 0.18s ease, transform 0.18s ease",

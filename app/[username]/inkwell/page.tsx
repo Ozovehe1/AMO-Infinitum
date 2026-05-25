@@ -15,15 +15,15 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/posts?admin=true&limit=5").then(r => r.json()),
+      fetch("/api/posts?admin=true&limit=200").then(r => r.json()),
       fetch("/api/categories").then(r => r.json()),
     ]).then(([postsData, cats]) => {
-      const all = postsData.posts || [];
-      setRecent(all);
+      const all: Post[] = postsData.posts || [];
+      setRecent(all.slice(0, 5));
       setStats({
         totalPosts: postsData.total || 0,
-        publishedPosts: all.filter((p: Post) => p.published).length,
-        draftPosts: all.filter((p: Post) => !p.published).length,
+        publishedPosts: all.filter(p => p.published).length,
+        draftPosts: all.filter(p => !p.published).length,
         totalCategories: cats.length,
       });
     });
