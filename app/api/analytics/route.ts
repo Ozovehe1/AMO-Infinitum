@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { userId } = session;
   const range = (req.nextUrl.searchParams.get("range") || "3m") as Range;
   const monthCount = range === "1m" ? 1 : range === "3m" ? 3 : range === "6m" ? 6 : 12;
   const granularity = getGranularity(range);
@@ -79,43 +80,38 @@ export async function GET(req: NextRequest) {
     allPosts,
     categories,
   ] = await Promise.all([
-    // Currently active subscribers (signed up + not unsubscribed)
-    prisma.subscriber.count({ where: { verified: true, unsubscribedAt: null } }),
-    // New sign-ups this period (regardless of whether they later unsubscribed)
-    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: since } } }),
-    // New sign-ups in previous period (for trend badge)
-    prisma.subscriber.count({ where: { verified: true, createdAt: { gte: prevSince, lt: since } } }),
-    // Pending confirmation (unverified, not yet unsubscribed)
-    prisma.subscriber.count({ where: { verified: false, unsubscribedAt: null } }),
-    // Active subscribers at the START of our chart period (who hadn't already unsubscribed)
+    prisma.subscriber.count({ where: { userId, verified: true, unsubscribedAt: null } }),
+    prisma.subscriber.count({ where: { userId, verified: true, createdAt: { gte: since } } }),
+    prisma.subscriber.count({ where: { userId, verified: true, createdAt: { gte: prevSince, lt: since } } }),
+    prisma.subscriber.count({ where: { userId, verified: false, unsubscribedAt: null } }),
     prisma.subscriber.count({
       where: {
+        userId,
         verified: true,
         createdAt: { lt: since },
         OR: [{ unsubscribedAt: null }, { unsubscribedAt: { gte: since } }],
       },
     }),
-    // All new verified subscribers in this period (for bucketing)
     prisma.subscriber.findMany({
-      where: { verified: true, createdAt: { gte: since } },
+      where: { userId, verified: true, createdAt: { gte: since } },
       select: { createdAt: true },
     }),
-    // All unsubscribes that happened within this period (for bucketing)
     prisma.subscriber.findMany({
-      where: { unsubscribedAt: { not: null, gte: since } },
+      where: { userId, unsubscribedAt: { not: null, gte: since } },
       select: { unsubscribedAt: true },
     }),
-    prisma.post.aggregate({ where: { published: true }, _sum: { views: true } }),
+    prisma.post.aggregate({ where: { userId, published: true }, _sum: { views: true } }),
     prisma.post.findMany({
-      where: { published: true },
+      where: { userId, published: true },
       orderBy: { views: "desc" },
       select: { id: true, title: true, slug: true, views: true, publishedAt: true, readingTime: true },
     }),
     prisma.post.findMany({
-      where: { published: true, publishedAt: { gte: since } },
+      where: { userId, published: true, publishedAt: { gte: since } },
       select: { publishedAt: true },
     }),
     prisma.category.findMany({
+      where: { userId },
       include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
       orderBy: { name: "asc" },
     }),
@@ -164,7 +160,7 @@ export async function GET(req: NextRequest) {
     prevNewSubscribers,
     pendingSubscribers,
     totalViews: totalViews._sum.views ?? 0,
-    totalPublished: await prisma.post.count({ where: { published: true } }),
+    totalPublished: await prisma.post.count({ where: { userId, published: true } }),
     topPosts,
     granularity,
     subscribersByMonth: subscribersByPeriod,

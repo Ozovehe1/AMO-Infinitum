@@ -12,13 +12,16 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const catId = parseInt(id);
   if (isNaN(catId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  const { name, description, color } = await req.json();
 
+  const existing = await prisma.category.findUnique({ where: { id: catId } });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (existing.userId !== session.userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const { name, description, color } = await req.json();
   const category = await prisma.category.update({
     where: { id: catId },
     data: { name, slug: slugify(name), description, color },
   });
-
   return NextResponse.json(category);
 }
 
@@ -29,6 +32,11 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params;
   const catId = parseInt(id);
   if (isNaN(catId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const existing = await prisma.category.findUnique({ where: { id: catId } });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (existing.userId !== session.userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   await prisma.category.delete({ where: { id: catId } });
   return NextResponse.json({ success: true });
 }

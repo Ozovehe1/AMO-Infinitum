@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type State = "idle" | "loading" | "sent" | "already" | "cooldown" | "error";
 
-export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
+export default function SubscribeForm({ dark = false, username }: { dark?: boolean; username: string }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<State>("idle");
 
@@ -16,7 +16,7 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), username }),
       });
       const data = await res.json();
       if (!res.ok) { setState("error"); return; }
@@ -49,7 +49,7 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
         </p>
         {state === "sent" && (
           <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
-            Don't see it? Check your spam folder.
+            Don&apos;t see it? Check your spam folder.
           </p>
         )}
       </div>
@@ -72,16 +72,13 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
           placeholder="your@email.com"
           required
           style={{
-            flex: "1 1 180px",
-            minWidth: 0,
+            flex: "1 1 180px", minWidth: 0,
             padding: "0.6rem 0.875rem",
             background: inputBg,
             border: `1px solid ${inputBorder}`,
             borderRadius: 4,
-            fontFamily: "Inter, sans-serif",
-            fontSize: "0.85rem",
-            color: textColor,
-            outline: "none",
+            fontFamily: "Inter, sans-serif", fontSize: "0.85rem",
+            color: textColor, outline: "none",
           }}
         />
         <button
@@ -89,12 +86,8 @@ export default function SubscribeForm({ dark = false }: { dark?: boolean }) {
           disabled={state === "loading"}
           style={{
             padding: "0.6rem 1.25rem",
-            background: "#c8a97e",
-            border: "none",
-            borderRadius: 4,
-            fontFamily: "Inter, sans-serif",
-            fontSize: "0.82rem",
-            fontWeight: 600,
+            background: "#c8a97e", border: "none", borderRadius: 4,
+            fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600,
             color: "#0d1f3c",
             cursor: state === "loading" ? "not-allowed" : "pointer",
             opacity: state === "loading" ? 0.7 : 1,

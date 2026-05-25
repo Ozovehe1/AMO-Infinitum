@@ -1,55 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword, verifyPassword, signToken, setAuthCookie, clearAuthCookie } from "@/lib/auth";
+import { verifyPassword, signToken, setAuthCookie, clearAuthCookie } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const { action, password, currentPassword, newPassword } = await req.json();
+  const { action, email, password, currentPassword, newPassword } = await req.json();
 
   if (action === "login") {
-    const admin = await prisma.admin.findFirst();
-
-    if (!admin) {
-      // First-time setup: create admin from env password
-      const envPassword = process.env.ADMIN_PASSWORD;
-      if (!envPassword) {
-        return NextResponse.json({ error: "ADMIN_PASSWORD env var not set" }, { status: 503 });
-      }
-      const hash = await hashPassword(envPassword);
-      await prisma.admin.create({ data: { passwordHash: hash } });
-
-      if (password !== envPassword) {
-        return NextResponse.json({ error: "Invalid password" }, { status: 401 });
-      }
-    } else {
-      const valid = await verifyPassword(password, admin.passwordHash);
-      if (!valid) {
-        return NextResponse.json({ error: "Invalid password" }, { status: 401 });
-      }
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
-
-    const token = signToken({ role: "admin" });
-    const res = NextResponse.json({ success: true });
-    const cookie = setAuthCookie(token);
-    res.cookies.set(cookie);
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+    const token = signToken({ userId: user.id, username: user.username, role: user.role });
+    const res = NextResponse.json({ success: true, username: user.username, onboarded: user.onboarded });
+    res.cookies.set(setAuthCookie(token));
     return res;
   }
 
   if (action === "logout") {
     const res = NextResponse.json({ success: true });
-    const cookie = clearAuthCookie();
-    res.cookies.set(cookie);
+    res.cookies.set(clearAuthCookie());
     return res;
   }
 
   if (action === "change-password") {
-    const admin = await prisma.admin.findFirst();
-    if (!admin) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const { getAdminSession } = await import("@/lib/auth");
+    const session = await getAdminSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const valid = await verifyPassword(currentPassword, admin.passwordHash);
+    const user = await prisma.user.findUnique({ where: { id: session.userId } });
+    if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
     if (!valid) return NextResponse.json({ error: "Wrong password" }, { status: 401 });
 
+    const { hashPassword } = await import("@/lib/auth");
     const hash = await hashPassword(newPassword);
-    await prisma.admin.update({ where: { id: admin.id }, data: { passwordHash: hash } });
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash: hash } });
     return NextResponse.json({ success: true });
   }
 

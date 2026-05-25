@@ -20,17 +20,20 @@ interface Post {
 
 interface PostCardProps {
   post: Post;
+  username: string;
+  siteName?: string;
   featured?: boolean;
 }
 
-export default function PostCard({ post, featured = false }: PostCardProps) {
+export default function PostCard({ post, username, siteName = "Blog", featured = false }: PostCardProps) {
   const date = formatDate(post.publishedAt || post.createdAt);
   const excerpt = post.excerpt || firstSentence(post.content);
   const cats = post.categories.map(c => c.category);
+  const href = `/${username}/blog/${post.slug}`;
 
   if (featured) {
     return (
-      <Link href={`/blog/${post.slug}`} style={{ textDecoration: "none", display: "block" }}>
+      <Link href={href} style={{ textDecoration: "none", display: "block" }}>
         <article style={{
           background: "#fffef9",
           border: "1px solid rgba(13,31,60,0.1)",
@@ -39,42 +42,20 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
           transition: "transform 0.25s, box-shadow 0.25s",
           cursor: "pointer",
           borderTop: "3px solid #c8a97e",
-          display: "flex",
-          flexDirection: "column",
-        }}
-          className="post-card-hover"
-        >
+        }} className="post-card-hover">
           {post.coverImage ? (
-            /* ── Real cover image ── */
-            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#1a4a5c", flexShrink: 0 }}>
+            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#1a4a5c" }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="post-card-img" />
             </div>
           ) : (
-            /* ── Branded cover — min 16/9 height, grows with excerpt, no clipping ── */
-            <div style={{ aspectRatio: "16/9", background: "#0d1f3c", position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 1.25rem" }}>
+            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#0d1f3c", position: "relative", display: "flex", alignItems: "flex-end", padding: "1.25rem 1.5rem" }}>
               <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.18em", color: "rgba(200,169,126,0.8)", textTransform: "uppercase" }}>AMO INFINITUM</span>
-              </div>
-              <div style={{ position: "relative" }}>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 600, color: "#fffef9", lineHeight: 1.25, margin: "0 0 0.35rem", wordBreak: "break-word" }}>
-                  {post.title}
-                </h2>
-                {excerpt && (
-                  <p style={{ color: "rgba(200,169,126,0.75)", fontSize: "0.75rem", lineHeight: 1.5, margin: "0 0 0.5rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word" }}>
-                    {excerpt}
-                  </p>
-                )}
-                <div style={{ width: 22, height: 2, background: "#c8a97e", borderRadius: 1 }} />
-              </div>
+              <span style={{ position: "relative", fontFamily: "Inter, sans-serif", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.22em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>{siteName}</span>
             </div>
           )}
-
-          {/* ── Card footer ── */}
-          <div style={{ padding: post.coverImage ? "1.5rem" : "0.875rem 1.5rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "0.5rem" }}>
+          <div style={{ padding: "1.5rem" }}>
             {cats.length > 0 && (
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.6rem" }}>
                 {cats.map(c => (
                   <span key={c.id} style={{ background: c.color + "18", color: c.color, border: `1px solid ${c.color}30`, borderRadius: 20, padding: "0.15rem 0.75rem", fontSize: "0.68rem", fontFamily: "Inter, sans-serif", letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500 }}>
                     {c.name}
@@ -82,18 +63,13 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
                 ))}
               </div>
             )}
-            {/* Title + excerpt only for posts that have a real cover image */}
-            {post.coverImage && (
-              <>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.25, margin: "0.1rem 0 0", wordBreak: "break-word" }}>
-                  {post.title}
-                </h2>
-                <p style={{ color: "#3a5068", fontSize: "0.92rem", lineHeight: 1.65, margin: 0, fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {excerpt}
-                </p>
-              </>
-            )}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.25, margin: "0 0 0.6rem", wordBreak: "break-word" }}>
+              {post.title}
+            </h2>
+            <p style={{ color: "#3a5068", fontSize: "0.92rem", lineHeight: 1.65, margin: "0 0 1rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
+              {excerpt}
+            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#8fa3b1", fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
                 <span>{date}</span>
                 <span>·</span>
@@ -112,15 +88,8 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
   }
 
   return (
-    <Link href={`/blog/${post.slug}`} style={{ textDecoration: "none", display: "block" }}>
-      <article style={{
-        padding: "1.5rem 0",
-        borderBottom: "1px solid rgba(13,31,60,0.1)",
-        cursor: "pointer",
-        transition: "opacity 0.2s",
-      }}
-        className="post-list-hover"
-      >
+    <Link href={href} style={{ textDecoration: "none", display: "block" }}>
+      <article style={{ padding: "1.5rem 0", borderBottom: "1px solid rgba(13,31,60,0.1)", cursor: "pointer", transition: "opacity 0.2s" }} className="post-list-hover">
         <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {cats.length > 0 && (
@@ -151,7 +120,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
           ) : (
             <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#0d1f3c", position: "relative" }}>
               <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 60%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 55%)" }} />
-              <span style={{ position: "absolute", bottom: 6, left: 7, fontFamily: "Inter, sans-serif", fontSize: "0.48rem", fontWeight: 700, letterSpacing: "0.18em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>AMO</span>
+              <span style={{ position: "absolute", bottom: 6, left: 7, fontFamily: "Inter, sans-serif", fontSize: "0.48rem", fontWeight: 700, letterSpacing: "0.18em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>{siteName.slice(0, 6)}</span>
             </div>
           )}
         </div>

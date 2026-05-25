@@ -2,12 +2,15 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-interface AuthCtx { logout: () => void }
-const AuthContext = createContext<AuthCtx>({ logout: () => {} });
+interface AuthCtx { logout: () => void; username: string }
+const AuthContext = createContext<AuthCtx>({ logout: () => {}, username: "" });
 export const useAuth = () => useContext(AuthContext);
 
-export default function AdminGuard({ children }: { children: React.ReactNode }) {
+interface Props { children: React.ReactNode; username: string }
+
+export default function AdminGuard({ children, username }: Props) {
   const [status, setStatus] = useState<"loading" | "authed" | "login">("loading");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [logging, setLogging] = useState(false);
@@ -15,41 +18,74 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   useEffect(() => {
-    // sessionStorage is cleared when the browser tab is closed.
-    // No session flag = new session = always re-authenticate.
     const sessionActive = typeof window !== "undefined" && sessionStorage.getItem("amo_session");
     if (!sessionActive) {
-      // Clear any lingering cookie so old mobile sessions don't skip login
-      fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) })
-        .finally(() => setStatus("login"));
+      fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "logout" }),
+      }).finally(() => setStatus("login"));
       return;
     }
     fetch("/api/auth/check")
-      .then(r => setStatus(r.ok ? "authed" : "login"))
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.authenticated) { setStatus("login"); return; }
+        // Verify the logged-in user matches the URL username
+        fetch("/api/auth/me")
+          .then(r => r.ok ? r.json() : null)
+          .then(me => {
+            if (me?.username === username) {
+              setStatus("authed");
+            } else {
+              sessionStorage.removeItem("amo_session");
+              setStatus("login");
+            }
+          })
+          .catch(() => setStatus("authed")); // fallback: trust check
+      })
       .catch(() => setStatus("login"));
-  }, [pathname]);
+  }, [pathname, username]);
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
     setLogging(true);
     setError("");
-    const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "login", password }) });
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login", email, password }),
+    });
     if (res.ok) {
+      const data = await res.json();
+      if (data.username !== username) {
+        setError("This account doesn't have access to this blog.");
+        setLogging(false);
+        return;
+      }
       sessionStorage.setItem("amo_session", "1");
-      setStatus("authed");
-      router.push("/inkwell");
+      if (!data.onboarded) {
+        router.push(`/${username}/inkwell/setup`);
+      } else {
+        setStatus("authed");
+        router.push(`/${username}/inkwell`);
+      }
     } else {
       const data = await res.json();
-      setError(data.error || "Invalid password");
+      setError(data.error || "Invalid email or password");
     }
     setLogging(false);
   };
 
   const logout = async () => {
     sessionStorage.removeItem("amo_session");
-    await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
+    await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "logout" }),
+    });
     setStatus("login");
-    router.push("/inkwell");
+    router.push(`/${username}/inkwell`);
   };
 
   if (status === "loading") {
@@ -66,29 +102,45 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0d1f3c", padding: "1.5rem" }}>
         <div style={{ width: "100%", maxWidth: 380 }}>
           <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: "0 0 0.5rem" }}>
-              AMO <span style={{ fontStyle: "italic", color: "#c8a97e" }}>Infinitum</span>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: "0 0 0.25rem" }}>
+              <span style={{ color: "#c8a97e" }}>/{username}</span>
             </h1>
-            <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>Admin — enter your password</p>
+            <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", margin: 0 }}>
+              Blog Admin — sign in to continue
+            </p>
           </div>
-          <form onSubmit={login} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form onSubmit={login} style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Email"
+              autoFocus
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 4, padding: "0.85rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "1rem", outline: "none" }}
+            />
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Password"
-              autoFocus
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 4, padding: "0.85rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "1rem", outline: "none" }}
             />
             {error && <p style={{ color: "#e07070", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
-            <button type="submit" disabled={logging || !password} style={{ background: "#2d7d9a", color: "#fff", border: "none", borderRadius: 4, padding: "0.85rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: "pointer", opacity: logging ? 0.7 : 1, transition: "opacity 0.2s" }}>
-              {logging ? "Entering…" : "Enter"}
+            <button type="submit" disabled={logging || !email || !password} style={{ background: "#2d7d9a", color: "#fff", border: "none", borderRadius: 4, padding: "0.85rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: "pointer", opacity: logging ? 0.7 : 1 }}>
+              {logging ? "Signing in…" : "Sign In"}
             </button>
           </form>
+          <p style={{ textAlign: "center", marginTop: "1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1" }}>
+            New here? <a href="/register" style={{ color: "#c8a97e", textDecoration: "none" }}>Create your blog →</a>
+          </p>
         </div>
       </div>
     );
   }
 
-  return <AuthContext.Provider value={{ logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ logout, username }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
