@@ -2,7 +2,6 @@ import { prisma } from "./db";
 import { put, del } from "@vercel/blob";
 import { stripHtml } from "./utils";
 
-
 const DG_URL    = "https://api.deepgram.com/v1/speak?model=aura-2-thalia-en";
 const CHUNK_MAX = 1800;
 const TEXT_CAP  = 7200;
@@ -24,6 +23,7 @@ export function chunkText(text: string): string[] {
 }
 
 export async function generatePostAudio(
+  userId: number,
   slug: string,
   title: string,
   content: string,
@@ -65,8 +65,9 @@ export async function generatePostAudio(
   }
 
   try {
-    // Delete old blob before uploading new one
-    const existing = await prisma.siteSettings.findUnique({ where: { key: `audio_${slug}` } });
+    const existing = await prisma.siteSettings.findUnique({
+      where: { userId_key: { userId, key: `audio_${slug}` } },
+    });
     if (existing?.value) {
       try { await del(existing.value); } catch { /* blob may already be gone */ }
     }
@@ -78,12 +79,11 @@ export async function generatePostAudio(
     });
 
     await prisma.siteSettings.upsert({
-      where:  { key: `audio_${slug}` },
+      where:  { userId_key: { userId, key: `audio_${slug}` } },
       update: { value: url },
-      create: { key: `audio_${slug}`, value: url },
+      create: { userId, key: `audio_${slug}`, value: url },
     });
 
-    // Revalidate the blog page so the new audio URL is served immediately
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
     await fetch(`${siteUrl}/api/revalidate-audio`, {
       method: "POST",

@@ -8,10 +8,10 @@ import { sendNewPostNotifications } from "@/lib/email";
 
 export const maxDuration = 30;
 
-async function triggerAudio(slug: string, title: string, content: string) {
+async function triggerAudio(userId: number, slug: string, title: string, content: string) {
   if (!process.env.TRIGGER_SECRET_KEY) return;
   try {
-    await tasks.trigger("generate-post-audio", { slug, title, content });
+    await tasks.trigger("generate-post-audio", { userId, slug, title, content });
   } catch { /* Trigger.dev not configured — audio skipped */ }
 }
 
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (post.published) {
-    await triggerAudio(post.slug, post.title, post.content);
+    await triggerAudio(userId, post.slug, post.title, post.content);
     if (shouldNotify !== false) {
       after(() => notifySubscribers(userId, post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
     }

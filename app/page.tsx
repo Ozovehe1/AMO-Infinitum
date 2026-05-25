@@ -1,243 +1,145 @@
 import { prisma } from "@/lib/db";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import PostCard from "@/components/PostCard";
 import Link from "next/link";
-import { formatDate, truncate } from "@/lib/utils";
-import { Suspense } from "react";
-import SubBanner from "@/components/SubBanner";
+import { formatDate } from "@/lib/utils";
 
 export const revalidate = 60;
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; page?: string }>;
-}) {
-  const params = await searchParams;
-  const category = params.category;
-  const page = parseInt(params.page || "1");
-  const limit = 9;
+async function getDiscoveryPosts() {
+  const posts = await prisma.post.findMany({
+    where: { published: true },
+    include: { user: { include: { settings: true } } },
+    orderBy: { publishedAt: "desc" },
+    take: 12,
+  });
 
-  const [featured, posts, total, categories] = await Promise.all([
-    prisma.post.findFirst({
-      where: { published: true, featured: true },
-      include: { categories: { include: { category: true } } },
-      orderBy: { publishedAt: "desc" },
-    }),
-    prisma.post.findMany({
-      where: {
-        published: true,
-        ...(category ? { categories: { some: { category: { slug: category } } } } : {}),
-      },
-      include: { categories: { include: { category: true } } },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.post.count({
-      where: {
-        published: true,
-        ...(category ? { categories: { some: { category: { slug: category } } } } : {}),
-      },
-    }),
-    prisma.category.findMany({
-      include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
-      orderBy: { name: "asc" },
-    }),
+  return posts.map(p => {
+    const siteName = p.user.settings.find(s => s.key === "site_name")?.value || p.user.username;
+    return {
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      excerpt: p.excerpt,
+      coverImage: p.coverImage,
+      readingTime: p.readingTime,
+      publishedAt: p.publishedAt,
+      createdAt: p.createdAt,
+      username: p.user.username,
+      siteName,
+    };
+  });
+}
+
+export default async function PlatformLanding() {
+  const [posts, totalUsers, totalPosts] = await Promise.all([
+    getDiscoveryPosts(),
+    prisma.user.count(),
+    prisma.post.count({ where: { published: true } }),
   ]);
 
-  const totalPages = Math.ceil(total / limit);
-  const featuredExcerpt = featured
-    ? featured.excerpt || truncate(featured.content, 200)
-    : "";
-
   return (
-    <>
-      <Header />
-
-      {/* ── HERO ── */}
-      <section style={{
-        position: "relative",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "flex-end",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "url('/hero-ship.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center 30%",
-        }} />
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(10,20,35,0.25) 0%, rgba(10,20,35,0.5) 55%, rgba(10,20,35,0.95) 100%)",
-        }} />
-        <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 8rem" }}>
-          <p style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "1.25rem", margin: "0 0 1.25rem" }}>
-            On the Infinitudes of Life
-          </p>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(3rem, 8vw, 6rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.05, margin: "0 0 1.5rem", maxWidth: 820 }}>
-            AMO{" "}
-            <span style={{ fontStyle: "italic", color: "#c8a97e" }}>Infinitum</span>
-          </h1>
-          <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(245,240,232,0.75)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic" }}>
-            We stretch our hands toward the end, only to find that every horizon is another dawn.
-          </p>
-          <a
-            href="#posts"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "0.5rem",
-              border: "1px solid rgba(200,169,126,0.55)",
-              color: "#c8a97e",
-              padding: "0.75rem 1.75rem",
-              borderRadius: 2,
-              fontFamily: "Inter, sans-serif",
-              fontSize: "0.78rem",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              textDecoration: "none",
-            }}
-          >
-            Read the Blog
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 7h10M8 3l4 4-4 4" />
-            </svg>
-          </a>
+    <div style={{ minHeight: "100vh", background: "#0d1f3c", color: "#fffef9" }}>
+      {/* Nav */}
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(13,31,60,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(200,169,126,0.12)", height: 60, display: "flex", alignItems: "center" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: "#c8a97e" }}>
+            AMO <span style={{ color: "#fffef9", fontStyle: "italic" }}>Infinitum</span>
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <Link href="/login" style={{ color: "#8fa3b1", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>Sign In</Link>
+            <Link href="/register" style={{ background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, padding: "0.45rem 1rem", borderRadius: 4 }}>Start Writing</Link>
+          </div>
         </div>
-        {/* Scroll indicator */}
-        <div style={{ position: "absolute", bottom: "2.5rem", left: "50%", transform: "translateX(-50%)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ color: "rgba(200,169,126,0.5)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>Scroll</span>
-          <div style={{ width: 1, height: 48, background: "linear-gradient(to bottom, rgba(200,169,126,0.6), transparent)" }} />
+      </nav>
+
+      {/* Hero */}
+      <section style={{ paddingTop: 160, paddingBottom: 100, paddingLeft: "1.5rem", paddingRight: "1.5rem", maxWidth: 1200, margin: "0 auto" }}>
+        <p style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "1.5rem" }}>A Platform for Writers</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2.5rem, 7vw, 5rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.1, margin: "0 0 1.5rem", maxWidth: 780 }}>
+          Your blog.<br />
+          <span style={{ color: "#c8a97e", fontStyle: "italic" }}>Your voice.</span>
+        </h1>
+        <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(255,254,249,0.65)", maxWidth: 560, lineHeight: 1.75, margin: "0 0 2.5rem" }}>
+          AMO Infinitum is a platform for writers who care about words. Start your blog in minutes — AI sets up your theme, you do the writing.
+        </p>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+          <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 700, padding: "0.875rem 2rem", borderRadius: 4 }}>
+            Create Your Blog →
+          </Link>
+          <Link href="/login" style={{ color: "#8fa3b1", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
+            Already writing? Sign in
+          </Link>
+        </div>
+
+        <div style={{ display: "flex", gap: "3rem", marginTop: "4rem", flexWrap: "wrap" }}>
+          {[[totalUsers, "Blogs"], [totalPosts, "Posts published"]].map(([n, label]) => (
+            <div key={String(label)}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", color: "#c8a97e", lineHeight: 1 }}>{n}</div>
+              <div style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", marginTop: "0.25rem" }}>{label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── FEATURED POST ── */}
-      {featured && !category && (
-        <section style={{ background: "#0d1f3c", padding: "5rem 1.5rem" }}>
+      {/* Discovery feed */}
+      {posts.length > 0 && (
+        <section style={{ background: "#f5f0e8", padding: "5rem 1.5rem" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <p style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "2.5rem", margin: "0 0 2.5rem" }}>
-              ✦ Featured
-            </p>
-            <Link href={`/blog/${featured.slug}`} style={{ textDecoration: "none" }}>
-              <div
-                style={{ display: "grid", gridTemplateColumns: featured.coverImage ? "1fr 1fr" : "1fr", gap: "4rem", alignItems: "center" }}
-                className="featured-grid"
-              >
-                {featured.coverImage && (
-                  <div style={{ borderRadius: 6, overflow: "hidden", aspectRatio: "4/3", background: "#1a4a5c" }}>
-                    <img src={featured.coverImage} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} className="featured-img" />
-                  </div>
-                )}
-                <div>
-                  <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
-                    {featured.categories.map(c => (
-                      <span key={c.categoryId} style={{ color: c.category.color, fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                        {c.category.name}
-                      </span>
-                    ))}
-                  </div>
-                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.2, margin: "0 0 1.1rem", wordBreak: "break-word" }}>
-                    {featured.title}
-                  </h2>
-                  <p style={{ color: "#8fa3b1", fontFamily: "'Source Serif 4', serif", fontSize: "1.05rem", lineHeight: 1.7, margin: "0 0 1.75rem", wordBreak: "break-word", overflowWrap: "break-word" }}>
-                    {featuredExcerpt}
-                  </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: "#8fa3b1", fontSize: "0.78rem", fontFamily: "Inter, sans-serif" }}>
-                    <span>{formatDate(featured.publishedAt || featured.createdAt)}</span>
-                    <span>·</span>
-                    <span>{featured.readingTime} min read</span>
-                    <span style={{ color: "#c8a97e", marginLeft: "0.25rem" }}>Read →</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
+            <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 0.4rem" }}>Community</p>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#0d1f3c", margin: "0 0 2.5rem", fontWeight: 600 }}>Latest from our writers</h2>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }} className="disc-grid">
+              {posts.map(post => (
+                <Link key={post.id} href={`/${post.username}/blog/${post.slug}`} style={{ textDecoration: "none" }}>
+                  <article style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, overflow: "hidden", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", height: "100%" }} className="disc-card">
+                    {post.coverImage ? (
+                      <div style={{ height: 160, overflow: "hidden" }}>
+                        <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="disc-img" />
+                      </div>
+                    ) : (
+                      <div style={{ height: 80, background: "#0d1f3c", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.85rem", color: "rgba(200,169,126,0.6)", fontStyle: "italic" }}>{post.siteName}</span>
+                      </div>
+                    )}
+                    <div style={{ padding: "1.25rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
+                        <span style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 }}>{post.siteName}</span>
+                        <span style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.7rem" }}>@{post.username}</span>
+                      </div>
+                      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "#0d1f3c", lineHeight: 1.3, margin: "0 0 0.5rem", wordBreak: "break-word" }}>
+                        {post.title}
+                      </h3>
+                      {post.excerpt && (
+                        <p style={{ color: "#3a5068", fontFamily: "'Source Serif 4', serif", fontSize: "0.85rem", lineHeight: 1.6, margin: "0 0 0.75rem", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                          {post.excerpt}
+                        </p>
+                      )}
+                      <div style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", display: "flex", gap: "0.5rem" }}>
+                        <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                        <span>·</span>
+                        <span>{post.readingTime} min read</span>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
           </div>
           <style>{`
-            .featured-img:hover { transform: scale(1.04); }
-            @media (max-width: 768px) { .featured-grid { grid-template-columns: 1fr !important; gap: 2rem !important; } }
+            .disc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(13,31,60,0.12); }
+            .disc-card:hover .disc-img { transform: scale(1.04); }
+            @media (max-width: 640px) { .disc-grid { grid-template-columns: 1fr !important; } }
           `}</style>
         </section>
       )}
 
-      {/* ── POSTS GRID ── */}
-      <main id="posts" style={{ flex: 1, background: "#f5f0e8", padding: "5rem 1.5rem" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-
-          {/* Category filter pills */}
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "3rem", paddingBottom: "2rem", borderBottom: "1px solid rgba(13,31,60,0.1)" }}>
-            <Link href="/" style={{
-              padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none",
-              border: "1px solid " + (!category ? "#2d7d9a" : "rgba(13,31,60,0.2)"),
-              background: !category ? "#2d7d9a" : "transparent",
-              color: !category ? "#fff" : "#3a5068",
-              transition: "all 0.2s",
-            }}>All</Link>
-            {categories.map(cat => (
-              <Link key={cat.id} href={`/?category=${cat.slug}`} style={{
-                padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none",
-                border: "1px solid " + (category === cat.slug ? cat.color : "rgba(13,31,60,0.2)"),
-                background: category === cat.slug ? cat.color : "transparent",
-                color: category === cat.slug ? "#fff" : "#3a5068",
-                transition: "all 0.2s",
-              }}>
-                {cat.name}
-                <span style={{ marginLeft: "0.4rem", opacity: 0.65, fontSize: "0.68rem" }}>({cat._count.posts})</span>
-              </Link>
-            ))}
-          </div>
-
-          {/* Count */}
-          <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 2rem" }}>
-            {category ? `Category — ${category}` : "All Writings"} &nbsp;·&nbsp; {total} {total === 1 ? "post" : "posts"}
-          </p>
-
-          {posts.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "6rem 0" }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: "0 0 0.5rem" }}>Nothing here yet.</p>
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "#8fa3b1" }}>The first word hasn&apos;t been written yet. Check back soon.</p>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }} className="posts-grid">
-              {posts.map(post => (
-                <PostCard key={post.id} post={post} featured />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "4rem" }}>
-              {page > 1 && (
-                <Link href={`/?${category ? `category=${category}&` : ""}page=${page - 1}`} style={{ padding: "0.5rem 1.25rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
-                  ← Prev
-                </Link>
-              )}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <Link key={p} href={`/?${category ? `category=${category}&` : ""}page=${p}`} style={{ padding: "0.5rem 0.875rem", border: "1px solid " + (p === page ? "#2d7d9a" : "rgba(13,31,60,0.2)"), background: p === page ? "#2d7d9a" : "transparent", borderRadius: 4, textDecoration: "none", color: p === page ? "#fff" : "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
-                  {p}
-                </Link>
-              ))}
-              {page < totalPages && (
-                <Link href={`/?${category ? `category=${category}&` : ""}page=${page + 1}`} style={{ padding: "0.5rem 1.25rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
-                  Next →
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      <Footer />
-
-      <Suspense><SubBanner /></Suspense>
-
-      <style>{`
-        @media (max-width: 640px) {
-          .posts-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-    </>
+      {/* Footer CTA */}
+      <section style={{ background: "#0d1f3c", padding: "5rem 1.5rem", textAlign: "center", borderTop: "1px solid rgba(200,169,126,0.12)" }}>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 4vw, 2.75rem)", color: "#fffef9", margin: "0 0 1rem", fontWeight: 600 }}>Ready to start writing?</h2>
+        <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", margin: "0 0 2rem" }}>Set up your blog in minutes. AI handles the design, you handle the words.</p>
+        <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 700, padding: "0.875rem 2.5rem", borderRadius: 4 }}>
+          Create Your Blog →
+        </Link>
+      </section>
+    </div>
   );
 }
