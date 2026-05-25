@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
@@ -56,6 +56,7 @@ function TSep() {
 
 export default function PostForm({ post }: { post?: PostData }) {
   const router = useRouter();
+  const { username } = useParams<{ username: string }>();
   const coverImgRef    = useRef<HTMLInputElement>(null);
   const bodyImgRef     = useRef<HTMLInputElement>(null);
   const mobileTitleRef    = useRef<HTMLTextAreaElement>(null);
@@ -147,10 +148,10 @@ export default function PostForm({ post }: { post?: PostData }) {
   // Load AI chat + session history on mount
   useEffect(() => {
     const pid = postId ?? "new";
-    // localStorage is the fast-access layer for the active chat
+    // localStorage is the fast-access layer for the active chat — keyed by user+post to prevent cross-user leakage
     let restoredFromLocal = false;
     try {
-      const chat = localStorage.getItem(`ai-chat-${pid}`);
+      const chat = localStorage.getItem(`ai-chat-${username}-${pid}`);
       if (chat) { setAiMessages(JSON.parse(chat)); restoredFromLocal = true; }
     } catch { /* ignore */ }
     // Archived sessions + DB backup of active chat
@@ -169,7 +170,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
   // Persist current chat — localStorage for speed, DB for durability
   useEffect(() => {
-    const key = `ai-chat-${postId ?? "new"}`;
+    const key = `ai-chat-${username}-${postId ?? "new"}`;
     if (aiMessages.length > 0) {
       localStorage.setItem(key, JSON.stringify(aiMessages));
       // Fire-and-forget DB backup so chat survives browser clears and device switches
@@ -181,7 +182,7 @@ export default function PostForm({ post }: { post?: PostData }) {
     } else {
       localStorage.removeItem(key);
     }
-  }, [aiMessages, postId]);
+  }, [aiMessages, postId, username]);
 
   // ── Session management ────────────────────────────────────
   // Saves sessions to DB — permanent storage, only the author can delete
@@ -322,10 +323,10 @@ export default function PostForm({ post }: { post?: PostData }) {
           if (willShowOverlay) {
             // Update URL without navigating — router.push would unmount the
             // component before the overlay can render
-            window.history.replaceState({}, "", `/inkwell/posts/${data.id}`);
+            window.history.replaceState({}, "", `/${username}/inkwell/posts/${data.id}`);
           } else {
-            if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
-            else router.push(`/inkwell/posts/${data.id}`);
+            if (options.silent) router.replace(`/${username}/inkwell/posts/${data.id}`);
+            else router.push(`/${username}/inkwell/posts/${data.id}`);
           }
         }
         if (options.publish !== undefined) setPublished(options.publish);
