@@ -480,6 +480,7 @@ export default function PostForm({ post }: { post?: PostData }) {
           coverImage={coverImage}
           content={content}
           onDismiss={() => setPublishedSlug(null)}
+          username={username}
         />
       )}
 
@@ -991,7 +992,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
           {/* Sidebar */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", position: "sticky", top: "1.5rem" }}>
-            <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers }} />
+            <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers, username }} />
             {/* AI toggle */}
             <button
               onClick={() => setAiOpen(o => !o)}
@@ -1130,7 +1131,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               </div>
 
               {/* Share link (when published) */}
-              {published && postSlug && <ShareRow slug={postSlug} />}
+              {published && postSlug && <ShareRow slug={postSlug} username={username} />}
               {published && postSlug && <AudioGenPanel />}
 
               {/* Featured */}
@@ -1202,7 +1203,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                       if (!confirm("Delete this post? This cannot be undone.")) return;
                       setDeleting(true);
                       await fetch(`/api/posts/${postId}`, { method: "DELETE" });
-                      router.push("/inkwell/posts");
+                      router.push(`/${username}/inkwell/posts`);
                     }}
                     disabled={deleting}
                     style={{ background: "transparent", color: "#c04040", border: "none", borderRadius: 12, padding: "0.625rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", opacity: deleting ? 0.6 : 1 }}
@@ -1259,9 +1260,10 @@ interface SettingsProps {
   inputStyle: React.CSSProperties; labelStyle: React.CSSProperties;
   postSlug?: string;
   notifySubscribers: boolean; setNotifySubscribers: (v: boolean) => void;
+  username: string;
 }
 
-function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers }: SettingsProps) {
+function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers, username }: SettingsProps) {
   return (
     <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 10, overflow: "hidden" }}>
       <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid rgba(13,31,60,0.07)", background: "#f5f0e8" }}>
@@ -1276,7 +1278,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           </span>
         </div>
 
-        {published && postSlug && <ShareRow slug={postSlug} />}
+        {published && postSlug && <ShareRow slug={postSlug} username={username} />}
         {published && postSlug && <AudioGenPanel />}
 
         <label style={{ display: "flex", alignItems: "center", gap: "0.625rem", cursor: "pointer" }}>
@@ -1337,7 +1339,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           <label style={labelStyle}>Categories</label>
           {categories.length === 0 ? (
             <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0 }}>
-              No categories. <Link href="/inkwell/categories" style={{ color: "#2d7d9a" }}>Create some.</Link>
+              No categories. <Link href={`/${username}/inkwell/categories`} style={{ color: "#2d7d9a" }}>Create some.</Link>
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -1356,10 +1358,10 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
   );
 }
 
-function ShareRow({ slug }: { slug: string }) {
+function ShareRow({ slug, username }: { slug: string; username: string }) {
   const [copied, setCopied] = useState(false);
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
-  const link = `${siteUrl}/blog/${slug}`;
+  const link = `${siteUrl}/${username}/blog/${slug}`;
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2500); }
     catch { window.prompt("Copy this link:", link); }
@@ -1380,13 +1382,13 @@ function ShareRow({ slug }: { slug: string }) {
   );
 }
 
-function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss }: {
-  slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void;
+function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss, username }: {
+  slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void; username: string;
 }) {
   const [sharing, setSharing] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
-  const postUrl = `${origin}/blog/${slug}`;
+  const postUrl = `${origin}/${username}/blog/${slug}`;
   const preview = excerpt || firstSentence(content);
 
   const shareText = preview || title;
@@ -1516,7 +1518,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
 
             <CopyLinkRow url={postUrl} />
 
-            <a href="/inkwell" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
+            <a href={`/${username}/inkwell`} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
               Dashboard
             </a>
             <button onClick={onDismiss}
