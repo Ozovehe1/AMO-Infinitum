@@ -4,7 +4,7 @@ import { getThemeByUsername } from "@/lib/theme";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate, truncate, subtleColor } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -179,7 +179,7 @@ function PostMeta({ post, date, onDark, accent, primary }: {
   primary?: string;
 }) {
   const textColor = onDark ? "#fffef9" : "#0d1f3c";
-  const subColor = onDark ? "rgba(255,254,249,0.55)" : `${primary || "#0d1f3c"}99`;
+  const subColor = onDark ? subtleColor(primary || "#0d1f3c") : `${primary || "#0d1f3c"}99`;
   return (
     <div style={{ maxWidth: 760 }}>
       {post.categories.length > 0 && (

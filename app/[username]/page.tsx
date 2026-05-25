@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PostCard from "@/components/PostCard";
 import Link from "next/link";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate, truncate, subtleColor } from "@/lib/utils";
 import { Suspense } from "react";
 import SubBanner from "@/components/SubBanner";
 
@@ -80,7 +80,7 @@ export default async function UserBlogHome({
   const primary = theme.colorPrimary || "#0d1f3c";
   const bg = theme.colorBg || "#f5f0e8";
   const base = `/${username}`;
-  const subtleOnDark = "rgba(255,254,249,0.55)";
+  const subtleOnDark = subtleColor(primary);
   const subtleOnLight = `${primary}99`;
 
   return (

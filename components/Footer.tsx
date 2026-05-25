@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SubscribeForm from "./SubscribeForm";
 import type { Theme } from "@/lib/theme";
+import { subtleColor } from "@/lib/utils";
 
 interface Props { username: string; theme: Theme }
 
@@ -9,12 +10,12 @@ export default function Footer({ username, theme }: Props) {
   const base = `/${username}`;
   const accent = theme.colorAccent || "#c8a97e";
   const primary = theme.colorPrimary || "#0d1f3c";
-  const subtle = "rgba(255,254,249,0.55)";
+  const subtle = subtleColor(primary);
 
   return (
     <footer style={{ background: primary, borderTop: `1px solid ${accent}1f`, padding: "3rem 1.5rem 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto 2.5rem", padding: "2rem", background: `${accent}0f`, border: `1px solid ${accent}26`, borderRadius: 6 }}>
-        <SubscribeForm dark username={username} siteName={theme.siteName} />
+        <SubscribeForm dark username={username} siteName={theme.siteName} subtleText={subtle} />
       </div>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>

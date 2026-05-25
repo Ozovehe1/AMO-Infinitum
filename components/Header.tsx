@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { Theme } from "@/lib/theme";
+import { subtleColor } from "@/lib/utils";
 
 interface Category { id: number; name: string; slug: string }
 
@@ -32,7 +33,7 @@ export default function Header({ username, theme }: Props) {
 
   const accent = theme.colorAccent || "#c8a97e";
   const primary = theme.colorPrimary || "#0d1f3c";
-  const subtle = "rgba(255,254,249,0.55)";
+  const subtle = subtleColor(primary);
 
   return (
     <header style={{

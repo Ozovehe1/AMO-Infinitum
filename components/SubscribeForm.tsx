@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type State = "idle" | "loading" | "sent" | "already" | "cooldown" | "error";
 
-export default function SubscribeForm({ dark = false, username, siteName }: { dark?: boolean; username: string; siteName?: string }) {
+export default function SubscribeForm({ dark = false, username, siteName, subtleText }: { dark?: boolean; username: string; siteName?: string; subtleText?: string }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<State>("idle");
 
@@ -31,7 +31,7 @@ export default function SubscribeForm({ dark = false, username, siteName }: { da
   };
 
   const textColor  = dark ? "#fffef9" : "#0d1f3c";
-  const subColor   = dark ? "rgba(255,254,249,0.55)" : "#3a5068";
+  const subColor   = dark ? (subtleText || "rgba(255,254,249,0.6)") : "#3a5068";
   const inputBg    = dark ? "rgba(255,254,249,0.06)" : "#fffef9";
   const inputBorder = dark ? "rgba(200,169,126,0.25)" : "rgba(13,31,60,0.18)";
 
