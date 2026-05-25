@@ -165,7 +165,7 @@ export default async function UserBlogHome({
       <main id="posts" style={{ flex: 1, background: bg, padding: "5rem 1.5rem" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "3rem", paddingBottom: "2rem", borderBottom: "1px solid rgba(13,31,60,0.1)" }}>
-            <Link href={base} style={{ padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none", border: "1px solid " + (!category ? "#2d7d9a" : "rgba(13,31,60,0.2)"), background: !category ? "#2d7d9a" : "transparent", color: !category ? "#fff" : "#3a5068", transition: "all 0.2s" }}>All</Link>
+            <Link href={base} style={{ padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none", border: "1px solid " + (!category ? accent : `${primary}33`), background: !category ? accent : "transparent", color: !category ? bg : "#3a5068", transition: "all 0.2s" }}>All</Link>
             {categories.map(cat => (
               <Link key={cat.id} href={`${base}?category=${cat.slug}`} style={{ padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none", border: "1px solid " + (category === cat.slug ? cat.color : "rgba(13,31,60,0.2)"), background: category === cat.slug ? cat.color : "transparent", color: category === cat.slug ? "#fff" : "#3a5068", transition: "all 0.2s" }}>
                 {cat.name}
@@ -180,13 +180,13 @@ export default async function UserBlogHome({
 
           {posts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "6rem 0" }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: "0 0 0.5rem" }}>Nothing here yet.</p>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: primary, margin: "0 0 0.5rem" }}>Nothing here yet.</p>
               <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "#8fa3b1" }}>Check back soon.</p>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }} className="posts-grid">
               {posts.map(post => (
-                <PostCard key={post.id} post={post} username={username} siteName={theme.siteName} featured />
+                <PostCard key={post.id} post={post} username={username} siteName={theme.siteName} featured theme={{ colorPrimary: primary, colorAccent: accent, colorBg: bg }} />
               ))}
             </div>
           )}
@@ -194,13 +194,13 @@ export default async function UserBlogHome({
           {totalPages > 1 && (
             <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "4rem" }}>
               {page > 1 && (
-                <Link href={`${base}?${category ? `category=${category}&` : ""}page=${page - 1}`} style={{ padding: "0.5rem 1.25rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>← Prev</Link>
+                <Link href={`${base}?${category ? `category=${category}&` : ""}page=${page - 1}`} style={{ padding: "0.5rem 1.25rem", border: `1px solid ${primary}33`, borderRadius: 4, textDecoration: "none", color: primary, fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>← Prev</Link>
               )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <Link key={p} href={`${base}?${category ? `category=${category}&` : ""}page=${p}`} style={{ padding: "0.5rem 0.875rem", border: "1px solid " + (p === page ? "#2d7d9a" : "rgba(13,31,60,0.2)"), background: p === page ? "#2d7d9a" : "transparent", borderRadius: 4, textDecoration: "none", color: p === page ? "#fff" : "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>{p}</Link>
+                <Link key={p} href={`${base}?${category ? `category=${category}&` : ""}page=${p}`} style={{ padding: "0.5rem 0.875rem", border: `1px solid ${p === page ? accent : `${primary}33`}`, background: p === page ? accent : "transparent", borderRadius: 4, textDecoration: "none", color: p === page ? bg : primary, fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>{p}</Link>
               ))}
               {page < totalPages && (
-                <Link href={`${base}?${category ? `category=${category}&` : ""}page=${page + 1}`} style={{ padding: "0.5rem 1.25rem", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, textDecoration: "none", color: "#0d1f3c", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>Next →</Link>
+                <Link href={`${base}?${category ? `category=${category}&` : ""}page=${page + 1}`} style={{ padding: "0.5rem 1.25rem", border: `1px solid ${primary}33`, borderRadius: 4, textDecoration: "none", color: primary, fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>Next →</Link>
               )}
             </div>
           )}

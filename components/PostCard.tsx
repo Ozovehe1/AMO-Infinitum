@@ -23,34 +23,54 @@ interface PostCardProps {
   username: string;
   siteName?: string;
   featured?: boolean;
+  theme?: { colorPrimary: string; colorAccent: string; colorBg: string };
 }
 
-export default function PostCard({ post, username, siteName = "Blog", featured = false }: PostCardProps) {
+function isDark(hex: string): boolean {
+  if (!hex || hex.length < 7) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return r * 0.299 + g * 0.587 + b * 0.114 < 128;
+}
+
+export default function PostCard({ post, username, siteName = "Blog", featured = false, theme }: PostCardProps) {
   const date = formatDate(post.publishedAt || post.createdAt);
   const excerpt = post.excerpt || firstSentence(post.content);
   const cats = post.categories.map(c => c.category);
   const href = `/${username}/blog/${post.slug}`;
 
+  const accent = theme?.colorAccent || "#c8a97e";
+  const primary = theme?.colorPrimary || "#0d1f3c";
+  const bg = theme?.colorBg || "#f5f0e8";
+  const darkTheme = isDark(bg);
+
+  const cardBg = darkTheme ? "rgba(255,255,255,0.04)" : "#fffef9";
+  const cardBorder = darkTheme ? "rgba(255,255,255,0.08)" : "rgba(13,31,60,0.1)";
+  const titleColor = darkTheme ? "#fffef9" : primary;
+  const textColor = darkTheme ? "rgba(255,254,249,0.62)" : "#3a5068";
+  const metaColor = darkTheme ? "rgba(255,254,249,0.38)" : "#8fa3b1";
+
   if (featured) {
     return (
       <Link href={href} style={{ textDecoration: "none", display: "block" }}>
         <article style={{
-          background: "#fffef9",
-          border: "1px solid rgba(13,31,60,0.1)",
+          background: cardBg,
+          border: `1px solid ${cardBorder}`,
           borderRadius: 8,
           overflow: "hidden",
           transition: "transform 0.25s, box-shadow 0.25s",
           cursor: "pointer",
-          borderTop: "3px solid #c8a97e",
+          borderTop: `3px solid ${accent}`,
         }} className="post-card-hover">
           {post.coverImage ? (
-            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#1a4a5c" }}>
+            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: primary }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="post-card-img" />
             </div>
           ) : (
-            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "#0d1f3c", position: "relative", display: "flex", alignItems: "flex-end", padding: "1.25rem 1.5rem" }}>
-              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
-              <span style={{ position: "relative", fontFamily: "Inter, sans-serif", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.22em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>{siteName}</span>
+            <div style={{ aspectRatio: "16/9", overflow: "hidden", background: primary, position: "relative", display: "flex", alignItems: "flex-end", padding: "1.25rem 1.5rem" }}>
+              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 80% 20%, ${accent}44 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, ${accent}22 0%, transparent 50%)` }} />
+              <span style={{ position: "relative", fontFamily: "Inter, sans-serif", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.22em", color: `${accent}bb`, textTransform: "uppercase" }}>{siteName}</span>
             </div>
           )}
           <div style={{ padding: "1.5rem" }}>
@@ -63,24 +83,24 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
                 ))}
               </div>
             )}
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.25, margin: "0 0 0.6rem", wordBreak: "break-word" }}>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: titleColor, lineHeight: 1.25, margin: "0 0 0.6rem", wordBreak: "break-word" }}>
               {post.title}
             </h2>
-            <p style={{ color: "#3a5068", fontSize: "0.92rem", lineHeight: 1.65, margin: "0 0 1rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
+            <p style={{ color: textColor, fontSize: "0.92rem", lineHeight: 1.65, margin: "0 0 1rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
               {excerpt}
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#8fa3b1", fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: metaColor, fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
                 <span>{date}</span>
                 <span>·</span>
                 <span>{post.readingTime} min read</span>
               </div>
-              <span style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 500 }}>Read →</span>
+              <span style={{ color: accent, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 500 }}>Read →</span>
             </div>
           </div>
         </article>
         <style>{`
-          .post-card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(13,31,60,0.12); }
+          .post-card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
           .post-card-hover:hover .post-card-img { transform: scale(1.04); }
         `}</style>
       </Link>
@@ -89,7 +109,7 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
 
   return (
     <Link href={href} style={{ textDecoration: "none", display: "block" }}>
-      <article style={{ padding: "1.5rem 0", borderBottom: "1px solid rgba(13,31,60,0.1)", cursor: "pointer", transition: "opacity 0.2s" }} className="post-list-hover">
+      <article style={{ padding: "1.5rem 0", borderBottom: `1px solid ${cardBorder}`, cursor: "pointer", transition: "opacity 0.2s" }} className="post-list-hover">
         <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {cats.length > 0 && (
@@ -101,26 +121,26 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
                 ))}
               </div>
             )}
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: "#0d1f3c", lineHeight: 1.3, margin: "0 0 0.4rem", wordBreak: "break-word" }}>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: titleColor, lineHeight: 1.3, margin: "0 0 0.4rem", wordBreak: "break-word" }}>
               {post.title}
             </h3>
-            <p style={{ color: "#3a5068", fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 0.75rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
+            <p style={{ color: textColor, fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 0.75rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
               {excerpt}
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#8fa3b1", fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: metaColor, fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
               <span>{date}</span>
               <span>·</span>
               <span>{post.readingTime} min read</span>
             </div>
           </div>
           {post.coverImage ? (
-            <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#1a4a5c" }}>
+            <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: primary }}>
               <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           ) : (
-            <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: "#0d1f3c", position: "relative" }}>
-              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 60%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 55%)" }} />
-              <span style={{ position: "absolute", bottom: 6, left: 7, fontFamily: "Inter, sans-serif", fontSize: "0.48rem", fontWeight: 700, letterSpacing: "0.18em", color: "rgba(200,169,126,0.75)", textTransform: "uppercase" }}>{siteName.slice(0, 6)}</span>
+            <div className="post-list-thumb" style={{ width: 100, height: 80, flexShrink: 0, borderRadius: 4, overflow: "hidden", background: primary, position: "relative" }}>
+              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 80% 20%, ${accent}40 0%, transparent 60%), radial-gradient(ellipse at 15% 85%, ${accent}22 0%, transparent 55%)` }} />
+              <span style={{ position: "absolute", bottom: 6, left: 7, fontFamily: "Inter, sans-serif", fontSize: "0.48rem", fontWeight: 700, letterSpacing: "0.18em", color: `${accent}bb`, textTransform: "uppercase" }}>{siteName.slice(0, 6)}</span>
             </div>
           )}
         </div>

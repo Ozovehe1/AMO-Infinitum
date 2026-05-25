@@ -90,6 +90,9 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
 
   const date = formatDate(post.publishedAt || post.createdAt);
   const base = `/${username}`;
+  const accent = theme.colorAccent || "#c8a97e";
+  const primary = theme.colorPrimary || "#0d1f3c";
+  const bg = theme.colorBg || "#f5f0e8";
 
   return (
     <>
@@ -97,18 +100,18 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
       <ReadingProgress />
 
       {/* Hero */}
-      <div style={{ background: theme.colorPrimary || "#0d1f3c", paddingTop: 64 }}>
+      <div style={{ background: primary, paddingTop: 64 }}>
         {post.coverImage ? (
           <div style={{ position: "relative", height: "clamp(280px, 45vh, 520px)", overflow: "hidden" }}>
             <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,31,60,0.4), rgba(13,31,60,0.9))" }} />
+            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${primary}66, ${primary}e8)` }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "3rem 1.5rem" }}>
-              <PostMeta post={post} date={date} onDark />
+              <PostMeta post={post} date={date} onDark accent={accent} />
             </div>
           </div>
         ) : (
           <div style={{ padding: "5rem 1.5rem 4rem" }}>
-            <PostMeta post={post} date={date} onDark />
+            <PostMeta post={post} date={date} onDark accent={accent} />
           </div>
         )}
       </div>
@@ -138,18 +141,18 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
         </div>
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 3rem" }}>
-          <Link href={base} style={{ color: "#2d7d9a", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          <Link href={base} style={{ color: accent, textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
             ← Back to all writings
           </Link>
         </div>
 
         {related.length > 0 && (
-          <section style={{ background: theme.colorBg || "#f5f0e8", padding: "4rem 1.5rem 5rem", borderTop: "1px solid rgba(13,31,60,0.08)" }}>
+          <section style={{ background: bg, padding: "4rem 1.5rem 5rem", borderTop: `1px solid ${primary}14` }}>
             <div style={{ maxWidth: 1100, margin: "0 auto" }}>
               <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 2rem" }}>You might also like</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
                 {related.map(r => (
-                  <PostCard key={r.id} post={r} username={username} siteName={theme.siteName} featured />
+                  <PostCard key={r.id} post={r} username={username} siteName={theme.siteName} featured theme={{ colorPrimary: primary, colorAccent: accent, colorBg: bg }} />
                 ))}
               </div>
             </div>
@@ -162,7 +165,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
   );
 }
 
-function PostMeta({ post, date, onDark }: {
+function PostMeta({ post, date, onDark, accent }: {
   post: {
     title: string;
     readingTime: number;
@@ -172,6 +175,7 @@ function PostMeta({ post, date, onDark }: {
   };
   date: string;
   onDark?: boolean;
+  accent?: string;
 }) {
   const textColor = onDark ? "#fffef9" : "#0d1f3c";
   const subColor = onDark ? "#8fa3b1" : "#3a5068";
@@ -196,7 +200,7 @@ function PostMeta({ post, date, onDark }: {
         {post.showUpdatedNotice && (
           <>
             <span>·</span>
-            <span style={{ color: "#c8a97e", fontStyle: "italic" }}>Updated {formatDate(post.updatedAt)}</span>
+            <span style={{ color: accent || "#c8a97e", fontStyle: "italic" }}>Updated {formatDate(post.updatedAt)}</span>
           </>
         )}
       </div>
