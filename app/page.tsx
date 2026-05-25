@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 async function getDiscoveryPosts() {
   const posts = await prisma.post.findMany({
-    where: { published: true },
+    where: { published: true, user: { emailVerified: true, onboarded: true } },
     include: { user: { include: { settings: true } } },
     orderBy: { publishedAt: "desc" },
     take: 12,
@@ -32,8 +32,8 @@ async function getDiscoveryPosts() {
 export default async function PlatformLanding() {
   const [posts, totalUsers, totalPosts] = await Promise.all([
     getDiscoveryPosts(),
-    prisma.user.count(),
-    prisma.post.count({ where: { published: true } }),
+    prisma.user.count({ where: { emailVerified: true, onboarded: true } }),
+    prisma.post.count({ where: { published: true, user: { emailVerified: true, onboarded: true } } }),
   ]);
 
   return (
