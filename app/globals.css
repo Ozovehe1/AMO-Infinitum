@@ -206,3 +206,22 @@ body {
 @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
 
 .tr-hover:hover td { background: rgba(13,31,60,0.02); }
+
+/* ── Manager dashboard grids ── */
+.mgr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 700px) { .mgr-kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.mgr-panels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 700px) { .mgr-panels { grid-template-columns: 1fr 1fr; } }
+
+.mgr-p { padding: 1.5rem; }
+@media (max-width: 640px) { .mgr-p { padding: 1rem; } }
