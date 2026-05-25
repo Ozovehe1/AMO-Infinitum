@@ -117,7 +117,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (post.published && process.env.TRIGGER_SECRET_KEY) {
     await prisma.siteSettings.deleteMany({ where: { userId, key: `audio_${post.slug}` } });
     try {
-      await tasks.trigger("generate-post-audio", { slug: post.slug, title: post.title, content: post.content });
+      await tasks.trigger("generate-post-audio", { userId, slug: post.slug, title: post.title, content: post.content });
     } catch { /* Trigger.dev not configured */ }
   }
 
