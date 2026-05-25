@@ -29,12 +29,17 @@ export default function AdminGuard({ children, username }: Props) {
         fetch("/api/auth/me")
           .then(r => r.ok ? r.json() : null)
           .then(me => {
-            if (me?.username === username) {
-              sessionStorage.setItem("amo_session", "1");
-              setStatus("authed");
-            } else {
+            if (me?.username !== username) {
               sessionStorage.removeItem("amo_session");
               setStatus("login");
+              return;
+            }
+            sessionStorage.setItem("amo_session", "1");
+            setStatus("authed");
+            // If session is valid but user hasn't finished setup, redirect to setup
+            // (skip if they're already on the setup page to avoid loop)
+            if (!me.onboarded && !pathname.includes("/setup")) {
+              router.push(`/${username}/inkwell/setup`);
             }
           })
           .catch(() => {
