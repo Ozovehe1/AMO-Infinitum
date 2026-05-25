@@ -24,7 +24,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false); return; }
       sessionStorage.setItem("amo_session", "1");
-      router.push(`/${form.username}/inkwell/setup`);
+      router.push(`/verify-email`);
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);

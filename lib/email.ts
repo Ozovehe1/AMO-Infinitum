@@ -100,6 +100,24 @@ function baseLayout(body: string, footer: string) {
 </body></html>`;
 }
 
+export async function sendVerificationEmail(email: string, username: string, token: string) {
+  const verifyUrl = `${SITE}/verify-email?token=${token}`;
+  const html = baseLayout(
+    `<p style="margin:0 0 8px;font-size:13px;color:#8fa3b1;letter-spacing:0.08em;text-transform:uppercase;">Welcome to AMO Infinitum</p>
+     <h2 style="margin:0 0 20px;font-family:Georgia,serif;font-size:26px;font-weight:700;color:#fffef9;line-height:1.3;">Verify your email</h2>
+     <p style="margin:0 0 22px;font-size:17px;color:#c8d8e4;line-height:1.85;">Hi <strong style="color:#fffef9;">@${username}</strong>, you're one step away from launching your blog. Click below to confirm your email address.</p>
+     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+       <tr><td style="background:#c8a97e;border-radius:6px;">
+         <a href="${verifyUrl}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#0d1f3c;text-decoration:none;letter-spacing:0.02em;">Verify Email →</a>
+       </td></tr>
+     </table>
+     <p style="margin:0;font-size:13px;color:#8fa3b1;line-height:1.7;">Or copy this link: <a href="${verifyUrl}" style="color:#c8a97e;word-break:break-all;">${verifyUrl}</a></p>
+     <p style="margin:16px 0 0;font-size:13px;color:#8fa3b1;">This link expires in 24 hours. If you didn't create an account, ignore this email.</p>`,
+    `<p style="margin:0;font-size:12px;color:#8fa3b1;">AMO Infinitum · A platform for writers</p>`
+  );
+  await transporter().sendMail({ from: FROM, to: email, subject: "Verify your email — AMO Infinitum", html });
+}
+
 export async function sendConfirmationEmail(email: string, token: string) {
   const confirmUrl = `${SITE}/api/subscribe/confirm?token=${token}`;
 

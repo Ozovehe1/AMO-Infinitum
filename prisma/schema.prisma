@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  username     String   @unique
-  passwordHash String
-  role         String   @default("user")
-  onboarded    Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  username       String   @unique
+  passwordHash   String
+  role           String   @default("user")
+  onboarded      Boolean  @default(false)
+  emailVerified  Boolean  @default(false)
+  verifyToken    String?  @unique
+  createdAt      DateTime @default(now())
 
   posts       Post[]
   categories  Category[]

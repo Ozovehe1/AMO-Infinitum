@@ -30,39 +30,46 @@ export async function POST(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { action } = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({}));
+  const { action } = body;
 
-  // --- Generate config from answers via Claude ---
   if (action === "generate") {
-    const { answers }: { answers: SetupAnswers } = await req.json().catch(() => ({ answers: {} as SetupAnswers }));
+    const { answers } = body as { answers: SetupAnswers };
     const preset = COLOR_PRESETS[answers.colorMood] || COLOR_PRESETS["warm+earthy"];
 
-    const prompt = `Given this blog setup information, return a JSON object only (no markdown, no extra text):
-Niche: ${answers.niche}
-Audience: ${answers.audience}
-Tone: ${answers.tone}
-Blog name chosen: ${answers.blogName}
-Tagline chosen: ${answers.tagline}
-Bio: ${answers.bio}
-Image style: ${answers.imageStyle}
-Color mood: ${answers.colorMood} (base colors: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg})
+    const prompt = `You are setting up a personal blog. Based on ALL the information below, return a single JSON object with no markdown, no extra text.
 
-Return JSON with these keys:
-- siteName (use the blog name provided, clean it up)
-- tagline (use the tagline provided, refine if needed)
-- description (2 sentences describing the blog for SEO)
-- heroQuote (1 vivid sentence that captures the blog's spirit)
-- colorPrimary (hex, based on color mood + niche)
-- colorAccent (hex, complementary accent)
-- colorBg (hex, light background)
-- footerTagline (short, poetic phrase)
-- aboutText (2-3 sentences from the bio, written in first person)
-- imageQuery (Unsplash search query matching niche + image style)`;
+BLOG SETUP DATA:
+- Niche/Topic: ${answers.niche}
+- Target audience: ${answers.audience}
+- Writing tone: ${answers.tone}
+- Color mood: ${answers.colorMood}
+- Blog name (user's choice): ${answers.blogName}
+- Tagline (user's choice): ${answers.tagline}
+- About the writer: ${answers.bio}
+- Preferred imagery style: ${answers.imageStyle}
+- Base color palette: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg}
+
+Return this exact JSON structure:
+{
+  "siteName": "clean version of the blog name",
+  "tagline": "refined version of their tagline — keep their voice",
+  "description": "2 sentences for SEO that capture the blog's purpose and audience",
+  "heroQuote": "1 powerful, original sentence that captures the blog's deepest spirit — not generic",
+  "colorPrimary": "hex color based on color mood",
+  "colorAccent": "hex complementary accent",
+  "colorBg": "hex light background",
+  "footerTagline": "short poetic closing phrase that matches the niche and tone",
+  "aboutText": "2-3 sentences rewritten from the bio in first person, warm and authentic",
+  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images. Think: what single photograph would feel like the soul of this blog?"
+}
+
+The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.`;
 
     try {
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 512,
+        max_tokens: 600,
         messages: [{ role: "user", content: prompt }],
       });
       const text = (msg.content[0] as { text: string }).text.trim();
@@ -74,16 +81,14 @@ Return JSON with these keys:
     }
   }
 
-  // --- Fetch Unsplash images ---
   if (action === "images") {
-    const { query } = await req.json().catch(() => ({ query: "minimal blog" }));
-    const photos = await searchUnsplash(query, 6);
+    const { query } = body as { query: string };
+    const photos = await searchUnsplash(query || "atmospheric photography editorial", 6);
     return NextResponse.json({ photos });
   }
 
-  // --- Save final config ---
   if (action === "save") {
-    const { config, coverImage } = await req.json().catch(() => ({}));
+    const { config, coverImage } = body;
     if (!config) return NextResponse.json({ error: "No config" }, { status: 400 });
 
     const { userId } = session;
