@@ -37,9 +37,17 @@ export async function POST(req: NextRequest) {
     data: { email, username, passwordHash, role: "user", onboarded: false, emailVerified: false, verifyToken },
   });
 
-  sendVerificationEmail(email, username, verifyToken).catch(err =>
-    console.error("[register] email send failed:", err)
-  );
+  try {
+    await sendVerificationEmail(email, username, verifyToken);
+  } catch (err) {
+    console.error("[register] email send failed:", err);
+    // Delete the user so they can retry registration cleanly
+    await prisma.user.delete({ where: { id: user.id } });
+    return NextResponse.json(
+      { error: "We couldn't send your verification email. Check that your email address is correct and try again." },
+      { status: 502 }
+    );
+  }
 
   return NextResponse.json({ success: true, username: user.username }, { status: 201 });
 }
