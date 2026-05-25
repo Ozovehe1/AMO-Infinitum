@@ -50,21 +50,30 @@ BLOG SETUP DATA:
 - Preferred imagery style: ${answers.imageStyle}
 - Base color palette: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg}
 
+DESIGN PRINCIPLES — apply these strictly:
+- Readability is the highest priority. Every color choice must ensure strong contrast between text and background (minimum 4.5:1 ratio). Never pair light text on light backgrounds or dark text on dark backgrounds.
+- colorBg must be a light, warm, or neutral tone that makes body text easy to read for long sessions. Avoid pure white (#ffffff) — use off-whites, creams, or very light tints.
+- colorPrimary is used for headings and UI elements on the light background — it must be dark enough to read clearly against colorBg.
+- colorAccent is used for links, buttons, and highlights — it must stand out against both colorBg and colorPrimary without being garish.
+- Spacing and breathing room matter. The tagline and heroQuote should be concise — short enough to be read in a single breath, with natural rhythm. No run-on sentences.
+- The aboutText should have natural paragraph breaks — write it as 2 short paragraphs, not one dense block.
+- All text fields (tagline, heroQuote, footerTagline) should feel considered and intentional — not padded or generic.
+
 Return this exact JSON structure:
 {
   "siteName": "clean version of the blog name",
-  "tagline": "refined version of their tagline — keep their voice",
+  "tagline": "refined version of their tagline — keep their voice, max 12 words",
   "description": "2 sentences for SEO that capture the blog's purpose and audience",
-  "heroQuote": "1 powerful, original sentence that captures the blog's deepest spirit — not generic",
-  "colorPrimary": "hex color based on color mood",
-  "colorAccent": "hex complementary accent",
-  "colorBg": "hex light background",
-  "footerTagline": "short poetic closing phrase that matches the niche and tone",
-  "aboutText": "2-3 sentences rewritten from the bio in first person, warm and authentic",
-  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images. Think: what single photograph would feel like the soul of this blog?"
+  "heroQuote": "1 powerful original sentence that captures the blog's spirit — under 20 words, no clichés",
+  "colorPrimary": "hex color — dark, readable on colorBg",
+  "colorAccent": "hex color — vivid but harmonious, readable on both light and dark surfaces",
+  "colorBg": "hex color — light, warm or neutral, easy on the eyes for long reading",
+  "footerTagline": "short poetic closing phrase — under 8 words, matches niche and tone",
+  "aboutText": "2 short paragraphs in first person, warm and specific to this writer — separated by \\n\\n",
+  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images"
 }
 
-The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.`;
+The colors must work together as a cohesive, readable system. Test your choices mentally: can someone read a 1500-word essay on this blog without eye strain?`;
 
     try {
       const msg = await anthropic.messages.create({
