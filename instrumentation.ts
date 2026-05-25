@@ -40,6 +40,7 @@ export async function register() {
     { key: "twitter_handle", value: "@Cryptnate" },
     { key: "footer_tagline", value: "On the infinitudes of life." },
     { key: "footer_copy", value: "All words, all mine." },
+    { key: "cover_image", value: "/cover.jpg" },
   ];
 
   for (const s of ownerSettings) {
