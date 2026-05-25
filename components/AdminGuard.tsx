@@ -18,31 +18,29 @@ export default function AdminGuard({ children, username }: Props) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const sessionActive = typeof window !== "undefined" && sessionStorage.getItem("amo_session");
-    if (!sessionActive) {
-      fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "logout" }),
-      }).finally(() => setStatus("login"));
-      return;
-    }
     fetch("/api/auth/check")
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data?.authenticated) { setStatus("login"); return; }
-        // Verify the logged-in user matches the URL username
+        if (!data?.authenticated) {
+          sessionStorage.removeItem("amo_session");
+          setStatus("login");
+          return;
+        }
         fetch("/api/auth/me")
           .then(r => r.ok ? r.json() : null)
           .then(me => {
             if (me?.username === username) {
+              sessionStorage.setItem("amo_session", "1");
               setStatus("authed");
             } else {
               sessionStorage.removeItem("amo_session");
               setStatus("login");
             }
           })
-          .catch(() => setStatus("authed")); // fallback: trust check
+          .catch(() => {
+            sessionStorage.setItem("amo_session", "1");
+            setStatus("authed");
+          });
       })
       .catch(() => setStatus("login"));
   }, [pathname, username]);
@@ -64,10 +62,10 @@ export default function AdminGuard({ children, username }: Props) {
         return;
       }
       sessionStorage.setItem("amo_session", "1");
+      setStatus("authed");
       if (!data.onboarded) {
         router.push(`/${username}/inkwell/setup`);
       } else {
-        setStatus("authed");
         router.push(`/${username}/inkwell`);
       }
     } else {
