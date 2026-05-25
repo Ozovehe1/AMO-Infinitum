@@ -32,6 +32,7 @@ export default function Header({ username, theme }: Props) {
 
   const accent = theme.colorAccent || "#c8a97e";
   const primary = theme.colorPrimary || "#0d1f3c";
+  const subtle = "rgba(255,254,249,0.55)";
 
   return (
     <header style={{
@@ -53,11 +54,11 @@ export default function Header({ username, theme }: Props) {
             Home
           </Link>
           {categories.slice(0, 4).map(cat => (
-            <Link key={cat.id} href={`${base}?category=${cat.slug}`} style={{ color: "#8fa3b1", textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", fontWeight: 400, transition: "color 0.2s" }}>
+            <Link key={cat.id} href={`${base}?category=${cat.slug}`} style={{ color: subtle, textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", fontWeight: 400, transition: "color 0.2s" }}>
               {cat.name}
             </Link>
           ))}
-          <Link href={`${base}/about`} style={{ color: pathname === `${base}/about` ? accent : "#8fa3b1", textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", fontWeight: 400, transition: "color 0.2s" }}>
+          <Link href={`${base}/about`} style={{ color: pathname === `${base}/about` ? accent : subtle, textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "Inter, sans-serif", fontWeight: 400, transition: "color 0.2s" }}>
             About
           </Link>
         </nav>
@@ -75,11 +76,11 @@ export default function Header({ username, theme }: Props) {
         <div style={{ background: `${primary}fc`, borderTop: `1px solid ${accent}26`, padding: "1rem 1.5rem 1.5rem" }}>
           <Link href={base} onClick={() => setMenuOpen(false)} style={{ display: "block", color: accent, textDecoration: "none", padding: "0.75rem 0", borderBottom: `1px solid ${accent}1a`, fontFamily: "Inter, sans-serif", fontSize: "0.9rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>Home</Link>
           {categories.map(cat => (
-            <Link key={cat.id} href={`${base}?category=${cat.slug}`} onClick={() => setMenuOpen(false)} style={{ display: "block", color: "#8fa3b1", textDecoration: "none", padding: "0.75rem 0", borderBottom: `1px solid ${accent}14`, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <Link key={cat.id} href={`${base}?category=${cat.slug}`} onClick={() => setMenuOpen(false)} style={{ display: "block", color: subtle, textDecoration: "none", padding: "0.75rem 0", borderBottom: `1px solid ${accent}14`, fontFamily: "Inter, sans-serif", fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>
               {cat.name}
             </Link>
           ))}
-          <Link href={`${base}/about`} onClick={() => setMenuOpen(false)} style={{ display: "block", color: "#8fa3b1", textDecoration: "none", padding: "0.75rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>About</Link>
+          <Link href={`${base}/about`} onClick={() => setMenuOpen(false)} style={{ display: "block", color: subtle, textDecoration: "none", padding: "0.75rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>About</Link>
         </div>
       )}
 

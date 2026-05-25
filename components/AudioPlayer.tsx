@@ -130,8 +130,8 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.65rem", color: "#8fa3b1" }}>Listen to this essay</span>
-              <span style={{ fontSize: "0.65rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: "0.65rem", color: "rgba(255,254,249,0.55)" }}>Listen to this essay</span>
+              <span style={{ fontSize: "0.65rem", color: "rgba(255,254,249,0.55)", whiteSpace: "nowrap" }}>
                 {duration > 0 ? `${fmt(current)} / ${fmt(duration)}` : ""}
               </span>
             </div>

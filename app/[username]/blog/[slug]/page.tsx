@@ -106,12 +106,12 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
             <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />
             <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${primary}66, ${primary}e8)` }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "3rem 1.5rem" }}>
-              <PostMeta post={post} date={date} onDark accent={accent} />
+              <PostMeta post={post} date={date} onDark accent={accent} primary={primary} />
             </div>
           </div>
         ) : (
           <div style={{ padding: "5rem 1.5rem 4rem" }}>
-            <PostMeta post={post} date={date} onDark accent={accent} />
+            <PostMeta post={post} date={date} onDark accent={accent} primary={primary} />
           </div>
         )}
       </div>
@@ -149,7 +149,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
         {related.length > 0 && (
           <section style={{ background: bg, padding: "4rem 1.5rem 5rem", borderTop: `1px solid ${primary}14` }}>
             <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 2rem" }}>You might also like</p>
+              <p style={{ color: `${primary}99`, fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 2rem" }}>You might also like</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
                 {related.map(r => (
                   <PostCard key={r.id} post={r} username={username} siteName={theme.siteName} featured theme={{ colorPrimary: primary, colorAccent: accent, colorBg: bg }} />
@@ -165,7 +165,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
   );
 }
 
-function PostMeta({ post, date, onDark, accent }: {
+function PostMeta({ post, date, onDark, accent, primary }: {
   post: {
     title: string;
     readingTime: number;
@@ -176,9 +176,10 @@ function PostMeta({ post, date, onDark, accent }: {
   date: string;
   onDark?: boolean;
   accent?: string;
+  primary?: string;
 }) {
   const textColor = onDark ? "#fffef9" : "#0d1f3c";
-  const subColor = onDark ? "#8fa3b1" : "#3a5068";
+  const subColor = onDark ? "rgba(255,254,249,0.55)" : `${primary || "#0d1f3c"}99`;
   return (
     <div style={{ maxWidth: 760 }}>
       {post.categories.length > 0 && (
