@@ -149,7 +149,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
         {related.length > 0 && (
           <section style={{ background: bg, padding: "4rem 1.5rem 5rem", borderTop: `1px solid ${primary}14` }}>
             <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 2rem" }}>You might also like</p>
+              <p style={{ color: `${primary}99`, fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 2rem" }}>You might also like</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
                 {related.map(r => (
                   <PostCard key={r.id} post={r} username={username} siteName={theme.siteName} featured theme={{ colorPrimary: primary, colorAccent: accent, colorBg: bg }} />
@@ -177,8 +177,10 @@ function PostMeta({ post, date, onDark, accent }: {
   onDark?: boolean;
   accent?: string;
 }) {
-  const textColor = onDark ? "#fffef9" : "#0d1f3c";
-  const subColor = onDark ? "#8fa3b1" : "#3a5068";
+  const textColor = onDark ? "#fffef9" : "var(--blog-primary, #0d1f3c)";
+  const subColor = onDark
+    ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 55%, transparent)"
+    : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 55%, transparent)";
   return (
     <div style={{ maxWidth: 760 }}>
       {post.categories.length > 0 && (
@@ -190,7 +192,7 @@ function PostMeta({ post, date, onDark, accent }: {
           ))}
         </div>
       )}
-      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, color: textColor, lineHeight: 1.2, margin: "0 0 1.25rem" }}>
+      <h1 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, color: textColor, lineHeight: 1.2, margin: "0 0 1.25rem" }}>
         {post.title}
       </h1>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", color: subColor, fontSize: "0.8rem", fontFamily: "Inter, sans-serif" }}>

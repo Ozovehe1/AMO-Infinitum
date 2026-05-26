@@ -30,8 +30,8 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
     }
   };
 
-  const textColor  = dark ? "#fffef9" : "#0d1f3c";
-  const subColor   = dark ? "#8fa3b1" : "#3a5068";
+  const textColor  = dark ? "#fffef9" : "var(--blog-primary, #0d1f3c)";
+  const subColor   = dark ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 55%, transparent)" : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 55%, transparent)";
   const inputBg    = dark ? "rgba(255,254,249,0.06)" : "#fffef9";
   const inputBorder = dark ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 25%, transparent)" : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 18%, transparent)";
 
@@ -48,7 +48,7 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
           {message}
         </p>
         {state === "sent" && (
-          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
+          <p style={{ margin: 0, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: subColor }}>
             Don&apos;t see it? Check your spam folder.
           </p>
         )}
@@ -58,7 +58,7 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
 
   return (
     <form onSubmit={submit} style={{ width: "100%" }}>
-      <p style={{ margin: "0 0 0.6rem", fontFamily: "'Playfair Display', serif", fontSize: "1.05rem", fontWeight: 600, color: textColor }}>
+      <p style={{ margin: "0 0 0.6rem", fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.05rem", fontWeight: 600, color: textColor }}>
         Stay in the loop
       </p>
       <p style={{ margin: "0 0 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: subColor, lineHeight: 1.6 }}>
