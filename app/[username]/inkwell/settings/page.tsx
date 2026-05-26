@@ -42,20 +42,20 @@ export default function SettingsPage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box" as const,
-    background: "#fffef9", border: "1px solid rgba(13,31,60,0.18)",
+    background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 18%, transparent)",
     borderRadius: 6, padding: "0.7rem 0.875rem",
-    fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "#0d1f3c", outline: "none",
+    fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none",
   };
   const labelStyle: React.CSSProperties = {
     display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem",
-    letterSpacing: "0.08em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.35rem",
+    letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.35rem",
   };
 
   if (loading) return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1 }}>
-        <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>Loading…</p>
+        <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p>
       </main>
     </div>
   );

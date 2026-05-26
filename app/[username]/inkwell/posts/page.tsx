@@ -51,7 +51,7 @@ export default function AllPosts() {
         <div style={{ maxWidth: 900, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem" }}>
             <div>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>All Posts · {total}</p>
+              <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>All Posts · {total}</p>
               <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary, #0d1f3c)", margin: 0, fontWeight: 600 }}>Your Writings</h1>
             </div>
             <Link href={`${base}/posts/new`} className="posts-new-btn" style={{ background: "var(--admin-primary, #0d1f3c)", color: "var(--admin-accent, #c8a97e)", textDecoration: "none", padding: "0.65rem 1.25rem", borderRadius: 2, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", letterSpacing: "0.06em" }}>
@@ -63,42 +63,42 @@ export default function AllPosts() {
             value={search}
             onChange={e => { setSearch(e.target.value); load(e.target.value); }}
             placeholder="Search posts…"
-            style={{ width: "100%", background: "#fffef9", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "#0d1f3c", outline: "none", marginBottom: "1.5rem", boxSizing: "border-box" }}
+            style={{ width: "100%", background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none", marginBottom: "1.5rem", boxSizing: "border-box" }}
           />
 
-          <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden" }}>
             {loading ? (
-              <p style={{ padding: "2rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>Loading…</p>
+              <p style={{ padding: "2rem", textAlign: "center", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p>
             ) : posts.length === 0 ? (
-              <p style={{ padding: "3rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>
+              <p style={{ padding: "3rem", textAlign: "center", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>
                 {search ? "No posts match your search." : <><Link href={`${base}/posts/new`} style={{ color: "var(--admin-accent, #c8a97e)" }}>Write your first post.</Link></>}
               </p>
             ) : (
               posts.map((p, i) => (
-                <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: i < posts.length - 1 ? "1px solid rgba(13,31,60,0.05)" : "none", gap: "0.75rem" }}>
+                <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: i < posts.length - 1 ? `1px solid color-mix(in srgb, var(--admin-primary) 5%, transparent)` : "none", gap: "0.75rem" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                      <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</span>
+                      <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "var(--admin-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</span>
                       {p.featured && <span style={{ background: "var(--admin-accent-faint, #c8a97e18)", color: "var(--admin-accent, #c8a97e)", border: "1px solid rgba(0,0,0,0.08)", padding: "0.1rem 0.4rem", borderRadius: 2, fontSize: "0.62rem", fontFamily: "Inter, sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0 }}>Featured</span>}
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                       {p.categories.map((c, j) => (
                         <span key={j} style={{ color: c.category.color, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>{c.category.name}</span>
                       ))}
-                      <span style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.7rem" }}>
+                      <span style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.7rem" }}>
                         {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · {p.readingTime} min
                       </span>
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}>
-                    <span style={{ color: p.published ? "#4a9e7a" : "#9a8e7e", borderLeft: `2px solid ${p.published ? "#4a9e7a" : "rgba(0,0,0,0.15)"}`, paddingLeft: "0.45rem", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+                    <span style={{ color: p.published ? "#4a9e7a" : "var(--admin-sidebar-muted)", borderLeft: `2px solid ${p.published ? "#4a9e7a" : "rgba(0,0,0,0.15)"}`, paddingLeft: "0.45rem", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
                       {p.published ? "Live" : "Draft"}
                     </span>
                     <Link href={`${base}/posts/${p.id}`} style={{ color: "var(--admin-accent, #c8a97e)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
                     {p.published && (
                       <>
-                        <Link href={`/${username}/blog/${p.slug}`} target="_blank" style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>↗</Link>
-                        <button onClick={() => sharePost(p)} className="post-share-btn" style={{ background: "none", border: "none", color: copiedId === p.id ? "#4a9e7a" : "#9a8e7e", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", cursor: "pointer", padding: 0 }}>
+                        <Link href={`/${username}/blog/${p.slug}`} target="_blank" style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>↗</Link>
+                        <button onClick={() => sharePost(p)} className="post-share-btn" style={{ background: "none", border: "none", color: copiedId === p.id ? "#4a9e7a" : "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", cursor: "pointer", padding: 0 }}>
                           {copiedId === p.id ? "Copied" : "Copy"}
                         </button>
                       </>

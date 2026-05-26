@@ -44,24 +44,24 @@ export default function EditPost() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1 }}>
         <div style={{ maxWidth: 1100 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.75rem" }}>
             <div>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Editing Post</p>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>
+              <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Editing Post</p>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary)", margin: 0, fontWeight: 600 }}>
                 {loading ? "Loading…" : (post?.title || "Post not found")}
               </h1>
             </div>
             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
               {post?.published && (
                 <>
-                  <Link href={`/${username}/blog/${post.slug}`} target="_blank" style={{ color: "#9a8e7e", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>
+                  <Link href={`/${username}/blog/${post.slug}`} target="_blank" style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>
                     ↗ View Live
                   </Link>
-                  <button onClick={sharePost} style={{ background: "transparent", color: shareCopied ? "#4a9e7a" : "#9a8e7e", border: "none", padding: "0.4rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer" }}>
+                  <button onClick={sharePost} style={{ background: "transparent", color: shareCopied ? "#4a9e7a" : "var(--admin-sidebar-muted)", border: "none", padding: "0.4rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer" }}>
                     {shareCopied ? "Copied" : "Share"}
                   </button>
                 </>
@@ -73,11 +73,11 @@ export default function EditPost() {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "5rem", color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>Loading post…</div>
+            <div style={{ textAlign: "center", padding: "5rem", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading post…</div>
           ) : !post ? (
             <div style={{ textAlign: "center", padding: "5rem" }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", color: "#0d1f3c" }}>Post not found.</p>
-              <Link href={`/${username}/inkwell/posts`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>← Back to posts</Link>
+              <p style={{ fontFamily: "'Playfair Display', serif", color: "var(--admin-primary)" }}>Post not found.</p>
+              <Link href={`/${username}/inkwell/posts`} style={{ color: "var(--admin-accent)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>← Back to posts</Link>
             </div>
           ) : (
             <PostForm post={{ ...post, coverImage: post.coverImage ?? undefined }} />
