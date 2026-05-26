@@ -8,6 +8,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ email: "", username: "", password: "", confirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +25,8 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false); return; }
       sessionStorage.setItem("amo_session", "1");
-      router.push(`/verify-email`);
+      setSuccess(true);
+      setTimeout(() => router.push(`/verify-email`), 2200);
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);
@@ -35,6 +37,19 @@ export default function RegisterPage() {
   const cardStyle: React.CSSProperties = { width: "100%", maxWidth: 440, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 12, padding: "2.5rem" };
   const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, padding: "0.875rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", outline: "none", marginBottom: "1rem" };
   const labelStyle: React.CSSProperties = { display: "block", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "0.35rem" };
+
+  if (success) {
+    return (
+      <div style={{ ...wrapStyle, flexDirection: "column", gap: "1.25rem", textAlign: "center" }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ width: 36, height: 36, border: "2px solid rgba(200,169,126,0.25)", borderTop: "2px solid #c8a97e", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.45rem", color: "#fffef9", margin: 0 }}>Blog created.</p>
+        <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.86rem", color: "#8fa3b1", lineHeight: 1.65, margin: 0, maxWidth: 340 }}>
+          We&apos;re sending you a verification email. Once confirmed, your writing panel will be ready.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={wrapStyle}>
@@ -80,6 +95,10 @@ export default function RegisterPage() {
           <button type="submit" disabled={loading} style={{ width: "100%", background: "#c8a97e", color: "#0d1f3c", border: "none", borderRadius: 6, padding: "0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1 }}>
             {loading ? "Creating your blog…" : "Create My Blog →"}
           </button>
+
+          <p style={{ color: "rgba(143,163,177,0.6)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", margin: "1.25rem 0 0", lineHeight: 1.6, textAlign: "center" }}>
+            After verifying your email, you&apos;ll be guided through a quick setup to personalize your writing panel.
+          </p>
         </form>
 
         <p style={{ textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", marginTop: "1.5rem", margin: "1.5rem 0 0" }}>

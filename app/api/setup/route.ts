@@ -84,10 +84,10 @@ Return this exact JSON structure:
   "aboutText": "2-3 sentences rewritten from the bio in first person, warm and authentic",
   "fontHeading": "exact font name from the heading list — must reflect who this writer is",
   "fontBody": "exact font name from the body list — must pair well with fontHeading",
-  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images. Think: what single photograph would feel like the soul of this blog?"
+  "imageQuery": "a precise Unsplash search query (4-7 words) for a HERO BACKGROUND photograph — must be landscape-oriented, atmospheric, and work with text overlaid on it. Derive it from: niche='${answers.niche}', imagery style='${answers.imageStyle}', color mood='${answers.colorMood}', tone='${answers.tone}', bio='${answers.bio}'. The photo must feel like the visual soul of this specific blog — the one image that, if a stranger saw it, they would immediately understand what this writer is about. Avoid: portraits, close-ups, generic stock, studio shots. Prefer: wide scenes, natural light, depth, mood."
 }
 
-The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.
+The imageQuery is the hero background image the user will see first. It must be landscape-oriented and atmospheric enough to have blog title text overlaid on it. Make it specific to THIS writer's world — derived from their actual niche, tone, and bio — not a generic search. Combine subject + environment + mood/light.
 The font choices are critical — they must feel like they belong to THIS specific writer, chosen by someone who truly read their answers, not defaults.`;
 
     try {
