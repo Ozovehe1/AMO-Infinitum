@@ -83,7 +83,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
           onClick={() => setOpen(true)}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
-            background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 10,
+            background: colorPrimary, color: colorAccent, border: "none", borderRadius: 10,
             padding: "0.9rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem",
             fontWeight: 600, cursor: "pointer", letterSpacing: "0.02em",
           }}
@@ -155,14 +155,14 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
 
                   {/* Header */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
-                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Share this post</p>
+                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: colorPrimary, margin: 0, fontWeight: 600 }}>Share this post</p>
                     <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 
                   {/* Share with cover */}
                   <button onClick={shareWithCover} disabled={sharing} style={{
                     width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
-                    background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 10,
+                    background: colorPrimary, color: colorAccent, border: "none", borderRadius: 10,
                     padding: "1rem", marginBottom: "0.625rem",
                     fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 700,
                     cursor: sharing ? "default" : "pointer", letterSpacing: "0.02em", opacity: sharing ? 0.7 : 1,
@@ -176,7 +176,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                   {/* Share link only */}
                   <button onClick={shareLinkOnly} style={{
                     width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
-                    background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 10,
+                    background: `${colorPrimary}0f`, color: colorPrimary, border: `1px solid ${colorPrimary}26`, borderRadius: 10,
                     padding: "1rem", marginBottom: "0.875rem",
                     fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600,
                     cursor: "pointer", letterSpacing: "0.02em",
@@ -191,8 +191,8 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                   {/* Download */}
                   <button onClick={download} disabled={downloading} style={{
                     width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                    background: "#f5f0e8", color: "#0d1f3c",
-                    border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8,
+                    background: `${colorPrimary}0f`, color: colorPrimary,
+                    border: `1px solid ${colorPrimary}26`, borderRadius: 8,
                     padding: "0.75rem 1rem", marginBottom: "0.875rem",
                     fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600,
                     cursor: downloading ? "default" : "pointer", opacity: downloading ? 0.7 : 1,
@@ -205,14 +205,14 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
 
                   {/* Copy link */}
                   <div style={{
-                    background: "#f5f0e8", border: "1px solid rgba(13,31,60,0.1)",
+                    background: `${colorPrimary}0a`, border: `1px solid ${colorPrimary}18`,
                     borderRadius: 8, padding: "0.75rem 1rem",
                     display: "flex", alignItems: "center", gap: "0.75rem",
                   }}>
-                    <span style={{ flex: 1, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", wordBreak: "break-all", lineHeight: 1.5 }}>{url}</span>
+                    <span style={{ flex: 1, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: `${colorPrimary}99`, wordBreak: "break-all", lineHeight: 1.5 }}>{url}</span>
                     <button onClick={copy} style={{
-                      flexShrink: 0, background: copied ? "#4a9e7a" : "#0d1f3c",
-                      color: copied ? "#fff" : "#c8a97e", border: "none", borderRadius: 6,
+                      flexShrink: 0, background: copied ? "#4a9e7a" : colorPrimary,
+                      color: copied ? "#fff" : colorAccent, border: "none", borderRadius: 6,
                       padding: "0.45rem 0.875rem", fontFamily: "Inter, sans-serif",
                       fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
                       transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap",

@@ -1476,33 +1476,33 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
           <a href={postUrl} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
             {coverImage ? (
               /* ── With cover image — overlay layout ── */
-              <div style={{ width: "100%", background: "#0d1f3c", position: "relative", overflow: "hidden" }}>
+              <div style={{ width: "100%", background: colorPrimary, position: "relative", overflow: "hidden" }}>
                 <img src={coverImage} alt="" style={{ display: "block", width: "100%", height: "auto" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 35%, transparent 60%)" }} />
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                    <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: colorAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: colorPrimary, fontFamily: "Georgia, serif", flexShrink: 0 }}>{(siteName || "B").charAt(0).toUpperCase()}</div>
+                    <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: colorAccent, letterSpacing: "0.06em" }}>{(siteName || "Blog").toUpperCase()}</span>
                   </div>
                   <div>
                     <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
                     {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,22px)", color: "rgba(255,255,255,0.82)", lineHeight: 1.5, margin: "0 0 12px" }}>{preview}</p>}
-                    <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                    <div style={{ width: 32, height: 2, background: colorAccent, borderRadius: 1 }} />
                   </div>
                 </div>
               </div>
             ) : (
               /* ── No cover — min 1200/630 ratio, grows with excerpt, no clipping ── */
-              <div style={{ width: "100%", background: "#0d1f3c", position: "relative", aspectRatio: "1200/630", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
-                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
+              <div style={{ width: "100%", background: colorPrimary, position: "relative", aspectRatio: "1200/630", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
+                <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 80% 20%, ${colorAccent}66 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, ${colorAccent}40 0%, transparent 50%)` }} />
                 <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                  <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: colorAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: colorPrimary, fontFamily: "Georgia, serif", flexShrink: 0 }}>{(siteName || "B").charAt(0).toUpperCase()}</div>
+                  <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: colorAccent, letterSpacing: "0.06em" }}>{(siteName || "Blog").toUpperCase()}</span>
                 </div>
                 <div style={{ position: "relative" }}>
                   <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
-                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: "0 0 12px" }}>{preview}</p>}
-                  <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: `${colorAccent}d0`, lineHeight: 1.55, margin: "0 0 12px" }}>{preview}</p>}
+                  <div style={{ width: 32, height: 2, background: colorAccent, borderRadius: 1 }} />
                 </div>
               </div>
             )}
