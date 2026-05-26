@@ -42,7 +42,7 @@ export default function SettingsPage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box" as const,
-    background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 18%, transparent)",
+    background: "var(--admin-bg-card)", border: "1px solid color-mix(in srgb, var(--admin-primary) 18%, transparent)",
     borderRadius: 6, padding: "0.7rem 0.875rem",
     fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none",
   };
@@ -78,7 +78,7 @@ export default function SettingsPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
             {/* Identity */}
-            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Identity</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div><label style={labelStyle}>Blog Name</label><input value={form.site_name} onChange={e => setForm(f => ({ ...f, site_name: e.target.value }))} style={inputStyle} /></div>
@@ -88,7 +88,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Colors */}
-            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Colors</h3>
               {(["primary", "accent", "bg"] as const).map(type => {
                 const key = `color_${type}` as keyof typeof form;
@@ -108,7 +108,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Typography */}
-            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 0.25rem" }}>Typography</h3>
               <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem", lineHeight: 1.5 }}>
                 Choose fonts for your blog&apos;s headings and body text.
@@ -127,7 +127,7 @@ export default function SettingsPage() {
                             padding: "0.4rem 0.875rem",
                             borderRadius: 4,
                             border: form[key] === f ? `2px solid var(--admin-primary)` : `1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)`,
-                            background: form[key] === f ? "var(--admin-primary)" : "#fffef9",
+                            background: form[key] === f ? "var(--admin-primary)" : "var(--admin-bg-card)",
                             color: form[key] === f ? "var(--admin-accent)" : "var(--admin-primary)",
                             fontFamily: `'${f}', Georgia, serif`,
                             fontSize: "0.88rem",
@@ -148,7 +148,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Footer & Social */}
-            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Footer & Social</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div><label style={labelStyle}>Footer Tagline</label><input value={form.footer_tagline} onChange={e => setForm(f => ({ ...f, footer_tagline: e.target.value }))} style={inputStyle} /></div>
@@ -158,7 +158,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Subscribers */}
-            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
               <div style={{ marginBottom: "1rem" }}>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 0.25rem" }}>Subscribers</h3>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)", margin: 0, lineHeight: 1.5 }}>

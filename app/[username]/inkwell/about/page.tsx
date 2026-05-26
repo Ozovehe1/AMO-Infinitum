@@ -48,7 +48,7 @@ export default function EditAbout() {
 
           {loading ? <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
-              <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
                 <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.75rem" }}>Hero Subtitle</label>
                 <textarea
                   value={heroSubtitle}
@@ -57,7 +57,7 @@ export default function EditAbout() {
                   style={{ width: "100%", boxSizing: "border-box", background: "var(--admin-bg)", border: `1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)`, borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "'Source Serif 4', serif", fontSize: "1rem", color: "var(--admin-primary)", lineHeight: 1.6, resize: "vertical", outline: "none" }}
                 />
               </div>
-              <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
                 <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.75rem" }}>About Body</label>
                 <div style={{ border: `1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)`, borderRadius: 6, overflow: "hidden" }}>
                   <Editor content={body} onChange={setBody} placeholder="Write about yourself and this blog…" />

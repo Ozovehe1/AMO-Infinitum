@@ -46,7 +46,7 @@ export default function AdminDashboard() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1rem", marginBottom: "2.5rem" }}>
             {statCards.map(s => (
-              <div key={s.label} style={{ background: "#fffef9", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 8, padding: "1.5rem", borderTop: `3px solid var(--admin-accent, #c8a97e)${s.opacity}` }}>
+              <div key={s.label} style={{ background: "var(--admin-bg-card)", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 8, padding: "1.5rem", borderTop: `3px solid var(--admin-accent, #c8a97e)${s.opacity}` }}>
                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem", color: "var(--admin-primary, #0d1f3c)", lineHeight: 1 }}>{s.value}</div>
                 <div style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", marginTop: "0.5rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{s.label}</div>
               </div>
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
 
           <div>
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", color: "var(--admin-primary, #0d1f3c)", margin: "0 0 1rem", fontWeight: 600 }}>Recent Posts</h2>
-            <div style={{ background: "#fffef9", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 8, overflow: "hidden" }}>
               {recent.length === 0 ? (
                 <p style={{ padding: "2rem", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", textAlign: "center" }}>
                   No posts yet.{" "}

@@ -224,7 +224,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
 
     if (allZero) {
       ctx.font = "11px Inter,sans-serif";
-      ctx.fillStyle = "#8fa3b1";
+      ctx.fillStyle = "var(--admin-sidebar-muted)";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("No data yet for this period", W / 2, H / 2);
@@ -295,7 +295,7 @@ function LineChart({ data }: { data: Record<string, number> }) {
       ctx.fillStyle = "#0d1f3c";
       ctx.fill();
       ctx.font = "9px Inter,sans-serif";
-      ctx.fillStyle = "#8fa3b1";
+      ctx.fillStyle = "var(--admin-sidebar-muted)";
       ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
       ctx.fillText(labels[activeIdx], tipX, tipY + 13);
@@ -364,7 +364,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
 
     if (allZero) {
       ctx.font = "11px Inter,sans-serif";
-      ctx.fillStyle = "#8fa3b1";
+      ctx.fillStyle = "var(--admin-sidebar-muted)";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(emptyMsg, W / 2, H / 2);
@@ -408,7 +408,7 @@ function BarChart({ data, unit = "", emptyMsg = "No data this period", allowNega
         ctx.fillStyle = "#0d1f3c";
         ctx.fill();
         ctx.font = "9px Inter,sans-serif";
-        ctx.fillStyle = "#8fa3b1";
+        ctx.fillStyle = "var(--admin-sidebar-muted)";
         ctx.textAlign = "center";
         ctx.textBaseline = "alphabetic";
         ctx.fillText(labels[i], tipX, tipY + 13);

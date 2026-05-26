@@ -470,7 +470,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
   // ── Sidebar styles (desktop) ──────────────────────────────
   const inputStyle: React.CSSProperties = {
-    width: "100%", background: "#fffef9",
+    width: "100%", background: "var(--admin-bg-card)",
     border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 8,
     padding: "0.875rem 1rem", fontFamily: "Inter, sans-serif",
     fontSize: "0.95rem", color: "var(--admin-primary)", outline: "none", boxSizing: "border-box",
@@ -637,7 +637,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 onClick={() => { setStyleOpen(s => !s); setAlignOpen(false); setCatPickerOpen(false); }}
                 style={{
                   height: 38, padding: "0 9px",
-                  background: styleOpen ? "rgba(13,31,60,0.08)" : "transparent", color: "#1a1a1a",
+                  background: styleOpen ? "color-mix(in srgb, var(--admin-primary) 8%, transparent)" : "transparent", color: "#1a1a1a",
                   border: "none", borderRadius: 4, cursor: "pointer",
                   fontSize: "0.82rem", fontFamily: "system-ui, sans-serif",
                   display: "flex", alignItems: "center", gap: 4,
@@ -656,7 +656,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 onClick={() => { setAlignOpen(s => !s); setStyleOpen(false); setCatPickerOpen(false); }}
                 style={{
                   height: 38, padding: "0 9px",
-                  background: alignOpen ? "rgba(13,31,60,0.08)" : "transparent",
+                  background: alignOpen ? "color-mix(in srgb, var(--admin-primary) 8%, transparent)" : "transparent",
                   color: "#1a1a1a", border: "none", borderRadius: 4, cursor: "pointer",
                   fontSize: "0.82rem", fontFamily: "system-ui, sans-serif",
                   display: "flex", alignItems: "center", gap: 4,
@@ -905,12 +905,12 @@ export default function PostForm({ post }: { post?: PostData }) {
           <>
             <div
               onClick={() => setAiOpen(false)}
-              style={{ position: "fixed", inset: 0, background: "rgba(13,31,60,0.45)", zIndex: 410, backdropFilter: "blur(2px)" }}
+              style={{ position: "fixed", inset: 0, background: "color-mix(in srgb, var(--admin-primary) 45%, transparent)", zIndex: 410, backdropFilter: "blur(2px)" }}
             />
             <div style={{
               position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 411,
-              background: "#0d1f3c", borderRadius: "18px 18px 0 0",
-              boxShadow: "0 -8px 40px rgba(13,31,60,0.4)",
+              background: "var(--admin-primary)", borderRadius: "18px 18px 0 0",
+              boxShadow: "0 -8px 40px color-mix(in srgb, var(--admin-primary) 40%, transparent)",
               height: `${drawerHeight}dvh`, display: "flex", flexDirection: "column",
               overflow: "hidden",
               paddingBottom: "env(safe-area-inset-bottom)",
@@ -920,13 +920,13 @@ export default function PostForm({ post }: { post?: PostData }) {
                 ref={aiHandleRef}
                 style={{ display: "flex", justifyContent: "center", padding: "0.875rem 0 0.5rem", cursor: "ns-resize", touchAction: "none", flexShrink: 0 }}
               >
-                <div style={{ width: 40, height: 5, background: "rgba(200,169,126,0.5)", borderRadius: 3 }} />
+                <div style={{ width: 40, height: 5, background: "color-mix(in srgb, var(--admin-accent) 50%, transparent)", borderRadius: 3 }} />
               </div>
               {/* Header */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.25rem 1.25rem 0.625rem", borderBottom: "1px solid rgba(200,169,126,0.12)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.25rem 1.25rem 0.625rem", borderBottom: "1px solid color-mix(in srgb, var(--admin-accent) 12%, transparent)", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <span style={{ fontSize: "1rem" }}>🧠</span>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-bg-card)", margin: 0 }}>
                     {aiView === "history" ? "History" : "AI Assistant"}
                   </h3>
                 </div>
@@ -937,9 +937,9 @@ export default function PostForm({ post }: { post?: PostData }) {
                         onClick={() => setAiSharePost(s => !s)}
                         title={aiSharePost ? "AI can see this post — tap to hide" : "Tap to let AI read this post"}
                         style={{
-                          background: aiSharePost ? "rgba(200,169,126,0.18)" : "transparent",
-                          border: `1px solid ${aiSharePost ? "rgba(200,169,126,0.5)" : "rgba(200,169,126,0.18)"}`,
-                          color: aiSharePost ? "#c8a97e" : "#8fa3b1",
+                          background: aiSharePost ? "color-mix(in srgb, var(--admin-accent) 18%, transparent)" : "transparent",
+                          border: `1px solid ${aiSharePost ? "color-mix(in srgb, var(--admin-accent) 50%, transparent)" : "color-mix(in srgb, var(--admin-accent) 18%, transparent)"}`,
+                          color: aiSharePost ? "var(--admin-accent)" : "var(--admin-sidebar-muted)",
                           borderRadius: 5, padding: "2px 7px",
                           fontFamily: "Inter, sans-serif", fontSize: "0.65rem",
                           cursor: "pointer", letterSpacing: "0.02em", whiteSpace: "nowrap",
@@ -948,22 +948,22 @@ export default function PostForm({ post }: { post?: PostData }) {
                         📄 {aiSharePost ? "Post shared" : "Share post"}
                       </button>
                       {aiSessions.length > 0 && (
-                        <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
+                        <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "var(--admin-sidebar-muted)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
                           History ({aiSessions.length})
                         </button>
                       )}
                       {aiMessages.length > 0 && (
-                        <button onClick={startNewChat} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                        <button onClick={startNewChat} style={{ background: "color-mix(in srgb, var(--admin-accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 20%, transparent)", borderRadius: 6, color: "var(--admin-accent)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
                           New chat
                         </button>
                       )}
                     </>
                   ) : (
-                    <button onClick={() => setAiView("chat")} style={{ background: "none", border: "none", color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+                    <button onClick={() => setAiView("chat")} style={{ background: "none", border: "none", color: "var(--admin-accent)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
                       ← Back
                     </button>
                   )}
-                  <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
+                  <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "var(--admin-sidebar-muted)", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
                 </div>
               </div>
               {/* Body */}
@@ -974,7 +974,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                   <>
                     {aiMessages.length === 0 && (
                       <div style={{ textAlign: "center", padding: "2rem 0" }}>
-                        <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
+                        <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
                           Your thinking partner — brainstorm,<br />research, challenge ideas.
                         </p>
                       </div>
@@ -1008,7 +1008,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               style={{ ...inputStyle, fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 700, padding: "1rem 1.25rem", border: "none", borderBottom: "2px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", borderRadius: 0, background: "transparent" }}
             />
             <div>
-              <label style={labelStyle}>Excerpt <span style={{ color: "#c8a97e" }}>(optional)</span></label>
+              <label style={labelStyle}>Excerpt <span style={{ color: "var(--admin-accent)" }}>(optional)</span></label>
               <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} placeholder="A short teaser shown in the post list…" rows={2} style={{ ...inputStyle, resize: "vertical" }} />
             </div>
             <Editor content={content} onChange={setContent} />
@@ -1045,14 +1045,14 @@ export default function PostForm({ post }: { post?: PostData }) {
       {aiOpen && isDesktop && (
         <div className="desktop-ai-panel" style={{
           position: "fixed", top: 0, right: 0, bottom: 0, width: "min(380px, 35vw)", zIndex: 350,
-          background: "#0d1f3c", display: "flex", flexDirection: "column",
-          boxShadow: "-6px 0 32px rgba(13,31,60,0.25)",
+          background: "var(--admin-primary)", display: "flex", flexDirection: "column",
+          boxShadow: "-6px 0 32px color-mix(in srgb, var(--admin-primary) 25%, transparent)",
         }}>
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid rgba(200,169,126,0.12)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid color-mix(in srgb, var(--admin-accent) 12%, transparent)", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ fontSize: "1.1rem" }}>🧠</span>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#fffef9", margin: 0 }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-bg-card)", margin: 0 }}>
                 {aiView === "history" ? "History" : "AI Assistant"}
               </h3>
             </div>
@@ -1063,9 +1063,9 @@ export default function PostForm({ post }: { post?: PostData }) {
                     onClick={() => setAiSharePost(s => !s)}
                     title={aiSharePost ? "AI can see this post — click to hide" : "Click to let AI read this post"}
                     style={{
-                      background: aiSharePost ? "rgba(200,169,126,0.18)" : "transparent",
-                      border: `1px solid ${aiSharePost ? "rgba(200,169,126,0.5)" : "rgba(200,169,126,0.18)"}`,
-                      color: aiSharePost ? "#c8a97e" : "#8fa3b1",
+                      background: aiSharePost ? "color-mix(in srgb, var(--admin-accent) 18%, transparent)" : "transparent",
+                      border: `1px solid ${aiSharePost ? "color-mix(in srgb, var(--admin-accent) 50%, transparent)" : "color-mix(in srgb, var(--admin-accent) 18%, transparent)"}`,
+                      color: aiSharePost ? "var(--admin-accent)" : "var(--admin-sidebar-muted)",
                       borderRadius: 5, padding: "2px 8px",
                       fontFamily: "Inter, sans-serif", fontSize: "0.68rem",
                       cursor: "pointer", letterSpacing: "0.02em", whiteSpace: "nowrap",
@@ -1074,22 +1074,22 @@ export default function PostForm({ post }: { post?: PostData }) {
                     📄 {aiSharePost ? "Post shared" : "Share post"}
                   </button>
                   {aiSessions.length > 0 && (
-                    <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
+                    <button onClick={() => setAiView("history")} style={{ background: "none", border: "none", color: "var(--admin-sidebar-muted)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", letterSpacing: "0.04em" }}>
                       History ({aiSessions.length})
                     </button>
                   )}
                   {aiMessages.length > 0 && (
-                    <button onClick={startNewChat} style={{ background: "rgba(200,169,126,0.12)", border: "1px solid rgba(200,169,126,0.2)", borderRadius: 6, color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
+                    <button onClick={startNewChat} style={{ background: "color-mix(in srgb, var(--admin-accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 20%, transparent)", borderRadius: 6, color: "var(--admin-accent)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: "3px 10px" }}>
                       New chat
                     </button>
                   )}
                 </>
               ) : (
-                <button onClick={() => setAiView("chat")} style={{ background: "none", border: "none", color: "#c8a97e", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+                <button onClick={() => setAiView("chat")} style={{ background: "none", border: "none", color: "var(--admin-accent)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
                   ← Back
                 </button>
               )}
-              <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
+              <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "var(--admin-sidebar-muted)", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
             </div>
           </div>
           {/* Body */}
@@ -1100,7 +1100,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               <>
                 {aiMessages.length === 0 && (
                   <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
-                    <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.7, margin: 0 }}>
+                    <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.7, margin: 0 }}>
                       Your thinking partner — brainstorm,<br />research, challenge ideas.
                     </p>
                   </div>
@@ -1125,32 +1125,32 @@ export default function PostForm({ post }: { post?: PostData }) {
       ════════════════════════════════════ */}
       {sheetOpen && (
         <>
-          <div onClick={() => setSheetOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(13,31,60,0.5)", zIndex: 400, backdropFilter: "blur(2px)" }} />
+          <div onClick={() => setSheetOpen(false)} style={{ position: "fixed", inset: 0, background: "color-mix(in srgb, var(--admin-primary) 50%, transparent)", zIndex: 400, backdropFilter: "blur(2px)" }} />
           <div style={{
             position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 401,
-            background: "#fffef9", borderRadius: "18px 18px 0 0",
-            boxShadow: "0 -8px 40px rgba(13,31,60,0.18)",
+            background: "var(--admin-bg-card)", borderRadius: "18px 18px 0 0",
+            boxShadow: "0 -8px 40px color-mix(in srgb, var(--admin-primary) 18%, transparent)",
             maxHeight: "88vh", overflowY: "auto",
             paddingBottom: "env(safe-area-inset-bottom)",
           }}>
             {/* Drag handle */}
             <div style={{ display: "flex", justifyContent: "center", padding: "0.875rem 0 0" }}>
-              <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2 }} />
+              <div style={{ width: 36, height: 4, background: "color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 2 }} />
             </div>
 
             {/* Sheet header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 1.25rem 0.625rem", borderBottom: "1px solid rgba(13,31,60,0.07)" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "#0d1f3c", margin: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 1.25rem 0.625rem", borderBottom: "1px solid color-mix(in srgb, var(--admin-primary) 7%, transparent)" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "var(--admin-primary)", margin: 0 }}>
                 {published ? "Update post" : "Ready to publish?"}
               </h3>
-              <button onClick={() => setSheetOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
+              <button onClick={() => setSheetOpen(false)} style={{ background: "none", border: "none", color: "var(--admin-sidebar-muted)", fontSize: "1.4rem", cursor: "pointer", lineHeight: 1 }}>×</button>
             </div>
 
             <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
               {/* Status badge */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#3a5068" }}>Status</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "var(--admin-sidebar-muted)" }}>Status</span>
                 <span style={{ background: published ? "#4a9e7a18" : "color-mix(in srgb, var(--admin-accent) 10%, transparent)", color: published ? "#4a9e7a" : "var(--admin-accent)", border: `1px solid ${published ? "#4a9e7a30" : "color-mix(in srgb, var(--admin-accent) 25%, transparent)"}`, padding: "0.2rem 0.875rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", textTransform: "uppercase" }}>
                   {published ? "Published" : "Draft"}
                 </span>
@@ -1163,7 +1163,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               {/* Featured */}
               <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
                 <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--admin-accent)" }} />
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068" }}>Pin as Featured post</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "var(--admin-sidebar-muted)" }}>Pin as Featured post</span>
               </label>
 
               {/* Updated notice — only relevant when editing a published post */}
@@ -1171,8 +1171,8 @@ export default function PostForm({ post }: { post?: PostData }) {
                 <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
                   <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
                   <div>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice to readers</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Displays the edit date on the post so readers know it was revised</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "var(--admin-sidebar-muted)", display: "block" }}>Show &quot;Updated&quot; notice to readers</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)" }}>Displays the edit date on the post so readers know it was revised</span>
                   </div>
                 </label>
               )}
@@ -1183,14 +1183,14 @@ export default function PostForm({ post }: { post?: PostData }) {
                 <button
                   onPointerDown={e => { e.preventDefault(); coverImgRef.current?.click(); }}
                   disabled={uploading}
-                  style={{ width: "100%", background: uploading ? "rgba(45,125,154,0.1)" : "rgba(45,125,154,0.06)", color: "#2d7d9a", border: "1.5px dashed rgba(45,125,154,0.35)", borderRadius: 10, padding: "0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: uploading ? "default" : "pointer", marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+                  style={{ width: "100%", background: uploading ? "color-mix(in srgb, var(--admin-accent) 10%, transparent)" : "color-mix(in srgb, var(--admin-accent) 6%, transparent)", color: "var(--admin-accent)", border: "1.5px dashed color-mix(in srgb, var(--admin-accent) 35%, transparent)", borderRadius: 10, padding: "0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: uploading ? "default" : "pointer", marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
                   {uploading ? <><SpinnerIcon />Uploading…</> : <>📷 Upload from gallery</>}
                 </button>
                 <input value={coverImage} onChange={e => setCoverImage(e.target.value)} placeholder="Or paste image URL…" style={{ ...inputStyle, fontSize: "0.85rem" }} />
                 {coverImage && (
-                  <div style={{ marginTop: "0.625rem", borderRadius: 8, overflow: "hidden", border: "1px solid rgba(13,31,60,0.1)", position: "relative" }}>
+                  <div style={{ marginTop: "0.625rem", borderRadius: 8, overflow: "hidden", border: "1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", position: "relative" }}>
                     <img src={coverImage} alt="Cover" style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    <button onClick={() => setCoverImage("")} style={{ position: "absolute", top: 8, right: 8, background: "rgba(13,31,60,0.7)", color: "#fff", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                    <button onClick={() => setCoverImage("")} style={{ position: "absolute", top: 8, right: 8, background: "color-mix(in srgb, var(--admin-primary) 70%, transparent)", color: "#fff", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
                   </div>
                 )}
               </div>
@@ -1204,8 +1204,8 @@ export default function PostForm({ post }: { post?: PostData }) {
                 <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
                   <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
                   <div>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Notify subscribers</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Send email to subscribers on publish</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "var(--admin-sidebar-muted)", display: "block" }}>Notify subscribers</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)" }}>Send email to subscribers on publish</span>
                   </div>
                 </label>
               )}
@@ -1291,14 +1291,14 @@ interface SettingsProps {
 
 function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers, username }: SettingsProps) {
   return (
-    <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 10, overflow: "hidden" }}>
-      <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid rgba(13,31,60,0.07)", background: "var(--admin-bg)" }}>
+    <div style={{ background: "var(--admin-bg-card)", border: "1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", borderRadius: 10, overflow: "hidden" }}>
+      <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid color-mix(in srgb, var(--admin-primary) 7%, transparent)", background: "var(--admin-bg)" }}>
         <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "var(--admin-primary)", margin: 0, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Publish</h3>
       </div>
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068" }}>Status</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)" }}>Status</span>
           <span style={{ background: published ? "#4a9e7a18" : "color-mix(in srgb, var(--admin-accent) 10%, transparent)", color: published ? "#4a9e7a" : "var(--admin-accent)", border: `1px solid ${published ? "#4a9e7a30" : "color-mix(in srgb, var(--admin-accent) 25%, transparent)"}`, padding: "0.15rem 0.7rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", textTransform: "uppercase" }}>
             {published ? "Published" : "Draft"}
           </span>
@@ -1309,15 +1309,15 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
 
         <label style={{ display: "flex", alignItems: "center", gap: "0.625rem", cursor: "pointer" }}>
           <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--admin-accent)" }} />
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068" }}>Mark as Featured</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)" }}>Mark as Featured</span>
         </label>
 
         {isEdit && published && (
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", cursor: "pointer" }}>
             <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
             <div>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Show readers the edit date</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)", display: "block" }}>Show &quot;Updated&quot; notice</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-sidebar-muted)" }}>Show readers the edit date</span>
             </div>
           </label>
         )}
@@ -1327,8 +1327,8 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", cursor: "pointer" }}>
             <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
             <div>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Notify subscribers</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Send email on publish</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)", display: "block" }}>Notify subscribers</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-sidebar-muted)" }}>Send email on publish</span>
             </div>
           </label>
         )}
@@ -1346,33 +1346,33 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
         )}
 
         {/* Cover image */}
-        <div style={{ borderTop: "1px solid rgba(13,31,60,0.07)", paddingTop: "1rem" }}>
+        <div style={{ borderTop: "1px solid color-mix(in srgb, var(--admin-primary) 7%, transparent)", paddingTop: "1rem" }}>
           <label style={labelStyle}>Cover Image</label>
-          <button onClick={() => coverImgRef.current?.click()} disabled={uploading} style={{ width: "100%", background: "rgba(45,125,154,0.06)", color: "#2d7d9a", border: "1.5px dashed rgba(45,125,154,0.35)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
+          <button onClick={() => coverImgRef.current?.click()} disabled={uploading} style={{ width: "100%", background: "color-mix(in srgb, var(--admin-accent) 6%, transparent)", color: "var(--admin-accent)", border: "1.5px dashed color-mix(in srgb, var(--admin-accent) 35%, transparent)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
             {uploading ? <><SpinnerIcon />Uploading…</> : <>📷 Upload</>}
           </button>
           <input value={coverImage} onChange={e => setCoverImage(e.target.value)} placeholder="Or paste URL…" style={{ ...inputStyle, fontSize: "0.8rem" }} />
           {coverImage && (
-            <div style={{ marginTop: "0.5rem", borderRadius: 6, overflow: "hidden", border: "1px solid rgba(13,31,60,0.1)", position: "relative" }}>
+            <div style={{ marginTop: "0.5rem", borderRadius: 6, overflow: "hidden", border: "1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", position: "relative" }}>
               <img src={coverImage} alt="Cover" style={{ width: "100%", height: 110, objectFit: "cover", display: "block" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <button onClick={() => setCoverImage("")} style={{ position: "absolute", top: 6, right: 6, background: "rgba(13,31,60,0.7)", color: "#fff", border: "none", borderRadius: 4, width: 24, height: 24, cursor: "pointer", fontSize: "0.9rem", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+              <button onClick={() => setCoverImage("")} style={{ position: "absolute", top: 6, right: 6, background: "color-mix(in srgb, var(--admin-primary) 70%, transparent)", color: "#fff", border: "none", borderRadius: 4, width: 24, height: 24, cursor: "pointer", fontSize: "0.9rem", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             </div>
           )}
         </div>
 
         {/* Categories */}
-        <div style={{ borderTop: "1px solid rgba(13,31,60,0.07)", paddingTop: "1rem" }}>
+        <div style={{ borderTop: "1px solid color-mix(in srgb, var(--admin-primary) 7%, transparent)", paddingTop: "1rem" }}>
           <label style={labelStyle}>Categories</label>
           {categories.length === 0 ? (
-            <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0 }}>
-              No categories. <Link href={`/${username}/inkwell/categories`} style={{ color: "#2d7d9a" }}>Create some.</Link>
+            <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0 }}>
+              No categories. <Link href={`/${username}/inkwell/categories`} style={{ color: "var(--admin-accent)" }}>Create some.</Link>
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               {categories.map(cat => (
                 <label key={cat.id} style={{ display: "flex", alignItems: "center", gap: "0.625rem", cursor: "pointer" }}>
                   <input type="checkbox" checked={selectedCats.includes(cat.id)} onChange={() => toggleCat(cat.id)} style={{ accentColor: cat.color }} />
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068" }}>{cat.name}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)" }}>{cat.name}</span>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: cat.color, marginLeft: "auto" }} />
                 </label>
               ))}
@@ -1393,14 +1393,14 @@ function ShareRow({ slug, username }: { slug: string; username: string }) {
     catch { window.prompt("Copy this link:", link); }
   };
   return (
-    <div style={{ background: "rgba(45,125,154,0.06)", border: "1px solid rgba(45,125,154,0.2)", borderRadius: 10, padding: "0.875rem 1rem", display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "#8fa3b1", margin: 0 }}>Share this post</p>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#2d7d9a", margin: 0, wordBreak: "break-all" }}>{link}</p>
+    <div style={{ background: "color-mix(in srgb, var(--admin-accent) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 20%, transparent)", borderRadius: 10, padding: "0.875rem 1rem", display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", margin: 0 }}>Share this post</p>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-accent)", margin: 0, wordBreak: "break-all" }}>{link}</p>
       <div style={{ display: "flex", gap: "0.5rem" }}>
-        <button onPointerDown={e => { e.preventDefault(); copy(); }} style={{ flex: 1, background: copied ? "#4a9e7a" : "#2d7d9a", color: "#fff", border: "none", borderRadius: 8, padding: "0.6rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}>
+        <button onPointerDown={e => { e.preventDefault(); copy(); }} style={{ flex: 1, background: copied ? "#4a9e7a" : "var(--admin-accent)", color: "#fff", border: "none", borderRadius: 8, padding: "0.6rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}>
           {copied ? "✓ Copied!" : "Copy Link"}
         </button>
-        <a href={link} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", color: "#2d7d9a", border: "1px solid rgba(45,125,154,0.3)", borderRadius: 8, padding: "0.6rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none", textAlign: "center" }}>
+        <a href={link} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", color: "var(--admin-accent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 30%, transparent)", borderRadius: 8, padding: "0.6rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none", textAlign: "center" }}>
           View Live ↗
         </a>
       </div>
@@ -1461,17 +1461,17 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(13,31,60,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "color-mix(in srgb, var(--admin-primary) 65%, transparent)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onDismiss}>
       {/* Sheet */}
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fffef9", borderRadius: "20px 20px 0 0", overflow: "hidden", width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--admin-bg-card)", borderRadius: "20px 20px 0 0", overflow: "hidden", width: "100%", maxWidth: 480, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
 
         {/* Scrollable content */}
         <div style={{ overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
 
           {/* Drag handle */}
           <div style={{ padding: "0.875rem 1.5rem 0" }}>
-            <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
+            <div style={{ width: 36, height: 4, background: "color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 2, margin: "0 auto" }} />
           </div>
 
           {/* Inline CSS preview card */}
@@ -1549,7 +1549,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
               Dashboard
             </a>
             <button onClick={onDismiss}
-              style={{ background: "transparent", color: "#8fa3b1", border: "none", padding: "0.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", width: "100%" }}>
+              style={{ background: "transparent", color: "var(--admin-sidebar-muted)", border: "none", padding: "0.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", width: "100%" }}>
               Continue editing
             </button>
           </div>
@@ -1569,7 +1569,7 @@ function CopyLinkRow({ url }: { url: string }) {
   };
   return (
     <div style={{ background: "var(--admin-bg)", border: "1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", borderRadius: 8, padding: "0.75rem 1rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-      <span style={{ flex: 1, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", wordBreak: "break-all", lineHeight: 1.5 }}>{url}</span>
+      <span style={{ flex: 1, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)", wordBreak: "break-all", lineHeight: 1.5 }}>{url}</span>
       <button onClick={copy} style={{ flexShrink: 0, background: copied ? "#4a9e7a" : "var(--admin-primary)", color: copied ? "#fff" : "var(--admin-accent)", border: "none", borderRadius: 6, padding: "0.45rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap" }}>
         {copied ? "✓ Copied!" : "Copy Link"}
       </button>
@@ -1587,7 +1587,7 @@ function AiHistoryView({ sessions, onResume, onDelete }: {
   if (sessions.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
-        <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
+        <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
           No archived conversations yet.<br />Click &quot;New chat&quot; to archive the current one.
         </p>
       </div>
@@ -1596,18 +1596,18 @@ function AiHistoryView({ sessions, onResume, onDelete }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
       {sessions.map(s => (
-        <div key={s.id} style={{ background: "rgba(255,254,249,0.06)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 10, padding: "0.875rem 1rem" }}>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", margin: "0 0 0.35rem", letterSpacing: "0.04em" }}>
+        <div key={s.id} style={{ background: "color-mix(in srgb, var(--admin-bg-card) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 12%, transparent)", borderRadius: 10, padding: "0.875rem 1rem" }}>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "var(--admin-sidebar-muted)", margin: "0 0 0.35rem", letterSpacing: "0.04em" }}>
             {new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             {" · "}{s.messages.length} messages
           </p>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#fffef9", margin: "0 0 0.75rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "var(--admin-bg-card)", margin: "0 0 0.75rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
             {s.preview}
           </p>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={() => onResume(s)}
-              style={{ flex: 1, background: "#c8a97e", color: "#0d1f3c", border: "none", borderRadius: 6, padding: "0.45rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer" }}
+              style={{ flex: 1, background: "var(--admin-accent)", color: "var(--admin-primary)", border: "none", borderRadius: 6, padding: "0.45rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer" }}
             >
               Resume
             </button>
@@ -1671,8 +1671,8 @@ function AiMessage({ role, content }: { role: "user" | "assistant"; content: str
 
   const bubble: React.CSSProperties = {
     maxWidth: "84%",
-    background: isUser ? "#c8a97e" : "rgba(255,254,249,0.07)",
-    color: isUser ? "#0d1f3c" : "#fffef9",
+    background: isUser ? "var(--admin-accent)" : "color-mix(in srgb, var(--admin-bg-card) 7%, transparent)",
+    color: isUser ? "var(--admin-primary)" : "var(--admin-bg-card)",
     borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
     padding: "0.625rem 0.875rem",
     fontFamily: "Inter, sans-serif", fontSize: "0.82rem", lineHeight: 1.6,
@@ -1693,7 +1693,7 @@ function AiMessage({ role, content }: { role: "user" | "assistant"; content: str
           style={{
             marginTop: "0.2rem",
             background: "none", border: "none",
-            color: copied ? "#4a9e7a" : "rgba(200,169,126,0.45)",
+            color: copied ? "#4a9e7a" : "color-mix(in srgb, var(--admin-accent) 45%, transparent)",
             fontSize: "0.65rem", fontFamily: "Inter, sans-serif",
             cursor: "pointer", padding: "0.1rem 0.3rem",
             display: "flex", alignItems: "center", gap: "0.25rem",
@@ -1710,9 +1710,9 @@ function AiMessage({ role, content }: { role: "user" | "assistant"; content: str
 function AiTypingDot() {
   return (
     <div style={{ display: "flex", justifyContent: "flex-start" }}>
-      <div style={{ background: "rgba(255,254,249,0.07)", borderRadius: "14px 14px 14px 4px", padding: "0.625rem 0.875rem", display: "flex", gap: 4, alignItems: "center" }}>
+      <div style={{ background: "color-mix(in srgb, var(--admin-bg-card) 7%, transparent)", borderRadius: "14px 14px 14px 4px", padding: "0.625rem 0.875rem", display: "flex", gap: 4, alignItems: "center" }}>
         {[0, 150, 300].map(delay => (
-          <span key={delay} style={{ width: 6, height: 6, borderRadius: "50%", background: "#c8a97e", display: "inline-block", animation: "aiBounce 1.1s ease-in-out infinite", animationDelay: `${delay}ms` }} />
+          <span key={delay} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--admin-accent)", display: "inline-block", animation: "aiBounce 1.1s ease-in-out infinite", animationDelay: `${delay}ms` }} />
         ))}
         <style>{`@keyframes aiBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }`}</style>
       </div>
@@ -1730,7 +1730,7 @@ function AiInput({ value, onChange, onSend, loading }: {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); }
   };
   return (
-    <div style={{ padding: "0.875rem 1rem", borderTop: "1px solid rgba(200,169,126,0.12)", flexShrink: 0, display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
+    <div style={{ padding: "0.875rem 1rem", borderTop: "1px solid color-mix(in srgb, var(--admin-accent) 12%, transparent)", flexShrink: 0, display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
       <textarea
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -1739,9 +1739,9 @@ function AiInput({ value, onChange, onSend, loading }: {
         rows={1}
         disabled={loading}
         style={{
-          flex: 1, background: "rgba(255,254,249,0.07)", border: "1px solid rgba(200,169,126,0.2)",
+          flex: 1, background: "color-mix(in srgb, var(--admin-bg-card) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 20%, transparent)",
           borderRadius: 10, padding: "0.6rem 0.75rem",
-          fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#fffef9",
+          fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "var(--admin-bg-card)",
           outline: "none", resize: "none", lineHeight: 1.5,
           minHeight: 38, maxHeight: 120, overflowY: "auto",
         }}
@@ -1750,8 +1750,8 @@ function AiInput({ value, onChange, onSend, loading }: {
         onClick={onSend}
         disabled={loading || !value.trim()}
         style={{
-          background: loading || !value.trim() ? "rgba(200,169,126,0.25)" : "#c8a97e",
-          color: "#0d1f3c", border: "none", borderRadius: 8,
+          background: loading || !value.trim() ? "color-mix(in srgb, var(--admin-accent) 25%, transparent)" : "var(--admin-accent)",
+          color: "var(--admin-primary)", border: "none", borderRadius: 8,
           width: 38, height: 38, flexShrink: 0,
           cursor: loading || !value.trim() ? "default" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -1776,11 +1776,11 @@ function SpinnerIcon() {
 // ── Audio generation panel (shown in SettingsPanel for published posts) ──
 function AudioGenPanel() {
   return (
-    <div style={{ borderTop: "1px solid rgba(13,31,60,0.07)", paddingTop: "0.875rem" }}>
+    <div style={{ borderTop: "1px solid color-mix(in srgb, var(--admin-primary) 7%, transparent)", paddingTop: "0.875rem" }}>
       <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--admin-primary)", margin: "0 0 0.3rem" }}>
         Audio
       </p>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1", margin: 0 }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)", margin: 0 }}>
         🎙 Audio generates on every publish or update
       </p>
     </div>

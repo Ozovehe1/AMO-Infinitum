@@ -63,10 +63,10 @@ export default function AllPosts() {
             value={search}
             onChange={e => { setSearch(e.target.value); load(e.target.value); }}
             placeholder="Search posts…"
-            style={{ width: "100%", background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none", marginBottom: "1.5rem", boxSizing: "border-box" }}
+            style={{ width: "100%", background: "var(--admin-bg-card)", border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none", marginBottom: "1.5rem", boxSizing: "border-box" }}
           />
 
-          <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden" }}>
             {loading ? (
               <p style={{ padding: "2rem", textAlign: "center", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p>
             ) : posts.length === 0 ? (

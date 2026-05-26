@@ -7,14 +7,14 @@ interface Category {
   color: string; _count?: { posts: number };
 }
 
-const PRESET_COLORS = ["#2d7d9a", "#c8a97e", "#4a9e7a", "#7a6aba", "#c04040", "#3a7a6a", "#8a5a3a", "#5a6a9a"];
+const PRESET_COLORS = ["var(--admin-accent)", "#c8a97e", "#4a9e7a", "#7a6aba", "#c04040", "#3a7a6a", "#8a5a3a", "#5a6a9a"];
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Category | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", color: "#2d7d9a" });
+  const [form, setForm] = useState({ name: "", description: "", color: "var(--admin-accent)" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,7 +24,7 @@ export default function CategoriesPage() {
   };
   useEffect(load, []);
 
-  const openCreate = () => { setForm({ name: "", description: "", color: "#2d7d9a" }); setEditing(null); setCreating(true); setError(""); };
+  const openCreate = () => { setForm({ name: "", description: "", color: "var(--admin-accent)" }); setEditing(null); setCreating(true); setError(""); };
   const openEdit = (cat: Category) => { setForm({ name: cat.name, description: cat.description || "", color: cat.color }); setEditing(cat); setCreating(true); setError(""); };
   const close = () => { setCreating(false); setEditing(null); setError(""); };
 
@@ -44,7 +44,7 @@ export default function CategoriesPage() {
     load();
   };
 
-  const inputStyle: React.CSSProperties = { width: "100%", background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 18%, transparent)", borderRadius: 6, padding: "0.7rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none", boxSizing: "border-box" };
+  const inputStyle: React.CSSProperties = { width: "100%", background: "var(--admin-bg-card)", border: "1px solid color-mix(in srgb, var(--admin-primary) 18%, transparent)", borderRadius: 6, padding: "0.7rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.35rem" };
 
   return (
@@ -63,7 +63,7 @@ export default function CategoriesPage() {
           </div>
 
           {creating && (
-            <div style={{ background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 12%, transparent)", borderRadius: 10, padding: "1.75rem", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--admin-bg-card)", border: "1px solid color-mix(in srgb, var(--admin-primary) 12%, transparent)", borderRadius: 10, padding: "1.75rem", marginBottom: "1.5rem" }}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "var(--admin-primary)", margin: "0 0 1.25rem", fontWeight: 600 }}>
                 {editing ? `Edit: ${editing.name}` : "New Category"}
               </h3>
@@ -91,7 +91,7 @@ export default function CategoriesPage() {
             </div>
           )}
 
-          <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden" }}>
             {loading ? (
               <p style={{ padding: "2rem", textAlign: "center", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p>
             ) : categories.length === 0 ? (

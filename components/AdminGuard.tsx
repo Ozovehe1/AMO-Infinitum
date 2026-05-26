@@ -105,10 +105,10 @@ export default function AdminGuard({ children, username }: Props) {
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--admin-primary, #0d1f3c)", padding: "1.5rem" }}>
         <div style={{ width: "100%", maxWidth: 380 }}>
           <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: "0 0 0.25rem" }}>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "var(--admin-bg-card)", margin: "0 0 0.25rem" }}>
               <span style={{ color: "var(--admin-accent, #c8a97e)" }}>/{username}</span>
             </h1>
-            <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", margin: 0 }}>
+            <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", margin: 0 }}>
               Blog Admin — sign in to continue
             </p>
           </div>
@@ -119,21 +119,21 @@ export default function AdminGuard({ children, username }: Props) {
               onChange={e => setEmail(e.target.value)}
               placeholder="Email"
               autoFocus
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 4, padding: "0.85rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "1rem", outline: "none" }}
+              style={{ background: "color-mix(in srgb, var(--admin-bg-card) 6%, transparent)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 4, padding: "0.85rem 1rem", color: "var(--admin-bg-card)", fontFamily: "Inter, sans-serif", fontSize: "1rem", outline: "none" }}
             />
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Password"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 4, padding: "0.85rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "1rem", outline: "none" }}
+              style={{ background: "color-mix(in srgb, var(--admin-bg-card) 6%, transparent)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 4, padding: "0.85rem 1rem", color: "var(--admin-bg-card)", fontFamily: "Inter, sans-serif", fontSize: "1rem", outline: "none" }}
             />
             {error && <p style={{ color: "#e07070", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
             <button type="submit" disabled={logging || !email || !password} style={{ background: "var(--admin-accent, #c8a97e)", color: "var(--admin-primary, #0d1f3c)", border: "none", borderRadius: 4, padding: "0.85rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: "pointer", opacity: logging ? 0.7 : 1 }}>
               {logging ? "Signing in…" : "Sign In"}
             </button>
           </form>
-          <p style={{ textAlign: "center", marginTop: "1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "#8fa3b1" }}>
+          <p style={{ textAlign: "center", marginTop: "1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: "var(--admin-sidebar-muted)" }}>
             New here? <a href="/register" style={{ color: "var(--admin-accent, #c8a97e)", textDecoration: "none" }}>Create your blog →</a>
           </p>
         </div>
