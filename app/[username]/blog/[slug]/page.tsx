@@ -124,7 +124,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
           <div className="prose-amo" dangerouslySetInnerHTML={{ __html: post.content }} />
         </article>
 
-        <ShareButtons title={post.title} slug={`${username}/blog/${post.slug}`} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} />
+        <ShareButtons title={post.title} slug={`${username}/blog/${post.slug}`} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} siteName={theme.siteName} colorAccent={accent} colorPrimary={primary} fontHeading={theme.fontHeading} />
 
         {post.categories.length > 0 && (
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 2rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -137,7 +137,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
         )}
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem" }}>
-          <hr style={{ border: "none", borderTop: "1px solid rgba(13,31,60,0.1)", margin: "2rem 0" }} />
+          <hr style={{ border: "none", borderTop: "1px solid color-mix(in srgb, var(--blog-primary, #0d1f3c) 10%, transparent)", margin: "2rem 0" }} />
         </div>
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 3rem" }}>

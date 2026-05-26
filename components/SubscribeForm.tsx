@@ -33,7 +33,7 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
   const textColor  = dark ? "#fffef9" : "#0d1f3c";
   const subColor   = dark ? "#8fa3b1" : "#3a5068";
   const inputBg    = dark ? "rgba(255,254,249,0.06)" : "#fffef9";
-  const inputBorder = dark ? "rgba(200,169,126,0.25)" : "rgba(13,31,60,0.18)";
+  const inputBorder = dark ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 25%, transparent)" : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 18%, transparent)";
 
   if (state === "sent" || state === "already" || state === "cooldown") {
     const message = state === "sent"
@@ -44,7 +44,7 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
 
     return (
       <div style={{ padding: "0.5rem 0" }}>
-        <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c8a97e" }}>
+        <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "var(--blog-accent, #c8a97e)" }}>
           {message}
         </p>
         {state === "sent" && (
@@ -86,9 +86,9 @@ export default function SubscribeForm({ dark = false, username }: { dark?: boole
           disabled={state === "loading"}
           style={{
             padding: "0.6rem 1.25rem",
-            background: "#c8a97e", border: "none", borderRadius: 4,
+            background: "var(--blog-accent, #c8a97e)", border: "none", borderRadius: 4,
             fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600,
-            color: "#0d1f3c",
+            color: "var(--blog-primary, #0d1f3c)",
             cursor: state === "loading" ? "not-allowed" : "pointer",
             opacity: state === "loading" ? 0.7 : 1,
             whiteSpace: "nowrap",

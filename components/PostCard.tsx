@@ -46,10 +46,10 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
   const darkTheme = isDark(bg);
 
   const cardBg = darkTheme ? "rgba(255,255,255,0.04)" : "#fffef9";
-  const cardBorder = darkTheme ? "rgba(255,255,255,0.08)" : "rgba(13,31,60,0.1)";
+  const cardBorder = darkTheme ? "rgba(255,255,255,0.08)" : `color-mix(in srgb, ${primary} 10%, transparent)`;
   const titleColor = darkTheme ? "#fffef9" : primary;
-  const textColor = darkTheme ? "rgba(255,254,249,0.62)" : "#3a5068";
-  const metaColor = darkTheme ? "rgba(255,254,249,0.38)" : "#8fa3b1";
+  const textColor = darkTheme ? "rgba(255,254,249,0.62)" : `${primary}aa`;
+  const metaColor = darkTheme ? "rgba(255,254,249,0.38)" : `${primary}60`;
 
   if (featured) {
     return (
@@ -83,10 +83,10 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
                 ))}
               </div>
             )}
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: titleColor, lineHeight: 1.25, margin: "0 0 0.6rem", wordBreak: "break-word" }}>
+            <h2 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.35rem", fontWeight: 600, color: titleColor, lineHeight: 1.25, margin: "0 0 0.6rem", wordBreak: "break-word" }}>
               {post.title}
             </h2>
-            <p style={{ color: textColor, fontSize: "0.92rem", lineHeight: 1.65, margin: "0 0 1rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
+            <p style={{ color: textColor, fontSize: "0.92rem", lineHeight: 1.65, margin: "0 0 1rem", fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", wordBreak: "break-word", overflowWrap: "break-word" }}>
               {excerpt}
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -121,10 +121,10 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
                 ))}
               </div>
             )}
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: titleColor, lineHeight: 1.3, margin: "0 0 0.4rem", wordBreak: "break-word" }}>
+            <h3 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.2rem", fontWeight: 600, color: titleColor, lineHeight: 1.3, margin: "0 0 0.4rem", wordBreak: "break-word" }}>
               {post.title}
             </h3>
-            <p style={{ color: textColor, fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 0.75rem", fontFamily: "'Source Serif 4', serif", wordBreak: "break-word", overflowWrap: "break-word" }}>
+            <p style={{ color: textColor, fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 0.75rem", fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", wordBreak: "break-word", overflowWrap: "break-word" }}>
               {excerpt}
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: metaColor, fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>
