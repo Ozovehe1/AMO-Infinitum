@@ -17,6 +17,7 @@ export default async function PlatformLanding() {
         .lp-cta:hover { opacity: 0.9; }
         @media (max-width: 640px) {
           .lp-nav-secondary { display: none !important; }
+          .lp-nav-cta { display: none !important; }
           .lp-hero-h1 { font-size: 2.6rem !important; line-height: 1.1 !important; }
           .lp-hero-sub { font-size: 1rem !important; }
           .lp-hero-ctarow { gap: 1.25rem !important; flex-direction: column !important; align-items: flex-start !important; }
@@ -50,7 +51,7 @@ export default async function PlatformLanding() {
                 <Link href="/about" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", whiteSpace: "nowrap" }}>About</Link>
                 <Link href="/login" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", whiteSpace: "nowrap" }}>Sign in</Link>
               </div>
-              <Link href="/register" style={{ color: "#c8a97e", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.04em", borderBottom: "1px solid rgba(200,169,126,0.4)", paddingBottom: "0.1rem", whiteSpace: "nowrap" }}>
+              <Link href="/register" className="lp-nav-cta" style={{ color: "#c8a97e", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.04em", borderBottom: "1px solid rgba(200,169,126,0.4)", paddingBottom: "0.1rem", whiteSpace: "nowrap" }}>
                 Begin writing →
               </Link>
             </div>
