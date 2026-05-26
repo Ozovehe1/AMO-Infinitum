@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +32,6 @@ export default async function PlatformLanding() {
     prisma.user.count({ where: { emailVerified: true, onboarded: true } }),
     prisma.post.count({ where: { published: true, user: { emailVerified: true, onboarded: true } } }),
   ]);
-
-  const featured = posts[0] ?? null;
-  const rest = posts.slice(1);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0c0c0f", color: "#fffef9" }}>
@@ -109,8 +106,7 @@ export default async function PlatformLanding() {
       </section>
 
       {/* Discovery feed */}
-      {posts.length > 0 && (
-        <section style={{ background: "#f5f0e8", padding: "5rem 1.5rem" }}>
+        <section style={{ background: "#f7f6f3", padding: "5rem 1.5rem" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid rgba(13,31,60,0.1)", paddingBottom: "1rem", marginBottom: "3rem", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -124,96 +120,52 @@ export default async function PlatformLanding() {
               )}
             </div>
 
-            {/* Featured — large horizontal card */}
-            {featured && (
-              <Link href={`/${featured.username}/blog/${featured.slug}`} style={{ textDecoration: "none", display: "block", marginBottom: "3rem" }} className="feat-link">
-                <article style={{
-                  display: "grid",
-                  gridTemplateColumns: featured.coverImage ? "1fr 1fr" : "1fr",
-                  gap: "3rem", alignItems: "center",
-                  background: "#fffef9",
-                  border: "1px solid rgba(13,31,60,0.07)",
-                  overflow: "hidden",
-                }} className="feat-card">
-                  {featured.coverImage ? (
-                    <div style={{ height: 340, overflow: "hidden" }}>
-                      <img src={featured.coverImage} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.55s ease" }} className="feat-img" />
-                    </div>
-                  ) : null}
-                  <div style={{ padding: featured.coverImage ? "2.5rem 2.5rem 2.5rem 0" : "2.5rem" }}>
-                    <p style={{ color: featured.accentColor, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 0.75rem" }}>
-                      ✦ Featured · {featured.siteName}
-                    </p>
-                    <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.6rem, 2.5vw, 2.4rem)", fontWeight: 400, color: "#0d1f3c", lineHeight: 1.2, margin: "0 0 1rem" }} className="feat-title">
-                      {featured.title}
-                    </h2>
-                    {featured.excerpt && (
-                      <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.97rem", color: "rgba(13,31,60,0.6)", lineHeight: 1.75, margin: "0 0 1.5rem", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {featured.excerpt}
-                      </p>
-                    )}
-                    <div style={{ color: "rgba(13,31,60,0.38)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                      <span>{formatDate(featured.publishedAt || featured.createdAt)}</span>
-                      <span>·</span>
-                      <span>{featured.readingTime} min read</span>
-                      <span style={{ color: featured.accentColor, marginLeft: "0.25rem" }}>Read →</span>
-                    </div>
-                  </div>
-                </article>
-              </Link>
-            )}
-
-            {/* Grid — remaining posts with images */}
-            {rest.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }} className="disc-grid">
-                {rest.map(post => (
-                  <Link key={post.id} href={`/${post.username}/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                    <article style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.07)", overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", transition: "box-shadow 0.25s" }} className="disc-card">
-                      {post.coverImage ? (
-                        <div style={{ height: 172, overflow: "hidden", flexShrink: 0 }}>
-                          <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.45s ease" }} className="disc-img" />
-                        </div>
-                      ) : (
-                        <div style={{ height: 72, background: "#0d1f3c", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.8rem", color: `${post.accentColor}99`, fontStyle: "italic" }}>{post.siteName}</span>
-                        </div>
-                      )}
-                      <div style={{ padding: "1.25rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                          <span style={{ color: post.accentColor, fontFamily: "Inter, sans-serif", fontSize: "0.65rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>{post.siteName}</span>
-                        </div>
-                        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.05rem", fontWeight: 400, color: "#0d1f3c", lineHeight: 1.35, margin: "0 0 0.5rem", flex: 1 }} className="disc-title">
-                          {post.title}
-                        </h3>
-                        {post.excerpt && (
-                          <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.82rem", color: "rgba(13,31,60,0.55)", lineHeight: 1.6, margin: "0 0 0.75rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                            {post.excerpt}
-                          </p>
-                        )}
-                        <div style={{ color: "rgba(13,31,60,0.35)", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", display: "flex", gap: "0.5rem", marginTop: "auto" }}>
-                          <span>{formatDate(post.publishedAt || post.createdAt)}</span>
-                          <span>·</span>
-                          <span>{post.readingTime} min</span>
-                        </div>
+            {/* Uniform card grid — all posts same treatment */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }} className="disc-grid">
+              {posts.map(post => (
+                <Link key={post.id} href={`/${post.username}/blog/${post.slug}`} style={{ textDecoration: "none" }}>
+                  <article style={{ background: "#ffffff", border: "1px solid rgba(13,31,60,0.07)", overflow: "hidden", height: "100%", display: "flex", flexDirection: "column" }} className="disc-card">
+                    {post.coverImage ? (
+                      <div style={{ height: 180, overflow: "hidden", flexShrink: 0 }}>
+                        <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.45s ease", display: "block" }} className="disc-img" />
                       </div>
-                    </article>
-                  </Link>
-                ))}
-              </div>
-            )}
+                    ) : (
+                      <div style={{ height: 80, background: "#0d1f3c", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.8rem", color: `${post.accentColor}80`, fontStyle: "italic" }}>{post.siteName}</span>
+                      </div>
+                    )}
+                    <div style={{ padding: "1.25rem 1.25rem 1.5rem", flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <p style={{ color: post.accentColor, fontFamily: "Inter, sans-serif", fontSize: "0.65rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>
+                        {post.siteName}
+                      </p>
+                      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.08rem", fontWeight: 400, color: "#0d1f3c", lineHeight: 1.35, margin: 0, flex: 1 }} className="disc-title">
+                        {post.title}
+                      </h3>
+                      {post.excerpt && (
+                        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.83rem", color: "rgba(13,31,60,0.55)", lineHeight: 1.65, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          {post.excerpt}
+                        </p>
+                      )}
+                      <div style={{ color: "rgba(13,31,60,0.35)", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", display: "flex", gap: "0.5rem", marginTop: "auto", paddingTop: "0.5rem" }}>
+                        <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                        <span>·</span>
+                        <span>{post.readingTime} min read</span>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
           </div>
 
           <style>{`
-            .feat-card:hover .feat-img { transform: scale(1.02); }
-            .feat-card:hover .feat-title { opacity: 0.7; }
+            .disc-card { transition: box-shadow 0.2s; }
             .disc-card:hover { box-shadow: 0 2px 16px rgba(13,31,60,0.08); }
             .disc-card:hover .disc-img { transform: scale(1.02); }
             .disc-card:hover .disc-title { opacity: 0.65; }
-            @media (max-width: 768px) { .feat-card { grid-template-columns: 1fr !important; } }
             @media (max-width: 640px) { .disc-grid { grid-template-columns: 1fr !important; } }
           `}</style>
         </section>
-      )}
 
       {/* Footer */}
       <footer style={{ background: "#0c0c0f", padding: "4rem 1.5rem", borderTop: "1px solid rgba(200,169,126,0.07)" }}>
