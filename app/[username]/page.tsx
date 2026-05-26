@@ -95,18 +95,18 @@ export default async function UserBlogHome({
           backgroundSize: "cover", backgroundPosition: "center 30%",
           background: theme.coverImage ? undefined : primary,
         }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,20,35,0.25) 0%, rgba(10,20,35,0.5) 55%, rgba(10,20,35,0.95) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,20,35,0.15) 0%, rgba(10,20,35,0.45) 40%, rgba(10,20,35,0.88) 68%, rgba(10,20,35,0.97) 100%)" }} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 8rem" }}>
           {theme.tagline && (
             <p style={{ color: accent, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.22em", textTransform: "uppercase", margin: "0 0 1.25rem", maxWidth: 480, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {theme.tagline}
             </p>
           )}
-          <h1 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(3rem, 8vw, 6rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.05, margin: "0 0 1.5rem", maxWidth: 820 }}>
+          <h1 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(3rem, 8vw, 6rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.05, margin: "0 0 1.5rem", maxWidth: 820, textShadow: "0 2px 12px rgba(0,0,0,0.35)" }}>
             {theme.siteName}
           </h1>
           {theme.heroQuote && (
-            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "color-mix(in srgb, var(--blog-bg, #f5f0e8) 75%, transparent)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(255,254,249,0.82)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", textShadow: "0 1px 6px rgba(0,0,0,0.3)" }}>
               {theme.heroQuote}
             </p>
           )}
