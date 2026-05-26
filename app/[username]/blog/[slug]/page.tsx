@@ -29,7 +29,10 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     `${siteUrl}/api/og` +
     `?title=${encodeURIComponent(post.title)}` +
     `&excerpt=${encodeURIComponent(post.excerpt || truncate(post.content, 130))}` +
-    `&cover=${encodeURIComponent(post.coverImage || "")}`;
+    `&cover=${encodeURIComponent(post.coverImage || "")}` +
+    `&siteName=${encodeURIComponent(theme.siteName || "")}` +
+    `&colorAccent=${encodeURIComponent(theme.colorAccent || "#c8a97e")}` +
+    `&colorPrimary=${encodeURIComponent(theme.colorPrimary || "#0d1f3c")}`;
   return {
     title: `${post.title} — ${theme.siteName}`,
     description: desc,
@@ -103,8 +106,8 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
       <div style={{ background: primary, paddingTop: 64 }}>
         {post.coverImage ? (
           <div style={{ position: "relative", height: "clamp(280px, 45vh, 520px)", overflow: "hidden" }}>
-            <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />
-            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${primary}66, ${primary}e8)` }} />
+            <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
+            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${primary}22, ${primary}cc)` }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "3rem 1.5rem" }}>
               <PostMeta post={post} date={date} onDark accent={accent} primary={primary} />
             </div>
