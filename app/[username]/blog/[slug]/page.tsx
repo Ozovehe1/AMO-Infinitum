@@ -106,8 +106,8 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
       <div style={{ background: primary, paddingTop: 64 }}>
         {post.coverImage ? (
           <div style={{ position: "relative", height: "clamp(280px, 45vh, 520px)", overflow: "hidden" }}>
-            <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
-            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${primary}22, ${primary}cc)` }} />
+            <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, transparent 0%, transparent 25%, ${primary}bb 75%, ${primary}f5 100%)` }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "3rem 1.5rem" }}>
               <PostMeta post={post} date={date} onDark accent={accent} primary={primary} />
             </div>
