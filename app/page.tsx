@@ -1,13 +1,26 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import HeroSlideshow from "@/components/HeroSlideshow";
 
 export const dynamic = "force-dynamic";
 
 export default async function PlatformLanding() {
-  const [totalUsers, totalPosts] = await Promise.all([
+  const [totalUsers, totalPosts, blogUsers] = await Promise.all([
     prisma.user.count({ where: { emailVerified: true, onboarded: true } }),
     prisma.post.count({ where: { published: true, user: { emailVerified: true, onboarded: true } } }),
+    prisma.user.findMany({
+      where: { emailVerified: true, onboarded: true },
+      include: { settings: { where: { key: { in: ["cover_image", "site_name", "site_tagline"] } } } },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
+
+  const slides = blogUsers
+    .map(u => {
+      const s = (k: string) => u.settings.find(r => r.key === k)?.value || "";
+      return { coverImage: s("cover_image"), siteName: s("site_name") || u.username, tagline: s("site_tagline"), username: u.username };
+    })
+    .filter(s => !!s.coverImage);
 
   return (
     <>
@@ -44,8 +57,9 @@ export default async function PlatformLanding() {
         </nav>
 
         {/* Hero */}
-        <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 1.5rem 7rem" }}>
+        <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden" }}>
+          <HeroSlideshow slides={slides} />
+          <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 1.5rem 7rem" }}>
 
             <h1 className="lp-hero-h1" style={{
               fontFamily: "'Playfair Display', serif",
