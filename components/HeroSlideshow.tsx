@@ -147,7 +147,7 @@ function SlideContent({ slide }: { slide: Slide }) {
           fontFamily: "Inter, sans-serif", fontSize: "0.72rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
           color: "#fffef9", margin: 0,
-          textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+          textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 2px 18px rgba(0,0,0,0.8)",
         }}>
           {slide.siteName}
         </p>
@@ -156,8 +156,8 @@ function SlideContent({ slide }: { slide: Slide }) {
           <p style={{
             fontFamily: "'Source Serif 4', Georgia, serif",
             fontSize: "0.88rem", fontStyle: "italic",
-            color: "rgba(255,254,249,0.88)", margin: 0, maxWidth: 320, lineHeight: 1.6,
-            textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+            color: "#fffef9", margin: 0, maxWidth: 320, lineHeight: 1.6,
+            textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 2px 18px rgba(0,0,0,0.8)",
           }}>
             {slide.tagline}
           </p>

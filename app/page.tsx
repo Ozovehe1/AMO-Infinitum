@@ -28,6 +28,8 @@ export default async function PlatformLanding() {
         html { scroll-behavior: smooth; }
         .lp-link:hover { opacity: 0.6; }
         .lp-cta-primary:hover { color: #e0c090 !important; }
+        @keyframes lp-scroll-bob { 0%,100% { transform: translateY(0); opacity:0.55; } 50% { transform: translateY(5px); opacity:0.9; } }
+        .lp-scroll-chevron { animation: lp-scroll-bob 2.2s ease-in-out infinite; }
         @media (max-width: 640px) {
           .lp-nav-links { display: none !important; }
           .lp-hero-h1 { font-size: clamp(2.4rem, 10vw, 3.5rem) !important; }
@@ -66,6 +68,7 @@ export default async function PlatformLanding() {
               fontSize: "clamp(3.25rem, 7vw, 6.5rem)",
               fontWeight: 400, color: "#fffef9", lineHeight: 1.05,
               margin: "0 0 2rem", maxWidth: 820, letterSpacing: "-0.01em",
+              textShadow: "0 2px 20px rgba(0,0,0,0.4)",
             }}>
               For writers who<br />take words seriously.
             </h1>
@@ -73,8 +76,9 @@ export default async function PlatformLanding() {
             <p style={{
               fontFamily: "'Source Serif 4', Georgia, serif",
               fontSize: "1.05rem",
-              color: "rgba(255,254,249,0.45)", maxWidth: 440,
+              color: "rgba(255,254,249,0.65)", maxWidth: 440,
               lineHeight: 1.85, margin: "0 0 3rem",
+              textShadow: "0 1px 8px rgba(0,0,0,0.3)",
             }}>
               AMO Infinitum is home to independent writers. AI sets up your blog — you do the writing.
             </p>
@@ -86,12 +90,14 @@ export default async function PlatformLanding() {
                 textDecoration: "none",
                 borderBottom: "1px solid rgba(200,169,126,0.5)",
                 paddingBottom: "0.15rem", transition: "color 0.2s",
+                textShadow: "0 1px 6px rgba(0,0,0,0.5)",
               }}>
                 Begin writing →
               </Link>
               <Link href="/posts" className="lp-link" style={{
-                color: "rgba(255,254,249,0.3)", fontFamily: "Inter, sans-serif",
+                color: "rgba(255,254,249,0.6)", fontFamily: "Inter, sans-serif",
                 fontSize: "0.82rem", textDecoration: "none", transition: "opacity 0.2s",
+                textShadow: "0 1px 6px rgba(0,0,0,0.5)",
               }}>
                 Browse {totalPosts > 0 ? `${totalPosts} post${totalPosts === 1 ? "" : "s"}` : "posts"}
               </Link>
@@ -108,6 +114,14 @@ export default async function PlatformLanding() {
                 {totalPosts > 0 && `${totalPosts} published work${totalPosts === 1 ? "" : "s"}`}
               </p>
             )}
+          </div>
+
+          {/* Scroll hint */}
+          <div style={{ position: "absolute", bottom: "2rem", left: "50%", transform: "translateX(-50%)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem", pointerEvents: "none" }}>
+            <div style={{ width: 1, height: 40, background: "linear-gradient(to bottom, transparent, rgba(200,169,126,0.45))" }} />
+            <svg className="lp-scroll-chevron" width="12" height="7" viewBox="0 0 12 7" fill="none" stroke="rgba(200,169,126,0.55)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 1l5 5 5-5" />
+            </svg>
           </div>
         </section>
 
