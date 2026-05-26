@@ -22,7 +22,7 @@ export default async function PlatformLanding() {
           .lp-hero-sub { font-size: 1rem !important; }
           .lp-hero-ctarow { gap: 1.25rem !important; flex-direction: column !important; align-items: flex-start !important; }
           .about-grid { grid-template-columns: 1fr !important; gap: 3rem !important; }
-          .lp-footer-links { flex-wrap: wrap !important; gap: 1rem !important; }
+          .lp-footer-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
         }
       `}</style>
 
@@ -50,9 +50,6 @@ export default async function PlatformLanding() {
                 }}>Browse posts</Link>
                 <Link href="/login" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", whiteSpace: "nowrap" }}>Sign in</Link>
               </div>
-              <Link href="/register" className="lp-nav-cta" style={{ color: "#c8a97e", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.04em", borderBottom: "1px solid rgba(200,169,126,0.4)", paddingBottom: "0.1rem", whiteSpace: "nowrap" }}>
-                Begin writing →
-              </Link>
             </div>
           </div>
         </nav>
@@ -110,7 +107,7 @@ export default async function PlatformLanding() {
         </section>
 
         {/* About section */}
-        <section style={{ background: "#faf9f6", padding: "6rem 1.5rem" }}>
+        <section id="about" style={{ background: "#faf9f6", padding: "6rem 1.5rem", scrollMarginTop: 58 }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "start" }} className="about-grid">
             <div>
               <p style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", margin: "0 0 1.5rem" }}>About the platform</p>
@@ -145,17 +142,44 @@ export default async function PlatformLanding() {
         </section>
 
         {/* Footer */}
-        <footer style={{ background: "#0d1f3c", padding: "3rem 1.5rem", borderTop: "1px solid rgba(200,169,126,0.07)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-            <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#c8a97e", fontStyle: "italic", textDecoration: "none" }}>
-              AMO Infinitum
-            </Link>
-            <div style={{ display: "flex", gap: "1.75rem", alignItems: "center" }} className="lp-footer-links">
-              <Link href="/posts" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>Posts</Link>
-              <Link href="/login" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>Sign in</Link>
-              <Link href="/register" style={{ color: "rgba(255,254,249,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.12)", paddingBottom: "0.12rem" }}>
+        <footer style={{ background: "#07131f", borderTop: "1px solid rgba(200,169,126,0.07)" }}>
+          {/* Main footer body */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "4rem 1.5rem 3rem", display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr", gap: "3rem" }} className="lp-footer-grid">
+            {/* Brand */}
+            <div>
+              <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "#c8a97e", fontStyle: "italic", textDecoration: "none", display: "block", marginBottom: "0.75rem" }}>
+                AMO Infinitum
+              </Link>
+              <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.88rem", color: "rgba(255,254,249,0.28)", lineHeight: 1.7, margin: 0, maxWidth: 280 }}>
+                A platform for independent writers. AI sets up your blog — you do the writing.
+              </p>
+            </div>
+
+            {/* Navigate */}
+            <div>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.6rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(255,254,249,0.2)", margin: "0 0 1.1rem" }}>Navigate</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                <Link href="/posts" style={{ color: "rgba(255,254,249,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none" }}>Posts</Link>
+                <a href="#about" style={{ color: "rgba(255,254,249,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none" }}>About ↑</a>
+                <Link href="/login" style={{ color: "rgba(255,254,249,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none" }}>Sign in</Link>
+              </div>
+            </div>
+
+            {/* Join */}
+            <div>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.6rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(255,254,249,0.2)", margin: "0 0 1.1rem" }}>Join</p>
+              <Link href="/register" style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none", borderBottom: "1px solid rgba(200,169,126,0.35)", paddingBottom: "0.1rem" }}>
                 Begin writing →
               </Link>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "1.25rem 1.5rem" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "rgba(255,254,249,0.15)", margin: 0 }}>
+                © {new Date().getFullYear()} AMO Infinitum. All rights reserved.
+              </p>
             </div>
           </div>
         </footer>
