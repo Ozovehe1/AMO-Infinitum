@@ -5,17 +5,18 @@ export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const title    = searchParams.get("title")    || "AMO Infinitum";
-  const excerpt  = searchParams.get("excerpt")  || "";
-  const cover    = searchParams.get("cover")    || "";
-  const download = searchParams.get("download") === "1";
+  const title        = searchParams.get("title")        || "Untitled";
+  const excerpt      = searchParams.get("excerpt")      || "";
+  const cover        = searchParams.get("cover")        || "";
+  const siteName     = searchParams.get("siteName")     || "AMO Infinitum";
+  const colorAccent  = searchParams.get("colorAccent")  || "#c8a97e";
+  const colorPrimary = searchParams.get("colorPrimary") || "#0d1f3c";
+  const download     = searchParams.get("download")     === "1";
 
   const fontRes = await fetch(
     "https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTnCjmHKM4nYO7KN_pqRbtA.woff"
   ).catch(() => null);
   const fontData = (fontRes && fontRes.ok) ? await fontRes.arrayBuffer() : null;
-
-  const shortExcerpt = excerpt;
 
   const imageResponse = new ImageResponse(
     (
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "#0d1f3c",
+          background: colorPrimary,
           position: "relative",
           overflow: "hidden",
         }}
@@ -45,29 +46,28 @@ export async function GET(req: NextRequest) {
             }}
           />
         ) : (
-          /* Decorative fallback pattern */
           <div
             style={{
               position: "absolute",
               top: 0, left: 0, right: 0, bottom: 0,
               background:
-                "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.35) 0%, transparent 55%), " +
-                "radial-gradient(ellipse at 20% 80%, rgba(200,169,126,0.2) 0%, transparent 50%)",
+                `radial-gradient(ellipse at 80% 20%, ${colorAccent}55 0%, transparent 55%), ` +
+                `radial-gradient(ellipse at 20% 80%, ${colorAccent}33 0%, transparent 50%)`,
             }}
           />
         )}
 
-        {/* Gradient overlay — title always readable */}
+        {/* Gradient overlay */}
         <div
           style={{
             position: "absolute",
             top: 0, left: 0, right: 0, bottom: 0,
             background:
-              "linear-gradient(135deg, rgba(13,31,60,0.15) 0%, rgba(13,31,60,0.55) 40%, rgba(13,31,60,0.95) 100%)",
+              `linear-gradient(135deg, ${colorPrimary}26 0%, ${colorPrimary}8c 40%, ${colorPrimary}f2 100%)`,
           }}
         />
 
-        {/* Top-left branding */}
+        {/* Top-left branding — per-blog name */}
         <div
           style={{
             position: "absolute",
@@ -77,26 +77,16 @@ export async function GET(req: NextRequest) {
             gap: 12,
           }}
         >
-          <div
-            style={{
-              width: 4,
-              height: 32,
-              background: "#c8a97e",
-              borderRadius: 2,
-            }}
-          />
+          <div style={{ width: 4, height: 32, background: colorAccent, borderRadius: 2 }} />
           <span
             style={{
               fontFamily: fontData ? "Playfair" : "Georgia, serif",
               fontSize: 26,
-              color: "#c8a97e",
+              color: colorAccent,
               letterSpacing: "0.06em",
             }}
           >
-            AMO{" "}
-            <span style={{ fontStyle: "italic", color: "#fffef9" }}>
-              Infinitum
-            </span>
+            {siteName}
           </span>
         </div>
 
@@ -111,18 +101,8 @@ export async function GET(req: NextRequest) {
             gap: 20,
           }}
         >
-          {/* Gold accent bar */}
-          <div
-            style={{
-              width: 52,
-              height: 3,
-              background: "#c8a97e",
-              borderRadius: 2,
-              marginBottom: 2,
-            }}
-          />
+          <div style={{ width: 52, height: 3, background: colorAccent, borderRadius: 2, marginBottom: 2 }} />
 
-          {/* Title */}
           <div
             style={{
               fontFamily: fontData ? "Playfair" : "Georgia, serif",
@@ -136,8 +116,7 @@ export async function GET(req: NextRequest) {
             {title}
           </div>
 
-          {/* Excerpt — clearly readable subtitle */}
-          {shortExcerpt && (
+          {excerpt && (
             <div
               style={{
                 fontFamily: "system-ui, sans-serif",
@@ -148,7 +127,7 @@ export async function GET(req: NextRequest) {
                 maxWidth: 840,
               }}
             >
-              {shortExcerpt}
+              {excerpt}
             </div>
           )}
         </div>
@@ -165,9 +144,8 @@ export async function GET(req: NextRequest) {
 
   if (!download) return imageResponse;
 
-  // Force browser download on all platforms (Android, iOS, desktop)
   const headers = new Headers(imageResponse.headers);
-  headers.set("Content-Disposition", 'attachment; filename="amo-infinitum-preview.png"');
+  headers.set("Content-Disposition", `attachment; filename="${siteName.toLowerCase().replace(/\s+/g, "-")}-preview.png"`);
   headers.set("Cache-Control", "no-cache");
   return new Response(imageResponse.body, { headers });
 }

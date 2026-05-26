@@ -1,3 +1,3 @@
 {
-  "buildCommand": "npx prisma generate && npx prisma migrate deploy && npx next build"
+  "buildCommand": "npx prisma generate && bash scripts/migrate.sh && npx next build"
 }

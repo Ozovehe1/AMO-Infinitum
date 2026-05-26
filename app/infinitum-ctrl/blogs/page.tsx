@@ -16,7 +16,7 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
   );
 }
 
-function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () => void; onDone: () => void }) {
+function DeleteModal({ user, onClose, onDone, onUnauth }: { user: UserStat; onClose: () => void; onDone: () => void; onUnauth: () => void }) {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,6 +25,7 @@ function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () =>
     if (confirm !== `@${user.username}`) { setError("Username doesn't match"); return; }
     setLoading(true);
     const res = await fetch(`/api/manager/user/${user.id}`, { method: "DELETE" });
+    if (res.status === 401) { onUnauth(); return; }
     if (!res.ok) { setError((await res.json()).error || "Failed to delete"); setLoading(false); return; }
     onDone();
   };
@@ -67,7 +68,7 @@ function DeleteModal({ user, onClose, onDone }: { user: UserStat; onClose: () =>
   );
 }
 
-function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) {
+function EmailModal({ user, onClose, onUnauth }: { user: UserStat; onClose: () => void; onUnauth: () => void }) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,7 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subject: subject.trim(), message: message.trim() }),
     });
+    if (res.status === 401) { onUnauth(); return; }
     if (!res.ok) { setError((await res.json()).error || "Failed to send"); setLoading(false); return; }
     setSent(true);
   };
@@ -169,11 +171,26 @@ function EmailModal({ user, onClose }: { user: UserStat; onClose: () => void }) 
 }
 
 export default function BlogsPage() {
-  const { stats, refresh } = useManager();
+  const { stats, refresh, logout } = useManager();
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<UserStat | null>(null);
   const [emailTarget, setEmailTarget] = useState<UserStat | null>(null);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanResult, setCleanResult] = useState<{ deleted: number; accounts: { username: string; email: string }[] } | null>(null);
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+
+  const unverifiedCount = stats ? stats.users.filter(u => !u.emailVerified).length : 0;
+
+  const cleanGhosts = async () => {
+    if (cleaning) return;
+    setCleaning(true);
+    const res = await fetch("/api/manager/cleanup", { method: "DELETE" });
+    if (res.status === 401) { logout(); return; }
+    const data = await res.json();
+    setCleanResult(data);
+    await refresh();
+    setCleaning(false);
+  };
 
   const users = useMemo(() => {
     if (!stats) return [];
@@ -185,19 +202,25 @@ export default function BlogsPage() {
   return (
     <div className="mgr-fade">
       {/* Header */}
-      <div style={{ padding: "2.5rem 2.5rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div className="mgr-header-pad" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "0.75rem" }}>
         <div>
           <p style={{ margin: "0 0 0.3rem", color: MGR.textDim, fontSize: "0.62rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>Manage</p>
           <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: MGR.text, margin: 0, fontWeight: 700, letterSpacing: "-0.03em" }}>All Blogs</h1>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem" }}>{stats?.totalUsers ?? 0} total</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+          <span style={{ color: "rgba(143,163,177,0.35)", fontSize: "0.72rem" }}>{stats?.totalUsers ?? 0} active · {unverifiedCount} unverified</span>
+          {unverifiedCount > 0 && (
+            <button onClick={cleanGhosts} disabled={cleaning}
+              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", borderRadius: 7, padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 600, cursor: cleaning ? "default" : "pointer", letterSpacing: "0.02em" }}>
+              {cleaning ? "Cleaning…" : `Remove ${unverifiedCount} ghost${unverifiedCount > 1 ? "s" : ""}`}
+            </button>
+          )}
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, padding: "0.55rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", outline: "none", width: 240 }} />
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, padding: "0.55rem 1rem", color: "#fffef9", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", outline: "none", width: 220 }} />
         </div>
       </div>
 
-      <div style={{ padding: "1.5rem 2.5rem" }}>
+      <div className="mgr-page-pad">
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
           {users.length === 0 ? (
             <div style={{ padding: "4rem", textAlign: "center", color: "rgba(143,163,177,0.3)", fontSize: "0.85rem" }}>
@@ -232,8 +255,12 @@ export default function BlogsPage() {
                       </td>
                       <td style={{ padding: "1rem 1.25rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <div style={{ width: 6, height: 6, borderRadius: "50%", background: u.onboarded ? "#4a9e7a" : "#c8943a" }} />
-                          <span style={{ color: u.onboarded ? "#4a9e7a" : "#c8943a", fontSize: "0.75rem" }}>{u.onboarded ? "Active" : "Pending"}</span>
+                          {!u.emailVerified
+                            ? <><div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f87171" }} /><span style={{ color: "#f87171", fontSize: "0.75rem" }}>Unverified</span></>
+                            : u.onboarded
+                            ? <><div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4a9e7a" }} /><span style={{ color: "#4a9e7a", fontSize: "0.75rem" }}>Active</span></>
+                            : <><div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} /><span style={{ color: "#f59e0b", fontSize: "0.75rem" }}>Pending setup</span></>
+                          }
                         </div>
                       </td>
                       <td style={{ padding: "1rem 1.25rem", color: u.posts > 0 ? "#fffef9" : "rgba(143,163,177,0.3)", fontWeight: u.posts > 0 ? 600 : 400 }}>{u.posts}</td>
@@ -271,10 +298,36 @@ export default function BlogsPage() {
           user={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onDone={async () => { await refresh(); setDeleteTarget(null); }}
+          onUnauth={() => { setDeleteTarget(null); logout(); }}
         />
       )}
       {emailTarget && (
-        <EmailModal user={emailTarget} onClose={() => setEmailTarget(null)} />
+        <EmailModal user={emailTarget} onClose={() => setEmailTarget(null)} onUnauth={() => { setEmailTarget(null); logout(); }} />
+      )}
+      {cleanResult && (
+        <div onClick={() => setCleanResult(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a2d", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "2rem", maxWidth: 440, width: "100%" }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(74,158,122,0.1)", border: "1px solid rgba(74,158,122,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a9e7a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.1rem", color: "#fffef9", margin: "0 0 0.5rem", fontWeight: 700 }}>
+              {cleanResult.deleted === 0 ? "No ghost accounts found" : `${cleanResult.deleted} ghost account${cleanResult.deleted > 1 ? "s" : ""} deleted`}
+            </h2>
+            {cleanResult.accounts.length > 0 && (
+              <div style={{ margin: "1rem 0", maxHeight: 180, overflowY: "auto" }}>
+                {cleanResult.accounts.map(a => (
+                  <div key={a.email} style={{ padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", fontSize: "0.78rem" }}>
+                    <span style={{ color: "rgba(143,163,177,0.6)" }}>@{a.username}</span>
+                    <span style={{ color: "rgba(143,163,177,0.35)" }}>{a.email}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button onClick={() => setCleanResult(null)} style={{ marginTop: "1rem", background: MGR.accent2, color: "#fff", border: "none", borderRadius: 8, padding: "0.7rem 1.5rem", fontSize: "0.85rem", fontWeight: 700, cursor: "pointer", width: "100%" }}>
+              Done
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

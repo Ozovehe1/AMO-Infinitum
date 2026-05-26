@@ -10,12 +10,19 @@ export default function ShareCard({
   excerpt,
   coverImage,
   cardRef,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
 }: {
   title: string;
   excerpt?: string;
   coverImage?: string;
   cardRef: React.RefObject<HTMLDivElement | null>;
+  siteName?: string;
+  colorAccent?: string;
+  colorPrimary?: string;
 }) {
+  const badgeLetter = siteName.charAt(0).toUpperCase() || "B";
   return (
     <div
       ref={cardRef}
@@ -27,7 +34,7 @@ export default function ShareCard({
         height: 630,
         flexShrink: 0,
         overflow: "hidden",
-        background: "#0d1f3c",
+        background: colorPrimary,
         fontFamily: "Georgia, 'Times New Roman', serif",
       }}
     >
@@ -54,7 +61,7 @@ export default function ShareCard({
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(160deg, rgba(13,31,60,0.55) 0%, rgba(13,31,60,0.92) 60%, #0d1f3c 100%)",
+            `linear-gradient(160deg, ${colorPrimary}8c 0%, ${colorPrimary}eb 60%, ${colorPrimary} 100%)`,
         }}
       />
 
@@ -76,28 +83,28 @@ export default function ShareCard({
               width: 36,
               height: 36,
               borderRadius: "50%",
-              background: "#c8a97e",
+              background: colorAccent,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 16,
               fontWeight: 700,
-              color: "#0d1f3c",
+              color: colorPrimary,
               fontFamily: "Georgia, serif",
             }}
           >
-            A
+            {badgeLetter}
           </div>
           <span
             style={{
               fontFamily: "Georgia, serif",
               fontSize: 18,
-              color: "#c8a97e",
+              color: colorAccent,
               letterSpacing: "0.06em",
               fontWeight: 400,
             }}
           >
-            AMO INFINITUM
+            {siteName.toUpperCase()}
           </span>
         </div>
 
@@ -140,7 +147,7 @@ export default function ShareCard({
               marginTop: 28,
               width: 48,
               height: 3,
-              background: "#c8a97e",
+              background: colorAccent,
               borderRadius: 2,
             }}
           />

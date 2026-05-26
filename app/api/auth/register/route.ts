@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword, signToken, setAuthCookie } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
 import { randomUUID } from "crypto";
 
@@ -37,13 +37,17 @@ export async function POST(req: NextRequest) {
     data: { email, username, passwordHash, role: "user", onboarded: false, emailVerified: false, verifyToken },
   });
 
-  // Non-blocking — don't fail registration if email send fails
-  sendVerificationEmail(email, username, verifyToken).catch(err =>
-    console.error("[register] Failed to send verification email:", err)
-  );
+  try {
+    await sendVerificationEmail(email, username, verifyToken);
+  } catch (err) {
+    console.error("[register] email send failed:", err);
+    // Delete the user so they can retry registration cleanly
+    await prisma.user.delete({ where: { id: user.id } });
+    return NextResponse.json(
+      { error: "We couldn't send your verification email. Check that your email address is correct and try again." },
+      { status: 502 }
+    );
+  }
 
-  const token = signToken({ userId: user.id, username: user.username, role: user.role });
-  const res = NextResponse.json({ success: true, username: user.username }, { status: 201 });
-  res.cookies.set(setAuthCookie(token));
-  return res;
+  return NextResponse.json({ success: true, username: user.username }, { status: 201 });
 }

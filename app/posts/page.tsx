@@ -59,7 +59,6 @@ export default async function PostsPage() {
               </span>
             </Link>
             <div style={{ display: "flex", alignItems: "center", gap: "1.75rem" }}>
-              <Link href="/about" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>About</Link>
               <Link href="/login" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>Sign in</Link>
               <Link href="/register" style={{ color: "#c8a97e", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.04em", borderBottom: "1px solid rgba(200,169,126,0.4)", paddingBottom: "0.1rem" }}>
                 Begin writing →
@@ -138,12 +137,9 @@ export default async function PostsPage() {
             <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#c8a97e", fontStyle: "italic", textDecoration: "none" }}>
               AMO Infinitum
             </Link>
-            <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-              <Link href="/about" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>About</Link>
-              <Link href="/register" style={{ color: "rgba(255,254,249,0.35)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.12)", paddingBottom: "0.12rem" }}>
-                Begin writing →
-              </Link>
-            </div>
+            <Link href="/register" style={{ color: "rgba(255,254,249,0.35)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.12)", paddingBottom: "0.12rem" }}>
+              Begin writing →
+            </Link>
           </div>
         </footer>
 

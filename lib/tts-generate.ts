@@ -84,11 +84,12 @@ export async function generatePostAudio(
       create: { userId, key: `audio_${slug}`, value: url },
     });
 
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://amo-infinitum.vercel.app";
     await fetch(`${siteUrl}/api/revalidate-audio`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
+      body: JSON.stringify({ slug, username: user?.username }),
     }).catch(() => { /* not critical */ });
   } catch (err) {
     console.error("[TTS] blob upload failed:", err);

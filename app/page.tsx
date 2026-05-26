@@ -36,9 +36,6 @@ export default async function PlatformLanding() {
       <style>{`
         html { scroll-behavior: smooth; }
         .nav-read-btn:hover { background: rgba(200,169,126,0.12) !important; }
-        @media (max-width: 768px) {
-          .about-grid { grid-template-columns: 1fr !important; gap: 3rem !important; }
-        }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "#0d1f3c", color: "#fffef9" }}>
@@ -64,7 +61,6 @@ export default async function PlatformLanding() {
               }}>
                 Browse posts
               </Link>
-              <Link href="/about" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>About</Link>
               <Link href="/login" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>
                 Sign in
               </Link>
@@ -127,41 +123,6 @@ export default async function PlatformLanding() {
           </div>
         </section>
 
-        {/* About section */}
-        <section style={{ background: "#faf9f6", padding: "7rem 1.5rem" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "start" }} className="about-grid">
-            <div>
-              <p style={{ color: "#c8a97e", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", margin: "0 0 1.5rem" }}>About the platform</p>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 3.5vw, 2.75rem)", fontWeight: 400, color: "#0d1f3c", lineHeight: 1.15, margin: "0 0 1.75rem" }}>
-                A home for writers who take words seriously.
-              </h2>
-              <Link href="/about" style={{ color: "rgba(26,24,20,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", textDecoration: "none", borderBottom: "1px solid rgba(26,24,20,0.15)", paddingBottom: "0.15rem" }}>
-                Read more about us →
-              </Link>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
-              <div style={{ borderLeft: "2px solid #c8a97e", paddingLeft: "1.5rem" }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 400, color: "#0d1f3c", margin: "0 0 0.6rem" }}>What this is.</h3>
-                <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.95rem", color: "rgba(26,24,20,0.65)", lineHeight: 1.8, margin: 0 }}>
-                  A multi-writer blogging platform. Every writer gets their own blog — their own space, their own readers. AI sets it up; you do the writing.
-                </p>
-              </div>
-              <div style={{ borderLeft: "2px solid rgba(13,31,60,0.12)", paddingLeft: "1.5rem" }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 400, color: "#0d1f3c", margin: "0 0 0.6rem" }}>Who it&apos;s for.</h3>
-                <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.95rem", color: "rgba(26,24,20,0.65)", lineHeight: 1.8, margin: 0 }}>
-                  Essayists, thinkers, storytellers, analysts. Anyone with something worth saying and the patience to say it properly. Not content creators — writers.
-                </p>
-              </div>
-              <div style={{ borderLeft: "2px solid rgba(13,31,60,0.12)", paddingLeft: "1.5rem" }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 400, color: "#0d1f3c", margin: "0 0 0.6rem" }}>What we believe.</h3>
-                <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.95rem", color: "rgba(26,24,20,0.65)", lineHeight: 1.8, margin: 0 }}>
-                  No likes, no follower counts, no feeds designed to maximise time-on-site. Just writing, and readers who came looking for it.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Footer */}
         <footer style={{ background: "#0d1f3c", padding: "4rem 1.5rem", borderTop: "1px solid rgba(200,169,126,0.07)" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1.5rem" }}>
@@ -171,7 +132,6 @@ export default async function PlatformLanding() {
             </div>
             <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
               <Link href="/posts" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>Browse posts</Link>
-              <Link href="/about" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>About</Link>
               <Link href="/login" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>Sign in</Link>
               <Link href="/register" style={{ color: "rgba(255,254,249,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.12)", paddingBottom: "0.15rem" }}>
                 Begin writing →

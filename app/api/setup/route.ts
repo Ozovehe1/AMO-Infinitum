@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { searchUnsplash } from "@/lib/unsplash";
+import { enforceContrast } from "@/lib/utils";
 import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 60;
@@ -14,7 +15,6 @@ interface SetupAnswers {
   tone: string;
   colorMood: string;
   blogName: string;
-  tagline: string;
   bio: string;
   readingFeel: string;
   imageStyle: string;
@@ -47,7 +47,6 @@ BLOG SETUP DATA:
 - Desired reading experience: ${answers.readingFeel || "not specified"}
 - Color mood: ${answers.colorMood}
 - Blog name (user's choice): ${answers.blogName}
-- Tagline (user's choice): ${answers.tagline}
 - About the writer: ${answers.bio}
 - Preferred imagery style: ${answers.imageStyle}
 - Base color palette: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg}
@@ -75,7 +74,7 @@ Available body fonts (pick one that pairs with your heading choice):
 Return this exact JSON structure:
 {
   "siteName": "clean version of the blog name",
-  "tagline": "refined version of their tagline — keep their voice",
+  "tagline": "a sharp original tagline invented from the niche, tone, bio, and blog name — under 10 words, in the writer's voice",
   "description": "2 sentences for SEO that capture the blog's purpose and audience",
   "heroQuote": "1 powerful, original sentence that captures the blog's deepest spirit — not generic",
   "colorPrimary": "hex color based on color mood",
@@ -85,10 +84,10 @@ Return this exact JSON structure:
   "aboutText": "2-3 sentences rewritten from the bio in first person, warm and authentic",
   "fontHeading": "exact font name from the heading list — must reflect who this writer is",
   "fontBody": "exact font name from the body list — must pair well with fontHeading",
-  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images. Think: what single photograph would feel like the soul of this blog?"
+  "imageQuery": "a precise Unsplash search query (4-7 words) for a HERO BACKGROUND photograph — must be landscape-oriented, atmospheric, and work with text overlaid on it. Derive it from: niche='${answers.niche}', imagery style='${answers.imageStyle}', color mood='${answers.colorMood}', tone='${answers.tone}', bio='${answers.bio}'. The photo must feel like the visual soul of this specific blog — the one image that, if a stranger saw it, they would immediately understand what this writer is about. Avoid: portraits, close-ups, generic stock, studio shots. Prefer: wide scenes, natural light, depth, mood."
 }
 
-The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.
+The imageQuery is the hero background image the user will see first. It must be landscape-oriented and atmospheric enough to have blog title text overlaid on it. Make it specific to THIS writer's world — derived from their actual niche, tone, and bio — not a generic search. Combine subject + environment + mood/light.
 The font choices are critical — they must feel like they belong to THIS specific writer, chosen by someone who truly read their answers, not defaults.`;
 
     try {
@@ -99,6 +98,12 @@ The font choices are critical — they must feel like they belong to THIS specif
       });
       const text = (msg.content[0] as { text: string }).text.trim();
       const config = JSON.parse(text.replace(/```json\n?|\n?```/g, ""));
+      const fixed = enforceContrast({
+        colorPrimary: config.colorPrimary,
+        colorAccent:  config.colorAccent,
+        colorBg:      config.colorBg,
+      });
+      Object.assign(config, fixed);
       return NextResponse.json({ config });
     } catch (e) {
       console.error("[setup/generate]", e);

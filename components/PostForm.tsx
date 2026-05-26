@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
@@ -56,6 +56,7 @@ function TSep() {
 
 export default function PostForm({ post }: { post?: PostData }) {
   const router = useRouter();
+  const { username } = useParams<{ username: string }>();
   const coverImgRef    = useRef<HTMLInputElement>(null);
   const bodyImgRef     = useRef<HTMLInputElement>(null);
   const mobileTitleRef    = useRef<HTMLTextAreaElement>(null);
@@ -90,7 +91,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [styleOpen,      setStyleOpen]      = useState(false);
   const [alignOpen,      setAlignOpen]      = useState(false);
   const [catPickerOpen,  setCatPickerOpen]  = useState(false);
-  const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | null>(null);
+  const [mobileUrlMode,  setMobileUrlMode]  = useState<"link" | "image" | "youtube" | null>(null);
   const [mobileUrlValue, setMobileUrlValue] = useState("");
   const [deleting,       setDeleting]       = useState(false);
   const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
@@ -123,9 +124,26 @@ export default function PostForm({ post }: { post?: PostData }) {
   // Force re-render when editor selection changes (for toolbar active states)
   const [, setEditorVersion] = useState(0);
 
+  const [themeBranding, setThemeBranding] = useState({ siteName: "Blog", colorAccent: "#c8a97e", colorPrimary: "#0d1f3c", fontHeading: "Georgia" });
+
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!username) return;
+    fetch(`/api/settings?username=${username}`)
+      .then(r => r.json())
+      .then(s => {
+        setThemeBranding({
+          siteName: s.site_name || "Blog",
+          colorAccent: s.color_accent || "#c8a97e",
+          colorPrimary: s.color_primary || "#0d1f3c",
+          fontHeading: s.font_heading || "Georgia",
+        });
+      })
+      .catch(() => {});
+  }, [username]);
 
   // Auto-size title + subtitle textareas on mount so existing drafts aren't clipped
   useEffect(() => {
@@ -147,10 +165,10 @@ export default function PostForm({ post }: { post?: PostData }) {
   // Load AI chat + session history on mount
   useEffect(() => {
     const pid = postId ?? "new";
-    // localStorage is the fast-access layer for the active chat
+    // localStorage is the fast-access layer for the active chat — keyed by user+post to prevent cross-user leakage
     let restoredFromLocal = false;
     try {
-      const chat = localStorage.getItem(`ai-chat-${pid}`);
+      const chat = localStorage.getItem(`ai-chat-${username}-${pid}`);
       if (chat) { setAiMessages(JSON.parse(chat)); restoredFromLocal = true; }
     } catch { /* ignore */ }
     // Archived sessions + DB backup of active chat
@@ -169,7 +187,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
   // Persist current chat — localStorage for speed, DB for durability
   useEffect(() => {
-    const key = `ai-chat-${postId ?? "new"}`;
+    const key = `ai-chat-${username}-${postId ?? "new"}`;
     if (aiMessages.length > 0) {
       localStorage.setItem(key, JSON.stringify(aiMessages));
       // Fire-and-forget DB backup so chat survives browser clears and device switches
@@ -181,7 +199,7 @@ export default function PostForm({ post }: { post?: PostData }) {
     } else {
       localStorage.removeItem(key);
     }
-  }, [aiMessages, postId]);
+  }, [aiMessages, postId, username]);
 
   // ── Session management ────────────────────────────────────
   // Saves sessions to DB — permanent storage, only the author can delete
@@ -322,10 +340,10 @@ export default function PostForm({ post }: { post?: PostData }) {
           if (willShowOverlay) {
             // Update URL without navigating — router.push would unmount the
             // component before the overlay can render
-            window.history.replaceState({}, "", `/inkwell/posts/${data.id}`);
+            window.history.replaceState({}, "", `/${username}/inkwell/posts/${data.id}`);
           } else {
-            if (options.silent) router.replace(`/inkwell/posts/${data.id}`);
-            else router.push(`/inkwell/posts/${data.id}`);
+            if (options.silent) router.replace(`/${username}/inkwell/posts/${data.id}`);
+            else router.push(`/${username}/inkwell/posts/${data.id}`);
           }
         }
         if (options.publish !== undefined) setPublished(options.publish);
@@ -435,6 +453,9 @@ export default function PostForm({ post }: { post?: PostData }) {
     if (mobileUrlMode === "link") {
       if (!val) mobileEditor.chain().focus().extendMarkRange("link").unsetLink().run();
       else mobileEditor.chain().focus().extendMarkRange("link").setLink({ href: val }).run();
+    } else if (mobileUrlMode === "youtube") {
+      const m = val.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (m) mobileEditor.chain().focus().insertContent({ type: "youtubeEmbed", attrs: { videoId: m[1] } }).run();
     } else {
       if (val) mobileEditor.chain().focus().setImage({ src: val }).run();
     }
@@ -479,6 +500,11 @@ export default function PostForm({ post }: { post?: PostData }) {
           coverImage={coverImage}
           content={content}
           onDismiss={() => setPublishedSlug(null)}
+          username={username}
+          siteName={themeBranding.siteName}
+          colorAccent={themeBranding.colorAccent}
+          colorPrimary={themeBranding.colorPrimary}
+          fontHeading={themeBranding.fontHeading}
         />
       )}
 
@@ -568,7 +594,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 if (e.key === "Enter") { e.preventDefault(); submitMobileUrl(); }
                 if (e.key === "Escape") { setMobileUrlMode(null); setMobileUrlValue(""); }
               }}
-              placeholder={mobileUrlMode === "link" ? "Paste a link URL…" : "Paste image URL…"}
+              placeholder={mobileUrlMode === "link" ? "Paste a link URL…" : mobileUrlMode === "youtube" ? "Paste YouTube URL…" : "Paste image URL…"}
               style={{
                 flex: 1, background: "#f5f5f5", border: "none",
                 borderRadius: 6, padding: "8px 12px",
@@ -585,7 +611,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                 fontFamily: "system-ui, sans-serif", fontSize: "0.82rem",
                 fontWeight: 700, cursor: "pointer", flexShrink: 0,
               }}
-            >{mobileUrlMode === "link" ? "Add Link" : "Insert"}</button>
+            >{mobileUrlMode === "link" ? "Add Link" : mobileUrlMode === "youtube" ? "Embed" : "Insert"}</button>
             <button
               onPointerDown={e => { e.preventDefault(); setMobileUrlMode(null); setMobileUrlValue(""); }}
               style={{ background: "none", border: "none", color: "#888", fontSize: "1.1rem", cursor: "pointer", padding: "4px", flexShrink: 0 }}
@@ -654,6 +680,8 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Image by URL */}
               {TB("Img", () => { setMobileUrlValue(""); setMobileUrlMode("image"); }, mobileUrlMode === "image")}
+              {/* YouTube embed */}
+              {TB("▶ YT", () => { setMobileUrlValue(""); setMobileUrlMode("youtube"); }, mobileUrlMode === "youtube")}
               <TSep />
 
               {/* Lists + blocks */}
@@ -990,7 +1018,7 @@ export default function PostForm({ post }: { post?: PostData }) {
 
           {/* Sidebar */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", position: "sticky", top: "1.5rem" }}>
-            <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers }} />
+            <SettingsPanel {...{ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers, username }} />
             {/* AI toggle */}
             <button
               onClick={() => setAiOpen(o => !o)}
@@ -1129,7 +1157,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               </div>
 
               {/* Share link (when published) */}
-              {published && postSlug && <ShareRow slug={postSlug} />}
+              {published && postSlug && <ShareRow slug={postSlug} username={username} />}
               {published && postSlug && <AudioGenPanel />}
 
               {/* Featured */}
@@ -1201,7 +1229,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                       if (!confirm("Delete this post? This cannot be undone.")) return;
                       setDeleting(true);
                       await fetch(`/api/posts/${postId}`, { method: "DELETE" });
-                      router.push("/inkwell/posts");
+                      router.push(`/${username}/inkwell/posts`);
                     }}
                     disabled={deleting}
                     style={{ background: "transparent", color: "#c04040", border: "none", borderRadius: 12, padding: "0.625rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", opacity: deleting ? 0.6 : 1 }}
@@ -1258,9 +1286,10 @@ interface SettingsProps {
   inputStyle: React.CSSProperties; labelStyle: React.CSSProperties;
   postSlug?: string;
   notifySubscribers: boolean; setNotifySubscribers: (v: boolean) => void;
+  username: string;
 }
 
-function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers }: SettingsProps) {
+function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers, username }: SettingsProps) {
   return (
     <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 10, overflow: "hidden" }}>
       <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid rgba(13,31,60,0.07)", background: "#f5f0e8" }}>
@@ -1275,7 +1304,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           </span>
         </div>
 
-        {published && postSlug && <ShareRow slug={postSlug} />}
+        {published && postSlug && <ShareRow slug={postSlug} username={username} />}
         {published && postSlug && <AudioGenPanel />}
 
         <label style={{ display: "flex", alignItems: "center", gap: "0.625rem", cursor: "pointer" }}>
@@ -1336,7 +1365,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           <label style={labelStyle}>Categories</label>
           {categories.length === 0 ? (
             <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0 }}>
-              No categories. <Link href="/inkwell/categories" style={{ color: "#2d7d9a" }}>Create some.</Link>
+              No categories. <Link href={`/${username}/inkwell/categories`} style={{ color: "#2d7d9a" }}>Create some.</Link>
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -1355,10 +1384,10 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
   );
 }
 
-function ShareRow({ slug }: { slug: string }) {
+function ShareRow({ slug, username }: { slug: string; username: string }) {
   const [copied, setCopied] = useState(false);
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
-  const link = `${siteUrl}/blog/${slug}`;
+  const link = `${siteUrl}/${username}/blog/${slug}`;
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2500); }
     catch { window.prompt("Copy this link:", link); }
@@ -1379,13 +1408,14 @@ function ShareRow({ slug }: { slug: string }) {
   );
 }
 
-function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss }: {
-  slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void;
+function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss, username, siteName, colorAccent, colorPrimary, fontHeading }: {
+  slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void; username: string;
+  siteName?: string; colorAccent?: string; colorPrimary?: string; fontHeading?: string;
 }) {
   const [sharing, setSharing] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://amo-infinitum.vercel.app";
-  const postUrl = `${origin}/blog/${slug}`;
+  const postUrl = `${origin}/${username}/blog/${slug}`;
   const preview = excerpt || firstSentence(content);
 
   const shareText = preview || title;
@@ -1393,7 +1423,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const downloadCard = async () => {
     setDownloading(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary, fontHeading });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}-postcard.png`;
@@ -1418,7 +1448,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const shareWithPreview = async () => {
     setSharing(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary, fontHeading });
       const shareData: ShareData = { title: shareText, url: postUrl };
       const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1448,33 +1478,33 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
           <a href={postUrl} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: "0.875rem", textDecoration: "none" }}>
             {coverImage ? (
               /* ── With cover image — overlay layout ── */
-              <div style={{ width: "100%", background: "#0d1f3c", position: "relative", overflow: "hidden" }}>
+              <div style={{ width: "100%", background: colorPrimary, position: "relative", overflow: "hidden" }}>
                 <img src={coverImage} alt="" style={{ display: "block", width: "100%", height: "auto" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 35%, transparent 60%)" }} />
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                    <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: colorAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: colorPrimary, fontFamily: "Georgia, serif", flexShrink: 0 }}>{(siteName || "B").charAt(0).toUpperCase()}</div>
+                    <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: colorAccent, letterSpacing: "0.06em" }}>{(siteName || "Blog").toUpperCase()}</span>
                   </div>
                   <div>
                     <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
                     {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,22px)", color: "rgba(255,255,255,0.82)", lineHeight: 1.5, margin: "0 0 12px" }}>{preview}</p>}
-                    <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                    <div style={{ width: 32, height: 2, background: colorAccent, borderRadius: 1 }} />
                   </div>
                 </div>
               </div>
             ) : (
               /* ── No cover — min 1200/630 ratio, grows with excerpt, no clipping ── */
-              <div style={{ width: "100%", background: "#0d1f3c", position: "relative", aspectRatio: "1200/630", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
-                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 80% 20%, rgba(45,125,154,0.4) 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, rgba(200,169,126,0.25) 0%, transparent 50%)" }} />
+              <div style={{ width: "100%", background: colorPrimary, position: "relative", aspectRatio: "1200/630", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(18px,5%,40px) clamp(20px,6%,56px)" }}>
+                <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 80% 20%, ${colorAccent}66 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, ${colorAccent}40 0%, transparent 50%)` }} />
                 <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#0d1f3c", fontFamily: "Georgia, serif", flexShrink: 0 }}>A</div>
-                  <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: "#c8a97e", letterSpacing: "0.06em" }}>AMO INFINITUM</span>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: colorAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: colorPrimary, fontFamily: "Georgia, serif", flexShrink: 0 }}>{(siteName || "B").charAt(0).toUpperCase()}</div>
+                  <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(11px,2.5vw,14px)", color: colorAccent, letterSpacing: "0.06em" }}>{(siteName || "Blog").toUpperCase()}</span>
                 </div>
                 <div style={{ position: "relative" }}>
                   <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 10px" }}>{title}</h2>
-                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: "rgba(200,169,126,0.82)", lineHeight: 1.55, margin: "0 0 12px" }}>{preview}</p>}
-                  <div style={{ width: 32, height: 2, background: "#c8a97e", borderRadius: 1 }} />
+                  {preview && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(15px,3.5vw,20px)", color: `${colorAccent}d0`, lineHeight: 1.55, margin: "0 0 12px" }}>{preview}</p>}
+                  <div style={{ width: 32, height: 2, background: colorAccent, borderRadius: 1 }} />
                 </div>
               </div>
             )}
@@ -1515,7 +1545,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
 
             <CopyLinkRow url={postUrl} />
 
-            <a href="/inkwell" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
+            <a href={`/${username}/inkwell`} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
               Dashboard
             </a>
             <button onClick={onDismiss}

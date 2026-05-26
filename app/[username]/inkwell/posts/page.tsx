@@ -37,7 +37,7 @@ export default function AllPosts() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg, #f5f0e8)" }}>
       <style>{`
         .posts-new-btn { display: inline-flex; }
         .post-share-btn { display: inline-flex; }
@@ -52,10 +52,10 @@ export default function AllPosts() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem" }}>
             <div>
               <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>All Posts · {total}</p>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Your Writings</h1>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary, #0d1f3c)", margin: 0, fontWeight: 600 }}>Your Writings</h1>
             </div>
-            <Link href={`${base}/posts/new`} className="posts-new-btn" style={{ background: "#0d1f3c", color: "#c8a97e", textDecoration: "none", padding: "0.65rem 1.25rem", borderRadius: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem" }}>
-              ✎ New Post
+            <Link href={`${base}/posts/new`} className="posts-new-btn" style={{ background: "var(--admin-primary, #0d1f3c)", color: "var(--admin-accent, #c8a97e)", textDecoration: "none", padding: "0.65rem 1.25rem", borderRadius: 2, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", letterSpacing: "0.06em" }}>
+              New Post
             </Link>
           </div>
 
@@ -71,7 +71,7 @@ export default function AllPosts() {
               <p style={{ padding: "2rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>Loading…</p>
             ) : posts.length === 0 ? (
               <p style={{ padding: "3rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>
-                {search ? "No posts match your search." : <><Link href={`${base}/posts/new`} style={{ color: "#2d7d9a" }}>Write your first post.</Link></>}
+                {search ? "No posts match your search." : <><Link href={`${base}/posts/new`} style={{ color: "var(--admin-accent, #c8a97e)" }}>Write your first post.</Link></>}
               </p>
             ) : (
               posts.map((p, i) => (
@@ -79,7 +79,7 @@ export default function AllPosts() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
                       <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</span>
-                      {p.featured && <span style={{ background: "#c8a97e18", color: "#c8a97e", border: "1px solid #c8a97e30", padding: "0.1rem 0.4rem", borderRadius: 8, fontSize: "0.62rem", fontFamily: "Inter, sans-serif", textTransform: "uppercase", flexShrink: 0 }}>Featured</span>}
+                      {p.featured && <span style={{ background: "var(--admin-accent-faint, #c8a97e18)", color: "var(--admin-accent, #c8a97e)", border: "1px solid rgba(0,0,0,0.08)", padding: "0.1rem 0.4rem", borderRadius: 2, fontSize: "0.62rem", fontFamily: "Inter, sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0 }}>Featured</span>}
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                       {p.categories.map((c, j) => (
@@ -91,15 +91,15 @@ export default function AllPosts() {
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}>
-                    <span style={{ background: p.published ? "#4a9e7a18" : "#c8a97e18", color: p.published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${p.published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.2rem 0.6rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                    <span style={{ color: p.published ? "#4a9e7a" : "#9a8e7e", borderLeft: `2px solid ${p.published ? "#4a9e7a" : "rgba(0,0,0,0.15)"}`, paddingLeft: "0.45rem", fontFamily: "Inter, sans-serif", fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
                       {p.published ? "Live" : "Draft"}
                     </span>
-                    <Link href={`${base}/posts/${p.id}`} style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
+                    <Link href={`${base}/posts/${p.id}`} style={{ color: "var(--admin-accent, #c8a97e)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>Edit</Link>
                     {p.published && (
                       <>
                         <Link href={`/${username}/blog/${p.slug}`} target="_blank" style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>↗</Link>
-                        <button onClick={() => sharePost(p)} className="post-share-btn" style={{ background: "none", border: "none", color: copiedId === p.id ? "#4a9e7a" : "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer", padding: 0 }}>
-                          {copiedId === p.id ? "✓" : "📤"}
+                        <button onClick={() => sharePost(p)} className="post-share-btn" style={{ background: "none", border: "none", color: copiedId === p.id ? "#4a9e7a" : "#9a8e7e", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", cursor: "pointer", padding: 0 }}>
+                          {copiedId === p.id ? "Copied" : "Copy"}
                         </button>
                       </>
                     )}

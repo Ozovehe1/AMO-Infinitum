@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export interface UserStat {
   id: number; username: string; email: string; role: string;
-  onboarded: boolean; createdAt: string; posts: number; subscribers: number;
+  onboarded: boolean; emailVerified: boolean; createdAt: string; posts: number; subscribers: number;
 }
 export interface RecentPost {
   id: number; title: string; slug: string;
@@ -162,6 +162,42 @@ function LoginScreen({ onLogin }: { onLogin: (s: PlatformStats) => void }) {
   );
 }
 
+function MobileTopBar({ onLogout }: { onLogout: () => void }) {
+  const pathname = usePathname();
+  const current = NAV.find(n => n.exact ? pathname === n.href : pathname.startsWith(n.href))?.label ?? "Manager";
+  return (
+    <header className="mgr-topbar" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 80, height: 52, background: MGR.bg, borderBottom: `1px solid ${MGR.border}`, alignItems: "center", justifyContent: "space-between", padding: "0 1rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: MGR.dim, border: `1px solid ${MGR.dimBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={MGR.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: MGR.text, fontWeight: 700 }}>{current}</span>
+      </div>
+      <button onClick={onLogout} style={{ background: "transparent", border: `1px solid ${MGR.border}`, borderRadius: 7, padding: "0.35rem 0.75rem", color: MGR.textDim, fontFamily: "Inter, sans-serif", fontSize: "0.68rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Out
+      </button>
+    </header>
+  );
+}
+
+function MobileBottomNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="mgr-bottomnav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 80, height: 64, background: MGR.bg, borderTop: `1px solid ${MGR.border}`, alignItems: "center", justifyContent: "space-around", padding: "0 0.5rem" }}>
+      {NAV.map(n => {
+        const active = n.exact ? pathname === n.href : pathname.startsWith(n.href);
+        return (
+          <Link key={n.href} href={n.href} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem", textDecoration: "none", color: active ? MGR.accent : MGR.sub, padding: "0.3rem 1rem", flex: 1 }}>
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: active ? 32 : 24, height: active ? 26 : 24, background: active ? MGR.dim : "transparent", borderRadius: 8, transition: "all 0.15s" }}>{n.icon}</span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.58rem", fontWeight: active ? 700 : 400, letterSpacing: "0.02em" }}>{n.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [stats, setStats] = useState<PlatformStats | null>(null);
@@ -178,14 +214,25 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     setAuthed(false); setStats(null);
   }, []);
 
-  // Auto-logout when tab is closed or user navigates away from site
+  // Auto-logout on tab close; re-verify session when tab regains visibility
   useEffect(() => {
     if (!authed) return;
     const onUnload = () => {
       navigator.sendBeacon("/api/manager/auth", new Blob([JSON.stringify({ action: "logout" })], { type: "application/json" }));
     };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetch("/api/manager/stats")
+          .then(r => { if (!r.ok) { setAuthed(false); setStats(null); } })
+          .catch(() => {});
+      }
+    };
     window.addEventListener("beforeunload", onUnload);
-    return () => window.removeEventListener("beforeunload", onUnload);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [authed]);
 
   const refresh = useCallback(async () => {
@@ -215,12 +262,38 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
           .mgr-row-hover:hover { background: rgba(255,255,255,0.025) !important; }
           .mgr-btn { opacity: 0.65; }
           .mgr-btn:hover { opacity: 1 !important; }
-          @media (max-width: 900px) { .mgr-sidebar-wrap { display:none !important; } .mgr-main { margin-left:0 !important; } }
+          /* Desktop: sidebar visible, no mobile bars */
+          .mgr-sidebar-wrap { display: block; }
+          .mgr-topbar { display: none; }
+          .mgr-bottomnav { display: none; }
+          .mgr-main { margin-left: 220px; min-height: 100vh; padding-bottom: 0; }
+          /* Mobile: hide sidebar, show top/bottom nav */
+          @media (max-width: 900px) {
+            .mgr-sidebar-wrap { display: none !important; }
+            .mgr-main { margin-left: 0 !important; padding-top: 52px; padding-bottom: 64px; }
+            .mgr-topbar { display: flex !important; }
+            .mgr-bottomnav { display: flex !important; }
+          }
+          .mgr-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2.5rem; }
+          .mgr-two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+          .mgr-page-pad { padding:2rem 2.5rem; }
+          .mgr-header-pad { padding:2.5rem 2.5rem 2rem; }
+          @media (max-width:900px) { .mgr-stat-grid { grid-template-columns:repeat(2,1fr); } .mgr-two-col { grid-template-columns:1fr; } .mgr-page-pad { padding:1.25rem; } .mgr-header-pad { padding:1.5rem 1.25rem 1.25rem; } }
+          @media (max-width:480px) { .mgr-stat-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; } }
         `}</style>
+
+        {/* Desktop sidebar */}
         <div className="mgr-sidebar-wrap"><Sidebar stats={stats} onLogout={doLogout} /></div>
-        <main className="mgr-main" style={{ marginLeft: 220, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+
+        {/* Mobile top bar */}
+        <MobileTopBar onLogout={doLogout} />
+
+        <main className="mgr-main" style={{ display: "flex", flexDirection: "column" }}>
           {children}
         </main>
+
+        {/* Mobile bottom nav */}
+        <MobileBottomNav />
       </div>
     </ManagerContext.Provider>
   );

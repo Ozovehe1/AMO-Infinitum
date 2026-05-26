@@ -17,8 +17,9 @@ export async function register() {
       passwordHash: ownerHash,
       role: "owner",
       onboarded: true,
+      emailVerified: true,
     },
-    update: { passwordHash: ownerHash },
+    update: { passwordHash: ownerHash, emailVerified: true },
   });
 
   const managerHash = await hash(managerPassword, 12);
@@ -37,10 +38,14 @@ export async function register() {
     { key: "color_primary", value: "#0d1f3c" },
     { key: "color_accent", value: "#c8a97e" },
     { key: "color_bg", value: "#f5f0e8" },
+    { key: "font_heading", value: "Playfair Display" },
+    { key: "font_body", value: "Source Serif 4" },
     { key: "twitter_handle", value: "@Cryptnate" },
     { key: "footer_tagline", value: "On the infinitudes of life." },
     { key: "footer_copy", value: "All words, all mine." },
     { key: "cover_image", value: "/cover.jpg" },
+    { key: "about_hero_subtitle", value: "A space that holds everything — every question, every silence, every thought that refuses to be filed neatly away." },
+    { key: "about_body", value: "<p><em>Amo</em> means love. <em>Infinitum</em> means without end. This blog is exactly that — a love that keeps going, for ideas, for language, for the texture of living.</p>" },
   ];
 
   for (const s of ownerSettings) {
