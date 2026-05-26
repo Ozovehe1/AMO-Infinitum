@@ -16,6 +16,7 @@ interface SetupAnswers {
   blogName: string;
   tagline: string;
   bio: string;
+  readingFeel: string;
   imageStyle: string;
 }
 
@@ -43,12 +44,33 @@ BLOG SETUP DATA:
 - Niche/Topic: ${answers.niche}
 - Target audience: ${answers.audience}
 - Writing tone: ${answers.tone}
+- Desired reading experience: ${answers.readingFeel || "not specified"}
 - Color mood: ${answers.colorMood}
 - Blog name (user's choice): ${answers.blogName}
 - Tagline (user's choice): ${answers.tagline}
 - About the writer: ${answers.bio}
 - Preferred imagery style: ${answers.imageStyle}
 - Base color palette: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg}
+
+TYPOGRAPHY — choose one heading font and one body font based on the writer's niche, tone, bio, and desired reading experience. These choices must feel intentional and personal, not random.
+
+Available heading fonts (pick one):
+- "Playfair Display" — classic, literary, elegant serif; suits timeless essayists, culture writers, thoughtful personal blogs
+- "Cormorant Garamond" — ethereal, poetic, old-world serif; suits poets, philosophy writers, intimate memoir-style blogs
+- "Lora" — warm, readable, grounded serif; suits personal storytellers, lifestyle writers, anyone who wants approachable elegance
+- "Libre Baskerville" — authoritative, journalistic serif; suits investigative writing, commentary, long-form analysis
+- "DM Serif Display" — contemporary editorial serif; suits modern essayists, design-conscious writers, cultural commentary
+- "Fraunces" — distinctive, warm display serif; suits narrative non-fiction, personal essays, journals with strong voice
+- "Space Grotesk" — modern, geometric sans; suits tech writers, developers, startup founders, data-driven blogs
+- "Plus Jakarta Sans" — clean, versatile sans; suits productivity writers, business content, clean minimalist blogs
+
+Available body fonts (pick one that pairs with your heading choice):
+- "Source Serif 4" — refined, digital-first serif; pairs with Playfair Display, DM Serif Display
+- "Lora" — warm serif for body; pairs with Cormorant Garamond, Fraunces
+- "Merriweather" — strong, high-readability serif; pairs with Libre Baskerville
+- "Literata" — designed for long reading; pairs with Lora, Fraunces
+- "Inter" — neutral, highly readable sans; pairs with Space Grotesk, Plus Jakarta Sans
+- "DM Sans" — modern, clean sans; pairs with Space Grotesk, Plus Jakarta Sans
 
 Return this exact JSON structure:
 {
@@ -61,15 +83,18 @@ Return this exact JSON structure:
   "colorBg": "hex light background",
   "footerTagline": "short poetic closing phrase that matches the niche and tone",
   "aboutText": "2-3 sentences rewritten from the bio in first person, warm and authentic",
+  "fontHeading": "exact font name from the heading list — must reflect who this writer is",
+  "fontBody": "exact font name from the body list — must pair well with fontHeading",
   "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images. Think: what single photograph would feel like the soul of this blog?"
 }
 
-The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.`;
+The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.
+The font choices are critical — they must feel like they belong to THIS specific writer, chosen by someone who truly read their answers, not defaults.`;
 
     try {
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 600,
+        max_tokens: 700,
         messages: [{ role: "user", content: prompt }],
       });
       const text = (msg.content[0] as { text: string }).text.trim();
@@ -102,6 +127,8 @@ The imageQuery is critical — it must be specific enough that the photos return
       { key: "color_bg", value: config.colorBg || "" },
       { key: "footer_tagline", value: config.footerTagline || "" },
       { key: "about_hero_subtitle", value: config.aboutText || "" },
+      ...(config.fontHeading ? [{ key: "font_heading", value: config.fontHeading }] : []),
+      ...(config.fontBody ? [{ key: "font_body", value: config.fontBody }] : []),
       ...(coverImage ? [{ key: "cover_image", value: coverImage }] : []),
     ];
 

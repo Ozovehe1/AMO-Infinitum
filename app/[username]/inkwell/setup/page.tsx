@@ -54,6 +54,18 @@ const STEPS = [
     type: "textarea",
   },
   {
+    id: "readingFeel",
+    question: "How should reading your blog feel?",
+    hint: "Think about the atmosphere you want to create — the pace, the mood, the texture of the words on the page.",
+    type: "choice",
+    options: [
+      "Like settling into a quiet library with a great novel",
+      "Like reading a sharp, well-edited magazine piece",
+      "Like getting a warm, thoughtful letter from a close friend",
+      "Like browsing a clean, modern publication online",
+    ],
+  },
+  {
     id: "imageStyle",
     question: "What kind of imagery suits your blog?",
     hint: "Visuals set the mood. The AI will use this to find a cover image that truly fits.",
@@ -67,12 +79,13 @@ const MOOD_MAP: Record<string, string> = {
   "Dark & modern": "dark+modern", "Bold & vibrant": "bold+vibrant",
 };
 
-const STEP_ICONS = ["✦", "◎", "◐", "◆", "✎", "—", "∿", "⬡"];
+const STEP_ICONS = ["✦", "◎", "◐", "◆", "✎", "—", "∿", "◈", "⬡"];
 
 type Answers = Record<string, string>;
 interface Config {
   siteName: string; tagline: string; description: string; heroQuote: string;
   colorPrimary: string; colorAccent: string; colorBg: string; footerTagline: string; aboutText: string;
+  fontHeading: string; fontBody: string;
 }
 interface Photo { url: string; thumb: string; credit: { name: string; link: string } }
 
@@ -123,6 +136,19 @@ function SetupInner() {
       })
       .catch(() => setPhase("questions")); // fail open if API unavailable
   }, []);
+
+  // Load the chosen fonts in the review screen
+  useEffect(() => {
+    if (!config?.fontHeading) return;
+    const families = [config.fontHeading, config.fontBody]
+      .filter(Boolean)
+      .map(f => `family=${encodeURIComponent(f)}:ital,wght@0,400;0,600;1,400`)
+      .join("&");
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+    document.head.appendChild(link);
+  }, [config?.fontHeading, config?.fontBody]);
 
   const s = STEPS[step];
 
@@ -316,6 +342,23 @@ function SetupInner() {
             </div>
             <span style={{ color: "#3a5068", fontSize: "0.75rem" }}>Color palette</span>
           </div>
+          {(config.fontHeading || config.fontBody) && (
+            <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "0.8rem 1rem", border: "1px solid rgba(200,169,126,0.07)" }}>
+              <div style={{ color: "#3a5068", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.6rem" }}>Typography</div>
+              {config.fontHeading && (
+                <div style={{ marginBottom: "0.4rem" }}>
+                  <span style={{ color: "#5a7080", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: "0.6rem" }}>Heading</span>
+                  <span style={{ color: "#fffef9", fontFamily: `'${config.fontHeading}', Georgia, serif`, fontSize: "1.05rem", fontWeight: 600 }}>{config.fontHeading}</span>
+                </div>
+              )}
+              {config.fontBody && (
+                <div>
+                  <span style={{ color: "#5a7080", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: "0.6rem" }}>Body</span>
+                  <span style={{ color: "rgba(255,254,249,0.7)", fontFamily: `'${config.fontBody}', Georgia, serif`, fontSize: "0.9rem" }}>{config.fontBody}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {error && <p style={{ color: "#e07070", fontSize: "0.82rem", marginBottom: "1rem" }}>{error}</p>}
@@ -424,7 +467,7 @@ function SetupInner() {
               value={current}
               onChange={e => setCurrent(e.target.value)}
               onKeyDown={e => e.key === "Enter" && current.trim() && nextStep()}
-              placeholder={`Describe your own ${s.id === "tone" ? "writing tone" : "color feel"}…`}
+              placeholder={`Describe your own ${s.id === "tone" ? "writing tone" : s.id === "colorMood" ? "color feel" : s.id === "readingFeel" ? "reading atmosphere" : "answer"}…`}
               autoFocus
               style={{
                 width: "100%", boxSizing: "border-box",
