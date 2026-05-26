@@ -116,14 +116,6 @@ export default async function PlatformLanding() {
               }}>
                 Not a social network. Not a content farm. A place where the writing matters and the reader came looking for it.
               </p>
-              <Link href="/about" className="lp-link" style={{
-                color: "rgba(26,24,20,0.35)", fontFamily: "Inter, sans-serif",
-                fontSize: "0.8rem", textDecoration: "none",
-                borderBottom: "1px solid rgba(26,24,20,0.15)", paddingBottom: "0.12rem",
-                transition: "opacity 0.2s",
-              }}>
-                Read more about us →
-              </Link>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
