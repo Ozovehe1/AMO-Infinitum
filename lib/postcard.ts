@@ -7,6 +7,7 @@ export async function makePostcardBlob({
   siteName = "Blog",
   colorAccent = "#c8a97e",
   colorPrimary = "#0d1f3c",
+  fontHeading = "Georgia",
 }: {
   title: string;
   excerpt?: string;
@@ -14,6 +15,7 @@ export async function makePostcardBlob({
   siteName?: string;
   colorAccent?: string;
   colorPrimary?: string;
+  fontHeading?: string;
 }): Promise<Blob> {
   let img: HTMLImageElement | null = null;
 
@@ -30,8 +32,8 @@ export async function makePostcardBlob({
   const ctx = canvas.getContext("2d")!;
 
   return img
-    ? drawWithCover(canvas, ctx, img, title, excerpt, siteName, colorAccent, colorPrimary)
-    : drawBranded(canvas, ctx, title, excerpt, siteName, colorAccent, colorPrimary);
+    ? drawWithCover(canvas, ctx, img, title, excerpt, siteName, colorAccent, colorPrimary, fontHeading)
+    : drawBranded(canvas, ctx, title, excerpt, siteName, colorAccent, colorPrimary, fontHeading);
 }
 
 // ── Cover-photo card (canvas sized to photo) ─────────────────────────────────
@@ -45,6 +47,7 @@ function drawWithCover(
   siteName = "Blog",
   colorAccent = "#c8a97e",
   colorPrimary = "#0d1f3c",
+  fontHeading = "Georgia",
 ): Promise<Blob> {
   const maxDim = 1200;
   const scale  = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
@@ -76,7 +79,7 @@ function drawWithCover(
   const excerptSize  = Math.round(W * 0.040);
   const EXCERPT_LINE_H = Math.round(excerptSize * 1.48);
 
-  ctx.font = `bold ${titleSize}px serif`;
+  ctx.font = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);
 
   let excerptLines: string[] = [];
@@ -96,7 +99,7 @@ function drawWithCover(
   let ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
 
   ctx.fillStyle    = "#ffffff";
-  ctx.font         = `bold ${titleSize}px serif`;
+  ctx.font         = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "top";
   for (const line of titleLines) { ctx.fillText(line, PAD, ty); ty += TITLE_LINE_H; }
@@ -121,6 +124,7 @@ function drawBranded(
   siteName = "Blog",
   colorAccent = "#c8a97e",
   colorPrimary = "#0d1f3c",
+  fontHeading = "Georgia",
 ): Promise<Blob> {
   const W   = 1200;
   const PAD = Math.round(W * PAD_RATIO);
@@ -132,7 +136,7 @@ function drawBranded(
 
   // Measure text before committing canvas height
   const mc = document.createElement("canvas").getContext("2d")!;
-  mc.font = `bold ${titleSize}px serif`;
+  mc.font = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   const titleLines = wrapText(mc, title, W - PAD * 2, 4);
 
   let excerptLines: string[] = [];
@@ -177,7 +181,7 @@ function drawBranded(
   let ty = BADGE_AREA;
 
   ctx.fillStyle    = "#ffffff";
-  ctx.font         = `bold ${titleSize}px serif`;
+  ctx.font         = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "top";
   for (const line of titleLines) { ctx.fillText(line, PAD, ty); ty += TITLE_LINE_H; }

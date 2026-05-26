@@ -45,7 +45,7 @@ export default function Header({ username, theme }: Props) {
     }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
         <Link href={base} style={{ textDecoration: "none" }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.35rem", fontWeight: 600, color: accent, letterSpacing: "0.02em" }}>
+          <span style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.35rem", fontWeight: 600, color: accent, letterSpacing: "0.02em" }}>
             {theme.siteName || "Blog"}
           </span>
         </Link>

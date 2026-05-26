@@ -127,7 +127,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
           <div className="prose-amo" dangerouslySetInnerHTML={{ __html: post.content }} />
         </article>
 
-        <ShareButtons title={post.title} slug={`${username}/blog/${post.slug}`} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} siteName={theme.siteName} colorAccent={accent} colorPrimary={primary} />
+        <ShareButtons title={post.title} slug={`${username}/blog/${post.slug}`} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} siteName={theme.siteName} colorAccent={accent} colorPrimary={primary} fontHeading={theme.fontHeading} />
 
         {post.categories.length > 0 && (
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 2rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -194,7 +194,7 @@ function PostMeta({ post, date, onDark, accent, primary }: {
           ))}
         </div>
       )}
-      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, color: textColor, lineHeight: 1.2, margin: "0 0 1.25rem" }}>
+      <h1 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: 600, color: textColor, lineHeight: 1.2, margin: "0 0 1.25rem" }}>
         {post.title}
       </h1>
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", color: subColor, fontSize: "0.8rem", fontFamily: "Inter, sans-serif" }}>

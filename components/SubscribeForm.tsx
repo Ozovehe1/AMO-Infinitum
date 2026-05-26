@@ -58,7 +58,7 @@ export default function SubscribeForm({ dark = false, username, siteName, subtle
 
   return (
     <form onSubmit={submit} style={{ width: "100%" }}>
-      <p style={{ margin: "0 0 0.6rem", fontFamily: "'Playfair Display', serif", fontSize: "1.05rem", fontWeight: 600, color: textColor }}>
+      <p style={{ margin: "0 0 0.6rem", fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.05rem", fontWeight: 600, color: textColor }}>
         Stay in the loop
       </p>
       <p style={{ margin: "0 0 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: subColor, lineHeight: 1.6 }}>

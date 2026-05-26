@@ -102,11 +102,11 @@ export default async function UserBlogHome({
               {theme.tagline}
             </p>
           )}
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(3rem, 8vw, 6rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.05, margin: "0 0 1.5rem", maxWidth: 820 }}>
+          <h1 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(3rem, 8vw, 6rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.05, margin: "0 0 1.5rem", maxWidth: 820 }}>
             {theme.siteName}
           </h1>
           {theme.heroQuote && (
-            <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(245,240,232,0.75)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic" }}>
+            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(245,240,232,0.75)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic" }}>
               {theme.heroQuote}
             </p>
           )}
@@ -143,10 +143,10 @@ export default async function UserBlogHome({
                       </span>
                     ))}
                   </div>
-                  <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.2, margin: "0 0 1.1rem", wordBreak: "break-word" }}>
+                  <h2 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 600, color: "#fffef9", lineHeight: 1.2, margin: "0 0 1.1rem", wordBreak: "break-word" }}>
                     {featured.title}
                   </h2>
-                  <p style={{ color: subtleOnDark, fontFamily: "'Source Serif 4', serif", fontSize: "1.05rem", lineHeight: 1.7, margin: "0 0 1.75rem", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                  <p style={{ color: subtleOnDark, fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "1.05rem", lineHeight: 1.7, margin: "0 0 1.75rem", wordBreak: "break-word", overflowWrap: "break-word" }}>
                     {featuredExcerpt}
                   </p>
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: subtleOnDark, fontSize: "0.78rem", fontFamily: "Inter, sans-serif" }}>
@@ -182,7 +182,7 @@ export default async function UserBlogHome({
 
           {posts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "6rem 0" }}>
-              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: primary, margin: "0 0 0.5rem" }}>Nothing here yet.</p>
+              <p style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.6rem", color: primary, margin: "0 0 0.5rem" }}>Nothing here yet.</p>
               <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: subtleOnLight }}>Check back soon.</p>
             </div>
           ) : (

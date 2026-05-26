@@ -124,7 +124,7 @@ export default function PostForm({ post }: { post?: PostData }) {
   // Force re-render when editor selection changes (for toolbar active states)
   const [, setEditorVersion] = useState(0);
 
-  const [themeBranding, setThemeBranding] = useState({ siteName: "Blog", colorAccent: "#c8a97e", colorPrimary: "#0d1f3c" });
+  const [themeBranding, setThemeBranding] = useState({ siteName: "Blog", colorAccent: "#c8a97e", colorPrimary: "#0d1f3c", fontHeading: "Georgia" });
 
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
@@ -139,6 +139,7 @@ export default function PostForm({ post }: { post?: PostData }) {
           siteName: s.site_name || "Blog",
           colorAccent: s.color_accent || "#c8a97e",
           colorPrimary: s.color_primary || "#0d1f3c",
+          fontHeading: s.font_heading || "Georgia",
         });
       })
       .catch(() => {});
@@ -503,6 +504,7 @@ export default function PostForm({ post }: { post?: PostData }) {
           siteName={themeBranding.siteName}
           colorAccent={themeBranding.colorAccent}
           colorPrimary={themeBranding.colorPrimary}
+          fontHeading={themeBranding.fontHeading}
         />
       )}
 
@@ -1406,9 +1408,9 @@ function ShareRow({ slug, username }: { slug: string; username: string }) {
   );
 }
 
-function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss, username, siteName, colorAccent, colorPrimary }: {
+function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss, username, siteName, colorAccent, colorPrimary, fontHeading }: {
   slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void; username: string;
-  siteName?: string; colorAccent?: string; colorPrimary?: string;
+  siteName?: string; colorAccent?: string; colorPrimary?: string; fontHeading?: string;
 }) {
   const [sharing, setSharing] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -1421,7 +1423,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const downloadCard = async () => {
     setDownloading(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary });
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary, fontHeading });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}-postcard.png`;
@@ -1446,7 +1448,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const shareWithPreview = async () => {
     setSharing(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary });
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary, fontHeading });
       const shareData: ShareData = { title: shareText, url: postUrl };
       const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {

@@ -56,7 +56,7 @@ body {
 .prose-amo h2,
 .prose-amo h3,
 .prose-amo h4 {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--blog-font-heading, 'Playfair Display', Georgia, serif);
   color: var(--navy);
   line-height: 1.25;
   margin-top: 2.5em;

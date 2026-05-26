@@ -10,9 +10,10 @@ interface ShareButtonsProps {
   siteName?: string;
   colorAccent?: string;
   colorPrimary?: string;
+  fontHeading?: string;
 }
 
-export default function ShareButtons({ title, slug, excerpt, coverImage, siteName = "Blog", colorAccent = "#c8a97e", colorPrimary = "#0d1f3c" }: ShareButtonsProps) {
+export default function ShareButtons({ title, slug, excerpt, coverImage, siteName = "Blog", colorAccent = "#c8a97e", colorPrimary = "#0d1f3c", fontHeading = "Georgia" }: ShareButtonsProps) {
   const badgeLetter = siteName.charAt(0).toUpperCase() || "B";
   const [open,        setOpen]        = useState(false);
   const [copied,      setCopied]      = useState(false);
@@ -38,7 +39,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
   const shareWithCover = async () => {
     setSharing(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt, coverImage, siteName, colorAccent, colorPrimary });
+      const blob = await makePostcardBlob({ title, excerpt, coverImage, siteName, colorAccent, colorPrimary, fontHeading });
       const shareData: ShareData = { title: shareText, url };
       const file = new File([blob], `${slug}-postcard.jpg`, { type: "image/jpeg" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -63,7 +64,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
   const download = async () => {
     setDownloading(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt, coverImage, siteName, colorAccent, colorPrimary });
+      const blob = await makePostcardBlob({ title, excerpt, coverImage, siteName, colorAccent, colorPrimary, fontHeading });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}-postcard.jpg`;
@@ -128,7 +129,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                           <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: colorAccent, letterSpacing: "0.06em" }}>{siteName.toUpperCase()}</span>
                         </div>
                         <div>
-                          <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
+                          <h2 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
                           {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
                           <div style={{ width: 28, height: 2, background: colorAccent, borderRadius: 1 }} />
                         </div>
@@ -143,7 +144,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                         <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: colorAccent, letterSpacing: "0.06em" }}>{siteName.toUpperCase()}</span>
                       </div>
                       <div style={{ position: "relative" }}>
-                        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
+                        <h2 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
                         {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: `${colorAccent}d0`, lineHeight: 1.5, margin: "0 0 12px" }}>{excerpt}</p>}
                         <div style={{ width: 28, height: 2, background: colorAccent, borderRadius: 1 }} />
                       </div>
@@ -155,7 +156,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
 
                   {/* Header */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
-                    <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: colorPrimary, margin: 0, fontWeight: 600 }}>Share this post</p>
+                    <p style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1rem", color: colorPrimary, margin: 0, fontWeight: 600 }}>Share this post</p>
                     <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 

@@ -8,10 +8,14 @@ const PRESET_COLORS = {
   bg:      ["#f5f0e8", "#f0f4f7", "#f5ede0", "#111827", "#fff9fe"],
 };
 
+const HEADING_FONTS = ["Playfair Display", "Lora", "Cormorant Garamond", "DM Serif Display", "Libre Baskerville", "Georgia"];
+const BODY_FONTS    = ["Source Serif 4", "Lora", "Merriweather", "Georgia", "EB Garamond", "Inter"];
+
 export default function SettingsPage() {
   const [form, setForm] = useState({
     site_name: "", site_tagline: "", site_hero_quote: "",
     color_primary: "#0d1f3c", color_accent: "#c8a97e", color_bg: "#f5f0e8",
+    font_heading: "Playfair Display", font_body: "Source Serif 4",
     twitter_handle: "", footer_tagline: "", footer_copy: "",
     sub_confirm_message: "",
   });
@@ -101,6 +105,46 @@ export default function SettingsPage() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Typography */}
+            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 0.25rem" }}>Typography</h3>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", margin: "0 0 1rem", lineHeight: 1.5 }}>
+                Choose fonts for your blog&apos;s headings and body text.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                {([["font_heading", "Heading Font", HEADING_FONTS], ["font_body", "Body Font", BODY_FONTS]] as const).map(([key, label, opts]) => (
+                  <div key={key}>
+                    <label style={labelStyle}>{label}</label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                      {opts.map(f => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setForm(fr => ({ ...fr, [key]: f }))}
+                          style={{
+                            padding: "0.4rem 0.875rem",
+                            borderRadius: 4,
+                            border: form[key] === f ? "2px solid #0d1f3c" : "1px solid rgba(13,31,60,0.2)",
+                            background: form[key] === f ? "#0d1f3c" : "#fffef9",
+                            color: form[key] === f ? "#c8a97e" : "#0d1f3c",
+                            fontFamily: `'${f}', Georgia, serif`,
+                            fontSize: "0.88rem",
+                            cursor: "pointer",
+                            transition: "all 0.15s",
+                          }}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                    <p style={{ fontFamily: `'${form[key]}', Georgia, serif`, fontSize: "1.05rem", color: "#0d1f3c", margin: "0.75rem 0 0", lineHeight: 1.6 }}>
+                      {key === "font_heading" ? "The quick brown fox jumps over the lazy dog" : "Reading is the quiet revolution of the self."}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Footer & Social */}

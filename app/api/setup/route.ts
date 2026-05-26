@@ -59,6 +59,10 @@ DESIGN PRINCIPLES — apply these strictly:
 - The aboutText should have natural paragraph breaks — write it as 2 short paragraphs, not one dense block.
 - All text fields (tagline, heroQuote, footerTagline) should feel considered and intentional — not padded or generic.
 
+TYPOGRAPHY OPTIONS — choose one heading font and one body font that best match the blog's tone and color mood:
+Heading fonts: "Playfair Display" (elegant/literary), "Lora" (refined/warm), "Cormorant Garamond" (classical/old-world), "DM Serif Display" (editorial/bold), "Libre Baskerville" (authoritative/clean), "Georgia" (universal/timeless)
+Body fonts: "Source Serif 4" (literary/comfortable), "Lora" (warm serif), "Merriweather" (legible long-form), "Georgia" (classic), "EB Garamond" (old-world), "Inter" (clean/modern sans)
+
 Return this exact JSON structure:
 {
   "siteName": "clean version of the blog name",
@@ -68,6 +72,8 @@ Return this exact JSON structure:
   "colorPrimary": "hex color — dark, readable on colorBg",
   "colorAccent": "hex color — vivid but harmonious, readable on both light and dark surfaces",
   "colorBg": "hex color — light, warm or neutral, easy on the eyes for long reading",
+  "fontHeading": "one heading font name from the list above",
+  "fontBody": "one body font name from the list above",
   "footerTagline": "short poetic closing phrase — under 8 words, matches niche and tone",
   "aboutText": "2 short paragraphs in first person, warm and specific to this writer — separated by \\n\\n",
   "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images"
@@ -117,6 +123,8 @@ The colors must work together as a cohesive, readable system. Test your choices 
       { key: "color_primary", value: config.colorPrimary || "" },
       { key: "color_accent", value: config.colorAccent || "" },
       { key: "color_bg", value: config.colorBg || "" },
+      { key: "font_heading", value: config.fontHeading || "Playfair Display" },
+      { key: "font_body", value: config.fontBody || "Source Serif 4" },
       { key: "footer_tagline", value: config.footerTagline || "" },
       { key: "about_hero_subtitle", value: aboutHeroSubtitle },
       { key: "about_body", value: aboutBody },

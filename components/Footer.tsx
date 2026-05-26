@@ -19,7 +19,7 @@ export default function Footer({ username, theme }: Props) {
       </div>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 600, color: accent, marginBottom: "0.5rem" }}>
+          <div style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1.2rem", fontWeight: 600, color: accent, marginBottom: "0.5rem" }}>
             {theme.siteName || "Blog"}
           </div>
           <p style={{ color: subtle, fontSize: "0.85rem", maxWidth: 260, lineHeight: 1.6, fontFamily: "Inter, sans-serif", margin: "0 0 1rem" }}>

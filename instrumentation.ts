@@ -38,6 +38,8 @@ export async function register() {
     { key: "color_primary", value: "#0d1f3c" },
     { key: "color_accent", value: "#c8a97e" },
     { key: "color_bg", value: "#f5f0e8" },
+    { key: "font_heading", value: "Playfair Display" },
+    { key: "font_body", value: "Source Serif 4" },
     { key: "twitter_handle", value: "@Cryptnate" },
     { key: "footer_tagline", value: "On the infinitudes of life." },
     { key: "footer_copy", value: "All words, all mine." },
