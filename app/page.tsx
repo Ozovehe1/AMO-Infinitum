@@ -48,7 +48,6 @@ export default async function PlatformLanding() {
                   border: "1px solid rgba(255,254,249,0.15)",
                   transition: "background 0.2s", whiteSpace: "nowrap",
                 }}>Browse posts</Link>
-                <Link href="/about" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", whiteSpace: "nowrap" }}>About</Link>
                 <Link href="/login" style={{ color: "rgba(255,254,249,0.4)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", whiteSpace: "nowrap" }}>Sign in</Link>
               </div>
               <Link href="/register" className="lp-nav-cta" style={{ color: "#c8a97e", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.04em", borderBottom: "1px solid rgba(200,169,126,0.4)", paddingBottom: "0.1rem", whiteSpace: "nowrap" }}>
@@ -153,7 +152,6 @@ export default async function PlatformLanding() {
             </Link>
             <div style={{ display: "flex", gap: "1.75rem", alignItems: "center" }} className="lp-footer-links">
               <Link href="/posts" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>Posts</Link>
-              <Link href="/about" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>About</Link>
               <Link href="/login" style={{ color: "rgba(255,254,249,0.25)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none" }}>Sign in</Link>
               <Link href="/register" style={{ color: "rgba(255,254,249,0.4)", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.12)", paddingBottom: "0.12rem" }}>
                 Begin writing →
