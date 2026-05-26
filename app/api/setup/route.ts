@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { searchUnsplash } from "@/lib/unsplash";
+import { enforceContrast } from "@/lib/utils";
 import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 60;
@@ -14,7 +15,6 @@ interface SetupAnswers {
   tone: string;
   colorMood: string;
   blogName: string;
-  tagline: string;
   bio: string;
   readingFeel: string;
   imageStyle: string;
@@ -47,7 +47,6 @@ BLOG SETUP DATA:
 - Desired reading experience: ${answers.readingFeel || "not specified"}
 - Color mood: ${answers.colorMood}
 - Blog name (user's choice): ${answers.blogName}
-- Tagline (user's choice): ${answers.tagline}
 - About the writer: ${answers.bio}
 - Preferred imagery style: ${answers.imageStyle}
 - Base color palette: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg}
@@ -75,7 +74,7 @@ Available body fonts (pick one that pairs with your heading choice):
 Return this exact JSON structure:
 {
   "siteName": "clean version of the blog name",
-  "tagline": "refined version of their tagline — keep their voice",
+  "tagline": "a sharp original tagline invented from the niche, tone, bio, and blog name — under 10 words, in the writer's voice",
   "description": "2 sentences for SEO that capture the blog's purpose and audience",
   "heroQuote": "1 powerful, original sentence that captures the blog's deepest spirit — not generic",
   "colorPrimary": "hex color based on color mood",
@@ -99,6 +98,12 @@ The font choices are critical — they must feel like they belong to THIS specif
       });
       const text = (msg.content[0] as { text: string }).text.trim();
       const config = JSON.parse(text.replace(/```json\n?|\n?```/g, ""));
+      const fixed = enforceContrast({
+        colorPrimary: config.colorPrimary,
+        colorAccent:  config.colorAccent,
+        colorBg:      config.colorBg,
+      });
+      Object.assign(config, fixed);
       return NextResponse.json({ config });
     } catch (e) {
       console.error("[setup/generate]", e);

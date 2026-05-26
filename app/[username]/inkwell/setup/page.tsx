@@ -7,56 +7,49 @@ const STEPS = [
   {
     id: "niche",
     question: "What will your blog be about?",
-    hint: "Choose a topic you could write about endlessly — your readers will feel your passion.",
-    placeholder: "e.g. tech, fitness, creative writing, finance, travel…",
+    hint: "Choose a topic you could write about endlessly — your readers will feel the conviction.",
+    placeholder: "e.g. technology, personal finance, creative writing, health…",
     type: "text",
   },
   {
     id: "audience",
     question: "Who are you writing for?",
     hint: "Picture one specific person sitting down to read your blog. Who are they?",
-    placeholder: "e.g. other developers, beginners, general readers, young professionals…",
+    placeholder: "e.g. early-career developers, curious generalists, parents of teenagers…",
     type: "text",
   },
   {
     id: "tone",
-    question: "What's the vibe of your writing?",
-    hint: "Your voice is your brand. Pick the tone that feels most like you — or describe your own.",
+    question: "What's the voice of your writing?",
+    hint: "Your voice is what keeps readers coming back. Pick the one that feels most like you.",
     type: "choice",
     options: ["Professional & authoritative", "Friendly & approachable", "Inspirational & poetic", "Playful & creative"],
   },
   {
     id: "colorMood",
-    question: "Pick a color feel for your blog",
-    hint: "Colors tell a story before a word is read. Which story is yours?",
+    question: "What's the visual mood of your blog?",
+    hint: "Colors communicate before a word is read. Which direction feels right?",
     type: "choice",
     options: ["Warm & earthy", "Cool & minimal", "Dark & modern", "Bold & vibrant"],
   },
   {
     id: "blogName",
     question: "What will you name your blog?",
-    hint: "The best names are short, memorable, and feel like you.",
+    hint: "The best names are short, memorable, and feel unmistakably like you.",
     placeholder: "Your blog name",
     type: "text",
   },
   {
-    id: "tagline",
-    question: "Write a one-sentence tagline",
-    hint: "Think of it as the subtitle of your life's work — distilled to a single line.",
-    placeholder: "e.g. Thoughts on building things that matter.",
-    type: "text",
-  },
-  {
     id: "bio",
-    question: "Tell me a bit about yourself",
-    hint: "Your readers want to know the person behind the words. Be honest and specific.",
-    placeholder: "Your background, what you do, what drives you to write…",
+    question: "Tell me about yourself",
+    hint: "Your readers want to know the person behind the words. Be honest and specific — this becomes your About page.",
+    placeholder: "Your background, what drives you to write, what readers will take away…",
     type: "textarea",
   },
   {
     id: "readingFeel",
     question: "How should reading your blog feel?",
-    hint: "Think about the atmosphere you want to create — the pace, the mood, the texture of the words on the page.",
+    hint: "Think about the atmosphere you're creating — the pace, the texture, the mood.",
     type: "choice",
     options: [
       "Like settling into a quiet library with a great novel",
@@ -68,7 +61,7 @@ const STEPS = [
   {
     id: "imageStyle",
     question: "What kind of imagery suits your blog?",
-    hint: "Visuals set the mood. The AI will use this to find a cover image that truly fits.",
+    hint: "The AI uses this to find a cover image that truly belongs to your blog.",
     type: "choice",
     options: ["Professional photography", "Minimal & abstract", "Illustrated & artistic", "None — text-only blog"],
   },
@@ -79,8 +72,6 @@ const MOOD_MAP: Record<string, string> = {
   "Dark & modern": "dark+modern", "Bold & vibrant": "bold+vibrant",
 };
 
-const STEP_ICONS = ["✦", "◎", "◐", "◆", "✎", "—", "∿", "◈", "⬡"];
-
 type Answers = Record<string, string>;
 interface Config {
   siteName: string; tagline: string; description: string; heroQuote: string;
@@ -89,27 +80,50 @@ interface Config {
 }
 interface Photo { url: string; thumb: string; credit: { name: string; link: string } }
 
+const GOLD = "#c8a97e";
+const DARK = "#0d0d10";
+const LIGHT_BG = "#faf9f6";
+const LIGHT_TEXT = "#1a1814";
+const MUTED = "#9a8e7e";
+const HAIRLINE = "rgba(26,24,20,0.1)";
+
 function Spinner({ label, sub }: { label: string; sub?: string }) {
   return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ position: "relative", width: 56, height: 56, margin: "0 auto 1.75rem" }}>
-        <div style={{ position: "absolute", inset: 0, border: "2px solid rgba(200,169,126,0.12)", borderTop: "2px solid rgba(200,169,126,0.4)", borderRadius: "50%", animation: "spin 1.4s linear infinite" }} />
-        <div style={{ position: "absolute", inset: 8, border: "2px solid rgba(200,169,126,0.08)", borderTop: "2px solid #c8a97e", borderRadius: "50%", animation: "spin 0.7s linear infinite reverse" }} />
+      <div style={{ position: "relative", width: 48, height: 48, margin: "0 auto 2rem" }}>
+        <div style={{ position: "absolute", inset: 0, border: `1.5px solid rgba(200,169,126,0.15)`, borderTop: `1.5px solid rgba(200,169,126,0.5)`, borderRadius: "50%", animation: "spin 1.4s linear infinite" }} />
+        <div style={{ position: "absolute", inset: 10, border: `1.5px solid transparent`, borderTop: `1.5px solid ${GOLD}`, borderRadius: "50%", animation: "spin 0.8s linear infinite reverse" }} />
       </div>
-      <p style={{ color: "#c8a97e", fontFamily: "'Playfair Display', serif", fontSize: "1.3rem", margin: "0 0 0.5rem" }}>{label}</p>
-      {sub && <p style={{ color: "#3a5068", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", margin: 0 }}>{sub}</p>}
+      <p style={{ color: LIGHT_TEXT, fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 400, margin: "0 0 0.5rem", letterSpacing: "0.01em" }}>{label}</p>
+      {sub && <p style={{ color: MUTED, fontFamily: "Inter, sans-serif", fontSize: "0.8rem", margin: 0, letterSpacing: "0.02em" }}>{sub}</p>}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
+const centeredPage: React.CSSProperties = {
+  minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+  background: LIGHT_BG, padding: "3rem 1.5rem", fontFamily: "Inter, sans-serif",
+};
+
+const darkBtn: React.CSSProperties = {
+  background: LIGHT_TEXT, color: LIGHT_BG, border: "none", borderRadius: 2,
+  padding: "0.875rem 2.25rem", fontFamily: "Inter, sans-serif",
+  fontSize: "0.78rem", fontWeight: 500, letterSpacing: "0.1em",
+  textTransform: "uppercase", cursor: "pointer",
+};
+
+const outlineBtn: React.CSSProperties = {
+  background: "transparent", color: MUTED, border: "none",
+  fontFamily: "Inter, sans-serif", fontSize: "0.82rem",
+  letterSpacing: "0.04em", cursor: "pointer", padding: "0.875rem 0",
+};
+
 function SetupInner() {
   const { username } = useParams<{ username: string }>();
   const router = useRouter();
   const sp = useSearchParams();
-  const justVerified = sp.get("verified") === "1";
 
-  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [current, setCurrent] = useState("");
@@ -121,23 +135,15 @@ function SetupInner() {
   const [chosenPhoto, setChosenPhoto] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Check email verification status
   useEffect(() => {
     fetch("/api/auth/me")
       .then(r => r.json())
       .then(data => {
-        if (data.emailVerified) {
-          setEmailVerified(true);
-          setPhase("questions");
-        } else {
-          setEmailVerified(false);
-          setPhase("verify-gate");
-        }
+        setPhase(data.emailVerified ? "questions" : "verify-gate");
       })
-      .catch(() => setPhase("questions")); // fail open if API unavailable
+      .catch(() => setPhase("questions"));
   }, []);
 
-  // Load the chosen fonts in the review screen
   useEffect(() => {
     if (!config?.fontHeading) return;
     const families = [config.fontHeading, config.fontBody]
@@ -154,16 +160,15 @@ function SetupInner() {
 
   const transition = useCallback((fn: () => void) => {
     setAnimating(true);
-    setTimeout(() => { fn(); setAnimating(false); }, 180);
+    setTimeout(() => { fn(); setAnimating(false); }, 160);
   }, []);
 
   const goBack = () => {
     if (step === 0) return;
     transition(() => {
       const prev = STEPS[step - 1];
-      const saved = answers[prev.id] || "";
+      setCurrent(answers[prev.id] || "");
       setCustomMode(false);
-      setCurrent(saved);
       setStep(step - 1);
     });
   };
@@ -176,8 +181,7 @@ function SetupInner() {
 
     if (step < STEPS.length - 1) {
       transition(() => {
-        const nextId = STEPS[step + 1].id;
-        setCurrent(answers[nextId] || "");
+        setCurrent(answers[STEPS[step + 1].id] || "");
         setCustomMode(false);
         setStep(step + 1);
       });
@@ -193,14 +197,12 @@ function SetupInner() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         setConfig(data.config);
-
         const imgRes = await fetch("/api/setup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "images", query: data.config.imageQuery }),
         });
-        const imgData = await imgRes.json();
-        setPhotos(imgData.photos || []);
+        setPhotos((await imgRes.json()).photos || []);
         setPhase("images");
       } catch (e) {
         setError(String(e));
@@ -224,341 +226,318 @@ function SetupInner() {
     }
   };
 
-  const wrap: React.CSSProperties = {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#080f1a",
-    padding: "2rem 1.5rem",
-    fontFamily: "Inter, sans-serif",
-  };
-
-  // Loading check
   if (phase === "check") return (
-    <div style={wrap}><Spinner label="Loading…" /></div>
+    <div style={centeredPage}><Spinner label="Loading…" /></div>
   );
 
-  // Email not verified gate
   if (phase === "verify-gate") return (
-    <div style={wrap}>
-      <div style={{ textAlign: "center", maxWidth: 480 }}>
-        <div style={{ fontSize: "3rem", marginBottom: "1.5rem" }}>✉</div>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.75rem", color: "#fffef9", margin: "0 0 1rem" }}>
-          Verify your email first
+    <div style={centeredPage}>
+      <div style={{ maxWidth: 440, width: "100%" }}>
+        <p style={{ color: GOLD, fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 1.5rem" }}>One step first</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.6rem, 3vw, 2rem)", color: LIGHT_TEXT, margin: "0 0 1rem", fontWeight: 400, lineHeight: 1.2 }}>
+          Verify your email address
         </h1>
-        <p style={{ color: "#8fa3b1", fontSize: "0.9rem", lineHeight: 1.7, margin: "0 0 2rem" }}>
-          We sent a verification link to your email address. Click it to confirm your account, then come back here to set up your blog.
+        <p style={{ color: MUTED, fontSize: "0.88rem", lineHeight: 1.75, margin: "0 0 2rem", fontFamily: "Inter, sans-serif" }}>
+          We sent a confirmation link to your inbox. Click it to activate your account, then return here to continue.
         </p>
-        <div style={{ background: "rgba(200,169,126,0.06)", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 10, padding: "1.25rem 1.5rem", marginBottom: "1.5rem" }}>
-          <p style={{ margin: 0, color: "#c8a97e", fontSize: "0.82rem" }}>
-            After clicking the link in your email, you&apos;ll be automatically redirected here to continue.
+        <div style={{ borderLeft: `3px solid ${GOLD}`, paddingLeft: "1rem", marginBottom: "2rem" }}>
+          <p style={{ margin: 0, color: LIGHT_TEXT, fontSize: "0.82rem", fontFamily: "Inter, sans-serif", lineHeight: 1.6 }}>
+            After confirming, you&apos;ll be redirected back here automatically.
           </p>
         </div>
-        <p style={{ color: "rgba(143,163,177,0.4)", fontSize: "0.75rem" }}>
-          Didn&apos;t receive it? Check your spam folder.
+        <p style={{ color: "rgba(26,24,20,0.3)", fontSize: "0.75rem", fontFamily: "Inter, sans-serif", margin: 0 }}>
+          No email? Check your spam folder.
         </p>
       </div>
     </div>
   );
 
   if (phase === "generating") return (
-    <div style={wrap}><Spinner label="Crafting your blog identity…" sub="This takes a moment. Good things do." /></div>
+    <div style={centeredPage}><Spinner label="Building your blog identity…" sub="This takes a moment. Good things do." /></div>
   );
 
   if (phase === "saving") return (
-    <div style={wrap}><Spinner label="Launching your blog…" /></div>
+    <div style={centeredPage}><Spinner label="Launching your blog…" /></div>
   );
 
   if (phase === "images") return (
-    <div style={wrap}>
-      <div style={{ width: "100%", maxWidth: 900, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 16, padding: "2.5rem 2rem" }}>
-        <div style={{ marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <span style={{ color: "#c8a97e", fontSize: "1.1rem" }}>⬡</span>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#fffef9", fontSize: "1.5rem", margin: 0 }}>Choose a cover image</h2>
-        </div>
-        <p style={{ color: "#3a5068", fontSize: "0.84rem", margin: "0 0 2rem", lineHeight: 1.6 }}>
-          These photos were selected to match your blog&apos;s niche, mood, and visual style. Pick the one that feels like your blog&apos;s soul — or skip and add one later.
+    <div style={{ ...centeredPage, padding: "3rem 1.5rem" }}>
+      <div style={{ width: "100%", maxWidth: 860 }}>
+        <p style={{ color: GOLD, fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 1.5rem" }}>Cover image</p>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", color: LIGHT_TEXT, fontSize: "clamp(1.6rem, 3vw, 2.25rem)", fontWeight: 400, margin: "0 0 0.75rem", lineHeight: 1.2 }}>Choose an image for your blog</h2>
+        <p style={{ color: MUTED, fontSize: "0.85rem", margin: "0 0 2.5rem", lineHeight: 1.65, fontFamily: "Inter, sans-serif" }}>
+          Selected to match your niche, mood, and visual style. Pick one — or skip and add your own later.
         </p>
 
         {photos.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "0.875rem", marginBottom: "2rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.75rem", marginBottom: "2.5rem" }}>
             {photos.map(p => (
               <button key={p.url} onClick={() => setChosenPhoto(chosenPhoto === p.url ? null : p.url)}
-                style={{ position: "relative", padding: 0, border: `2px solid ${chosenPhoto === p.url ? "#c8a97e" : "transparent"}`, borderRadius: 10, overflow: "hidden", cursor: "pointer", background: "none", display: "block", transition: "border-color 0.15s" }}>
-                <img src={p.thumb} alt="" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} />
-                <div style={{ background: "rgba(0,0,0,0.5)", padding: "0.3rem 0.6rem", textAlign: "left" }}>
-                  <span style={{ color: "#5a7080", fontSize: "0.62rem" }}>by {p.credit.name}</span>
+                style={{ position: "relative", padding: 0, border: `2px solid ${chosenPhoto === p.url ? LIGHT_TEXT : "transparent"}`, borderRadius: 4, overflow: "hidden", cursor: "pointer", background: "none", display: "block", transition: "border-color 0.15s", outline: "none" }}>
+                <img src={p.thumb} alt="" style={{ width: "100%", height: 148, objectFit: "cover", display: "block" }} />
+                <div style={{ background: "rgba(0,0,0,0.45)", padding: "0.3rem 0.5rem" }}>
+                  <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.6rem", fontFamily: "Inter, sans-serif" }}>Photo by {p.credit.name}</span>
                 </div>
                 {chosenPhoto === p.url && (
-                  <div style={{ position: "absolute", top: 8, right: 8, width: 24, height: 24, borderRadius: "50%", background: "#c8a97e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ color: "#0d1f3c", fontSize: "0.8rem", fontWeight: 700 }}>✓</span>
+                  <div style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: 2, background: LIGHT_TEXT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ color: LIGHT_BG, fontSize: "0.75rem", fontWeight: 700 }}>✓</span>
                   </div>
                 )}
               </button>
             ))}
           </div>
         ) : (
-          <div style={{ padding: "2.5rem", textAlign: "center", color: "#3a5068", fontSize: "0.85rem", marginBottom: "1.5rem", border: "1px dashed rgba(200,169,126,0.15)", borderRadius: 8 }}>
+          <div style={{ padding: "2.5rem", textAlign: "center", color: MUTED, fontSize: "0.85rem", marginBottom: "2rem", border: `1px solid ${HAIRLINE}`, borderRadius: 4, fontFamily: "Inter, sans-serif" }}>
             No images found — you can add one from Settings after launch.
           </div>
         )}
 
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          <button onClick={() => setPhase("review")} style={{ background: "#c8a97e", color: "#0d1f3c", border: "none", borderRadius: 8, padding: "0.8rem 1.75rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}>
-            {chosenPhoto ? "Continue →" : "Skip for now →"}
+        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+          <button onClick={() => setPhase("review")} style={{ ...darkBtn, opacity: 1 }}>
+            {chosenPhoto ? "Continue" : "Skip for now"}
           </button>
-          {chosenPhoto && <span style={{ color: "#3a5068", fontSize: "0.78rem" }}>1 image selected</span>}
+          {chosenPhoto && <span style={{ color: MUTED, fontSize: "0.78rem", fontFamily: "Inter, sans-serif" }}>1 selected</span>}
         </div>
       </div>
     </div>
   );
 
   if (phase === "review" && config) return (
-    <div style={wrap}>
-      <div style={{ width: "100%", maxWidth: 700, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 16, padding: "2.5rem 2rem" }}>
-        <p style={{ color: "#c8a97e", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 0.4rem" }}>Almost there</p>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#fffef9", fontSize: "1.6rem", margin: "0 0 0.5rem" }}>Here&apos;s your blog</h2>
-        <p style={{ color: "#3a5068", fontSize: "0.84rem", margin: "0 0 2rem", lineHeight: 1.6 }}>Everything is editable from your Settings page after launch.</p>
+    <div style={{ ...centeredPage, alignItems: "flex-start", padding: "4rem 1.5rem" }}>
+      <div style={{ width: "100%", maxWidth: 620 }}>
+        <p style={{ color: GOLD, fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 1.5rem" }}>Review</p>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", color: LIGHT_TEXT, fontSize: "clamp(1.6rem, 3vw, 2.25rem)", fontWeight: 400, margin: "0 0 0.5rem", lineHeight: 1.2 }}>
+          Your blog, ready to launch
+        </h2>
+        <p style={{ color: MUTED, fontSize: "0.84rem", margin: "0 0 2.5rem", lineHeight: 1.65, fontFamily: "Inter, sans-serif" }}>
+          Everything below is editable from your Settings page at any time.
+        </p>
 
         {chosenPhoto && (
-          <div style={{ marginBottom: "1.25rem", borderRadius: 8, overflow: "hidden", height: 130 }}>
+          <div style={{ marginBottom: "1.5rem", borderRadius: 4, overflow: "hidden", height: 140 }}>
             <img src={chosenPhoto} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "2rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", borderTop: `1px solid ${HAIRLINE}` }}>
           {([["Name", config.siteName], ["Tagline", config.tagline], ["Hero quote", config.heroQuote], ["Footer line", config.footerTagline]] as [string, string][]).filter(([, v]) => v).map(([label, val]) => (
-            <div key={label} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "0.8rem 1rem", border: "1px solid rgba(200,169,126,0.07)" }}>
-              <div style={{ color: "#3a5068", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.2rem" }}>{label}</div>
-              <div style={{ color: "#fffef9", fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", lineHeight: 1.4 }}>{val}</div>
+            <div key={label} style={{ padding: "1rem 0", borderBottom: `1px solid ${HAIRLINE}` }}>
+              <div style={{ color: MUTED, fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.35rem", fontFamily: "Inter, sans-serif" }}>{label}</div>
+              <div style={{ color: LIGHT_TEXT, fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", lineHeight: 1.5 }}>{val}</div>
             </div>
           ))}
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "0.8rem 1rem", border: "1px solid rgba(200,169,126,0.07)", display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ padding: "1rem 0", borderBottom: `1px solid ${HAIRLINE}`, display: "flex", alignItems: "center", gap: "1.25rem" }}>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               {(["colorPrimary", "colorAccent", "colorBg"] as (keyof Config)[]).map(k => (
-                <div key={k} title={config[k] as string} style={{ width: 22, height: 22, borderRadius: "50%", background: config[k] as string, border: "2px solid rgba(255,255,255,0.12)", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+                <div key={k} title={config[k] as string} style={{ width: 20, height: 20, borderRadius: "50%", background: config[k] as string, border: `1px solid ${HAIRLINE}` }} />
               ))}
             </div>
-            <span style={{ color: "#3a5068", fontSize: "0.75rem" }}>Color palette</span>
+            <span style={{ color: MUTED, fontSize: "0.75rem", fontFamily: "Inter, sans-serif" }}>Palette</span>
           </div>
           {(config.fontHeading || config.fontBody) && (
-            <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "0.8rem 1rem", border: "1px solid rgba(200,169,126,0.07)" }}>
-              <div style={{ color: "#3a5068", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.6rem" }}>Typography</div>
-              {config.fontHeading && (
-                <div style={{ marginBottom: "0.4rem" }}>
-                  <span style={{ color: "#5a7080", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: "0.6rem" }}>Heading</span>
-                  <span style={{ color: "#fffef9", fontFamily: `'${config.fontHeading}', Georgia, serif`, fontSize: "1.05rem", fontWeight: 600 }}>{config.fontHeading}</span>
-                </div>
-              )}
-              {config.fontBody && (
-                <div>
-                  <span style={{ color: "#5a7080", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: "0.6rem" }}>Body</span>
-                  <span style={{ color: "rgba(255,254,249,0.7)", fontFamily: `'${config.fontBody}', Georgia, serif`, fontSize: "0.9rem" }}>{config.fontBody}</span>
-                </div>
-              )}
+            <div style={{ padding: "1rem 0", borderBottom: `1px solid ${HAIRLINE}` }}>
+              <div style={{ color: MUTED, fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.6rem", fontFamily: "Inter, sans-serif" }}>Typography</div>
+              <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
+                {config.fontHeading && (
+                  <div>
+                    <span style={{ color: "rgba(26,24,20,0.4)", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "Inter, sans-serif", display: "block", marginBottom: "0.2rem" }}>Heading</span>
+                    <span style={{ color: LIGHT_TEXT, fontFamily: `'${config.fontHeading}', Georgia, serif`, fontSize: "1rem", fontWeight: 600 }}>{config.fontHeading}</span>
+                  </div>
+                )}
+                {config.fontBody && (
+                  <div>
+                    <span style={{ color: "rgba(26,24,20,0.4)", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "Inter, sans-serif", display: "block", marginBottom: "0.2rem" }}>Body</span>
+                    <span style={{ color: MUTED, fontFamily: `'${config.fontBody}', Georgia, serif`, fontSize: "0.9rem" }}>{config.fontBody}</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        {error && <p style={{ color: "#e07070", fontSize: "0.82rem", marginBottom: "1rem" }}>{error}</p>}
+        {error && <p style={{ color: "#c0392b", fontSize: "0.82rem", margin: "1rem 0 0", fontFamily: "Inter, sans-serif" }}>{error}</p>}
 
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <button onClick={save} style={{ background: "#c8a97e", color: "#0d1f3c", border: "none", borderRadius: 8, padding: "0.8rem 1.75rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}>
-            Launch my blog →
-          </button>
-          <button onClick={() => setPhase("images")} style={{ background: "transparent", color: "#3a5068", border: "1px solid rgba(200,169,126,0.15)", borderRadius: 8, padding: "0.8rem 1rem", fontSize: "0.85rem", cursor: "pointer" }}>
-            ← Back
-          </button>
+        <div style={{ display: "flex", gap: "2rem", alignItems: "center", marginTop: "2.5rem" }}>
+          <button onClick={save} style={darkBtn}>Launch my blog</button>
+          <button onClick={() => setPhase("images")} style={outlineBtn}>← Back</button>
         </div>
       </div>
     </div>
   );
 
-  // Questions phase
-  const isChoice = s.type === "choice" && !customMode;
+  // Questions phase — split screen
+  const stepNum = String(step + 1).padStart(2, "0");
+  const totalNum = String(STEPS.length).padStart(2, "0");
+  const canAdvance = !!current.trim();
+
   return (
-    <div style={wrap}>
-      <div style={{
-        width: "100%",
-        maxWidth: 860,
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(200,169,126,0.12)",
-        borderRadius: 16,
-        padding: "2.5rem 2rem 2rem",
-        opacity: animating ? 0 : 1,
-        transform: animating ? "translateY(10px)" : "none",
-        transition: "opacity 0.18s ease, transform 0.18s ease",
-      }}>
-        {/* Segmented progress bar */}
-        <div style={{ display: "flex", gap: 4, marginBottom: "2.5rem" }}>
-          {STEPS.map((_, i) => (
-            <div key={i} style={{
-              flex: 1, height: 3, borderRadius: 2,
-              background: i < step ? "#c8a97e" : i === step ? "rgba(200,169,126,0.5)" : "rgba(200,169,126,0.1)",
-              transition: "background 0.3s ease",
-            }} />
-          ))}
+    <>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .setup-right { padding: 0 8% 0 7%; }
+        @media (max-width: 768px) {
+          .setup-left { display: none !important; }
+          .setup-right { padding: 3.5rem 1.75rem !important; }
+        }
+        .setup-opt:hover { color: #1a1814 !important; }
+        .setup-input:focus { border-bottom-color: #c8a97e !important; }
+        .setup-input::placeholder { color: rgba(26,24,20,0.28); }
+      `}</style>
+
+      <div style={{ display: "flex", minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
+
+        {/* Left panel */}
+        <div className="setup-left" style={{ width: "38%", background: DARK, position: "relative", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "2.5rem 2.5rem 2.5rem" }}>
+          <div>
+            <span style={{ color: "rgba(200,169,126,0.45)", fontSize: "0.68rem", letterSpacing: "0.22em", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>Inkwell</span>
+          </div>
+          <div style={{ position: "absolute", bottom: "3rem", left: "2.5rem", right: "2.5rem" }}>
+            <div style={{ overflow: "hidden", lineHeight: 0.85, marginBottom: "2.5rem" }}>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(6rem, 14vw, 11rem)", fontWeight: 600, color: "rgba(255,255,255,0.04)", display: "block", userSelect: "none" }}>
+                {stepNum}
+              </span>
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.22)", fontSize: "0.7rem", letterSpacing: "0.14em", fontFamily: "Inter, sans-serif" }}>
+              {stepNum} / {totalNum}
+            </span>
+          </div>
         </div>
 
-        {/* Step label */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1rem" }}>
-          <span style={{ color: "#c8a97e", fontSize: "1rem" }}>{STEP_ICONS[step]}</span>
-          <span style={{ color: "#3a5068", fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-            Step {step + 1} of {STEPS.length}
-          </span>
-        </div>
+        {/* Right panel */}
+        <div className="setup-right" style={{
+          flex: 1, background: LIGHT_BG, display: "flex", flexDirection: "column",
+          justifyContent: "center", minHeight: "100vh",
+          opacity: animating ? 0 : 1,
+          transform: animating ? "translateY(4px)" : "none",
+          transition: "opacity 0.16s ease, transform 0.16s ease",
+        }}>
+          <div style={{ maxWidth: 520, width: "100%" }}>
 
-        <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#fffef9", fontSize: "clamp(1.4rem, 2.5vw, 1.75rem)", margin: "0 0 0.6rem", lineHeight: 1.25 }}>
-          {s.question}
-        </h2>
-        <p style={{ color: "#3a5068", fontSize: "0.85rem", margin: "0 0 1.75rem", lineHeight: 1.6 }}>
-          {s.hint}
-        </p>
+            {/* Step label */}
+            <p style={{ color: GOLD, fontSize: "0.7rem", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 2.5rem", fontFamily: "Inter, sans-serif" }}>
+              Question {stepNum}
+            </p>
 
-        {error && <p style={{ color: "#e07070", fontSize: "0.82rem", marginBottom: "1rem" }}>{error}</p>}
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 400, color: LIGHT_TEXT, lineHeight: 1.15, margin: "0 0 0.75rem" }}>
+              {s.question}
+            </h2>
+            <p style={{ color: MUTED, fontSize: "0.84rem", margin: "0 0 2.75rem", lineHeight: 1.7, fontFamily: "Inter, sans-serif" }}>
+              {s.hint}
+            </p>
 
-        {/* Choice options */}
-        {s.type === "choice" && !customMode && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1.5rem" }}>
-            {s.options!.map(opt => {
-              const selected = current === opt;
-              return (
-                <button key={opt} onClick={() => setCurrent(opt)} style={{
-                  background: selected ? "rgba(200,169,126,0.1)" : "rgba(255,255,255,0.02)",
-                  border: `1px solid ${selected ? "#c8a97e" : "rgba(200,169,126,0.1)"}`,
-                  borderRadius: 10, padding: "1rem 1.25rem",
-                  color: selected ? "#fffef9" : "#3a5068",
-                  fontSize: "0.92rem", cursor: "pointer", textAlign: "left",
-                  transition: "all 0.15s ease",
-                  display: "flex", alignItems: "center", gap: "1rem",
+            {error && <p style={{ color: "#c0392b", fontSize: "0.8rem", marginBottom: "1rem" }}>{error}</p>}
+
+            {/* Choice options */}
+            {s.type === "choice" && !customMode && (
+              <div style={{ marginBottom: "2rem" }}>
+                {s.options!.map(opt => {
+                  const selected = current === opt;
+                  return (
+                    <button key={opt} className="setup-opt" onClick={() => setCurrent(opt)} style={{
+                      display: "block", width: "100%", background: "transparent", border: "none",
+                      borderBottom: `1px solid ${HAIRLINE}`,
+                      boxShadow: selected ? `-3px 0 0 0 ${GOLD}` : "none",
+                      padding: selected ? "0.875rem 0 0.875rem 0.875rem" : "0.875rem 0",
+                      color: selected ? LIGHT_TEXT : "rgba(26,24,20,0.5)",
+                      fontSize: "0.95rem", cursor: "pointer", textAlign: "left",
+                      transition: "color 0.12s, box-shadow 0.12s, padding 0.12s",
+                      fontFamily: "Inter, sans-serif", letterSpacing: "0.01em",
+                    }}>
+                      {opt}
+                    </button>
+                  );
+                })}
+                <button onClick={() => { setCustomMode(true); setCurrent(""); }} style={{
+                  display: "block", width: "100%", background: "transparent", border: "none",
+                  padding: "0.875rem 0", color: "rgba(26,24,20,0.3)",
+                  fontSize: "0.82rem", cursor: "pointer", textAlign: "left",
+                  fontFamily: "Inter, sans-serif", letterSpacing: "0.02em",
+                  marginTop: "0.25rem",
                 }}>
-                  <span style={{
-                    width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                    border: `2px solid ${selected ? "#c8a97e" : "rgba(200,169,126,0.25)"}`,
-                    background: selected ? "#c8a97e" : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.15s ease",
-                  }}>
-                    {selected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#0d1f3c", display: "block" }} />}
-                  </span>
-                  {opt}
+                  + Write your own
                 </button>
-              );
-            })}
-            {/* Type your own option */}
-            <button onClick={() => { setCustomMode(true); setCurrent(""); }} style={{
-              background: "transparent", border: "1px dashed rgba(200,169,126,0.2)",
-              borderRadius: 10, padding: "0.875rem 1.25rem",
-              color: "#3a5068", fontSize: "0.85rem", cursor: "pointer", textAlign: "left",
-              display: "flex", alignItems: "center", gap: "0.75rem",
-              transition: "all 0.15s ease",
-            }}>
-              <span style={{ width: 18, height: 18, borderRadius: "50%", border: "1.5px dashed rgba(200,169,126,0.3)", flexShrink: 0 }} />
-              Type my own answer…
-            </button>
+              </div>
+            )}
+
+            {/* Custom answer input for choice questions */}
+            {s.type === "choice" && customMode && (
+              <div style={{ marginBottom: "2rem" }}>
+                <input
+                  className="setup-input"
+                  value={current}
+                  onChange={e => setCurrent(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && canAdvance && nextStep()}
+                  placeholder="Describe it in your own words…"
+                  autoFocus
+                  style={{
+                    width: "100%", boxSizing: "border-box", background: "transparent",
+                    border: "none", borderBottom: `2px solid rgba(26,24,20,0.18)`,
+                    borderRadius: 0, padding: "0.75rem 0",
+                    color: LIGHT_TEXT, fontSize: "1rem", outline: "none",
+                    fontFamily: "Inter, sans-serif", transition: "border-color 0.15s",
+                  }}
+                />
+                <button onClick={() => { setCustomMode(false); setCurrent(""); }} style={{ background: "transparent", border: "none", color: "rgba(26,24,20,0.35)", fontSize: "0.78rem", cursor: "pointer", marginTop: "0.75rem", padding: 0, fontFamily: "Inter, sans-serif" }}>
+                  ← Back to options
+                </button>
+              </div>
+            )}
+
+            {/* Textarea */}
+            {s.type === "textarea" && (
+              <textarea
+                className="setup-input"
+                value={current}
+                onChange={e => setCurrent(e.target.value)}
+                placeholder={s.placeholder}
+                autoFocus
+                style={{
+                  width: "100%", boxSizing: "border-box", background: "transparent",
+                  border: "none", borderBottom: `2px solid rgba(26,24,20,0.18)`,
+                  borderRadius: 0, padding: "0.75rem 0",
+                  color: LIGHT_TEXT, fontSize: "0.97rem", outline: "none",
+                  resize: "none", marginBottom: "2rem",
+                  fontFamily: "Inter, sans-serif", lineHeight: 1.75,
+                  minHeight: "130px", transition: "border-color 0.15s",
+                }}
+              />
+            )}
+
+            {/* Text input */}
+            {s.type === "text" && (
+              <input
+                className="setup-input"
+                value={current}
+                onChange={e => setCurrent(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && canAdvance && nextStep()}
+                placeholder={s.placeholder}
+                autoFocus
+                style={{
+                  width: "100%", boxSizing: "border-box", background: "transparent",
+                  border: "none", borderBottom: `2px solid rgba(26,24,20,0.18)`,
+                  borderRadius: 0, padding: "0.75rem 0",
+                  color: LIGHT_TEXT, fontSize: "1.05rem", outline: "none",
+                  marginBottom: "2rem", fontFamily: "Inter, sans-serif",
+                  transition: "border-color 0.15s",
+                }}
+              />
+            )}
+
+            {/* Actions */}
+            <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
+              <button onClick={nextStep} disabled={!canAdvance} style={{ ...darkBtn, opacity: canAdvance ? 1 : 0.25, cursor: canAdvance ? "pointer" : "default" }}>
+                {step === STEPS.length - 1 ? "Generate my blog" : "Continue"}
+              </button>
+              {step > 0 && (
+                <button onClick={goBack} style={outlineBtn}>← Back</button>
+              )}
+            </div>
+
           </div>
-        )}
-
-        {/* Custom answer input for choice questions */}
-        {s.type === "choice" && customMode && (
-          <div style={{ marginBottom: "1.5rem" }}>
-            <input
-              value={current}
-              onChange={e => setCurrent(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && current.trim() && nextStep()}
-              placeholder={`Describe your own ${s.id === "tone" ? "writing tone" : s.id === "colorMood" ? "color feel" : s.id === "readingFeel" ? "reading atmosphere" : "answer"}…`}
-              autoFocus
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(200,169,126,0.25)",
-                borderRadius: 10, padding: "1rem 1.1rem",
-                color: "#fffef9", fontSize: "1rem", outline: "none",
-                fontFamily: "Inter, sans-serif", lineHeight: 1.5,
-              }}
-            />
-            <button onClick={() => { setCustomMode(false); setCurrent(""); }} style={{ background: "transparent", border: "none", color: "#3a5068", fontSize: "0.78rem", cursor: "pointer", marginTop: "0.5rem", padding: 0 }}>
-              ← Back to options
-            </button>
-          </div>
-        )}
-
-        {/* Textarea */}
-        {s.type === "textarea" && (
-          <textarea
-            value={current}
-            onChange={e => setCurrent(e.target.value)}
-            placeholder={s.placeholder}
-            autoFocus
-            style={{
-              width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(200,169,126,0.2)",
-              borderRadius: 10, padding: "1rem 1.1rem",
-              color: "#fffef9", fontSize: "1rem", outline: "none",
-              resize: "vertical", marginBottom: "1.5rem",
-              fontFamily: "Inter, sans-serif", lineHeight: 1.7,
-              minHeight: "140px",
-            }}
-          />
-        )}
-
-        {/* Text input */}
-        {s.type === "text" && (
-          <input
-            value={current}
-            onChange={e => setCurrent(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && current.trim() && nextStep()}
-            placeholder={s.placeholder}
-            autoFocus
-            style={{
-              width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(200,169,126,0.2)",
-              borderRadius: 10, padding: "1rem 1.1rem",
-              color: "#fffef9", fontSize: "1.05rem", outline: "none",
-              marginBottom: "1.5rem", fontFamily: "Inter, sans-serif",
-              lineHeight: 1.5,
-            }}
-          />
-        )}
-
-        {/* Actions */}
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-          {step > 0 && (
-            <button onClick={goBack} style={{ background: "transparent", color: "#3a5068", border: "1px solid rgba(200,169,126,0.12)", borderRadius: 8, padding: "0.75rem 1rem", fontSize: "0.85rem", cursor: "pointer" }}>
-              ←
-            </button>
-          )}
-          <button onClick={nextStep} disabled={!current.trim()} style={{
-            background: "#c8a97e", color: "#0d1f3c", border: "none",
-            borderRadius: 8, padding: "0.8rem 1.75rem",
-            fontSize: "0.92rem", fontWeight: 700,
-            cursor: current.trim() ? "pointer" : "default",
-            opacity: current.trim() ? 1 : 0.4,
-            transition: "opacity 0.2s ease",
-          }}>
-            {step === STEPS.length - 1 ? "Generate my blog →" : "Next →"}
-          </button>
-          {(s.type === "text" || (s.type === "choice" && customMode)) && (
-            <span style={{ color: "#3a5068", fontSize: "0.72rem" }}>Press Enter ↵</span>
-          )}
         </div>
 
-        {/* Step dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: "0.4rem", marginTop: "2.5rem" }}>
-          {STEPS.map((_, i) => (
-            <div key={i} style={{
-              height: 4, borderRadius: 2,
-              width: i === step ? 20 : 6,
-              background: i === step ? "#c8a97e" : i < step ? "rgba(200,169,126,0.4)" : "rgba(200,169,126,0.12)",
-              transition: "all 0.25s ease",
-            }} />
-          ))}
-        </div>
       </div>
-    </div>
+    </>
   );
 }
 
