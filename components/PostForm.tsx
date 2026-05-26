@@ -38,7 +38,7 @@ function TB(label: string, action: () => void, active?: boolean, extraStyle?: Re
       onPointerDown={e => { e.preventDefault(); action(); }}
       style={{
         height: 38, padding: "0 9px",
-        background: active ? "rgba(13,31,60,0.08)" : "transparent",
+        background: active ? "color-mix(in srgb, var(--admin-primary) 8%, transparent)" : "transparent",
         color: "#1a1a1a", border: "none", borderRadius: 4,
         cursor: "pointer", fontSize: "0.82rem",
         fontFamily: "system-ui, -apple-system, sans-serif",
@@ -471,13 +471,13 @@ export default function PostForm({ post }: { post?: PostData }) {
   // ── Sidebar styles (desktop) ──────────────────────────────
   const inputStyle: React.CSSProperties = {
     width: "100%", background: "#fffef9",
-    border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8,
+    border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 8,
     padding: "0.875rem 1rem", fontFamily: "Inter, sans-serif",
-    fontSize: "0.95rem", color: "#0d1f3c", outline: "none", boxSizing: "border-box",
+    fontSize: "0.95rem", color: "var(--admin-primary)", outline: "none", boxSizing: "border-box",
   };
   const labelStyle: React.CSSProperties = {
     display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.7rem",
-    letterSpacing: "0.08em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.4rem",
+    letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.4rem",
   };
 
   // ── Status pill content ───────────────────────────────────
@@ -487,7 +487,7 @@ export default function PostForm({ post }: { post?: PostData }) {
     : autoSaving ? "Saving…"
     : lastSaved ? `Saved ${timeSince(lastSaved)}`
     : published ? "Published" : "Draft";
-  const statusDot = saved || lastSaved ? "#c8a97e" : "#8fa3b1";
+  const statusDot = saved || lastSaved ? "var(--admin-accent)" : "var(--admin-sidebar-muted)";
 
   return (
     <>
@@ -555,8 +555,8 @@ export default function PostForm({ post }: { post?: PostData }) {
             onClick={() => setAiOpen(o => !o)}
             title="AI assistant"
             style={{
-              background: aiOpen ? "#c8a97e" : "rgba(13,31,60,0.08)",
-              color: aiOpen ? "#0d1f3c" : "#555",
+              background: aiOpen ? "var(--admin-accent)" : "color-mix(in srgb, var(--admin-primary) 8%, transparent)",
+              color: aiOpen ? "var(--admin-primary)" : "#555",
               border: "none", borderRadius: 8,
               padding: "8px 12px",
               fontFamily: "system-ui, sans-serif",
@@ -568,7 +568,7 @@ export default function PostForm({ post }: { post?: PostData }) {
           <button
             onClick={() => setSheetOpen(true)}
             style={{
-              background: "#0d1f3c", color: "#c8a97e",
+              background: "var(--admin-primary)", color: "var(--admin-accent)",
               border: "none", borderRadius: 8,
               padding: "8px 18px",
               fontFamily: "system-ui, sans-serif",
@@ -605,7 +605,7 @@ export default function PostForm({ post }: { post?: PostData }) {
             <button
               onPointerDown={e => { e.preventDefault(); submitMobileUrl(); }}
               style={{
-                background: "#0d1f3c", color: "#c8a97e",
+                background: "var(--admin-primary)", color: "var(--admin-accent)",
                 border: "none", borderRadius: 6,
                 padding: "7px 14px",
                 fontFamily: "system-ui, sans-serif", fontSize: "0.82rem",
@@ -1005,7 +1005,7 @@ export default function PostForm({ post }: { post?: PostData }) {
           {/* Editor column */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <input value={title} onChange={e => { setTitle(e.target.value); if (error) setError(""); }} placeholder="Post Title"
-              style={{ ...inputStyle, fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 700, padding: "1rem 1.25rem", border: "none", borderBottom: "2px solid rgba(13,31,60,0.1)", borderRadius: 0, background: "transparent" }}
+              style={{ ...inputStyle, fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 700, padding: "1rem 1.25rem", border: "none", borderBottom: "2px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", borderRadius: 0, background: "transparent" }}
             />
             <div>
               <label style={labelStyle}>Excerpt <span style={{ color: "#c8a97e" }}>(optional)</span></label>
@@ -1023,9 +1023,9 @@ export default function PostForm({ post }: { post?: PostData }) {
             <button
               onClick={() => setAiOpen(o => !o)}
               style={{
-                width: "100%", background: aiOpen ? "#0d1f3c" : "rgba(13,31,60,0.04)",
-                color: aiOpen ? "#c8a97e" : "#0d1f3c",
-                border: `1px solid ${aiOpen ? "#0d1f3c" : "rgba(13,31,60,0.15)"}`,
+                width: "100%", background: aiOpen ? "var(--admin-primary)" : "color-mix(in srgb, var(--admin-primary) 4%, transparent)",
+                color: aiOpen ? "var(--admin-accent)" : "var(--admin-primary)",
+                border: `1px solid ${aiOpen ? "var(--admin-primary)" : "color-mix(in srgb, var(--admin-primary) 15%, transparent)"}`,
                 borderRadius: 8, padding: "0.75rem",
                 fontFamily: "Inter, sans-serif", fontSize: "0.875rem", fontWeight: 600,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
@@ -1151,7 +1151,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               {/* Status badge */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#3a5068" }}>Status</span>
-                <span style={{ background: published ? "#4a9e7a18" : "#c8a97e18", color: published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.2rem 0.875rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", textTransform: "uppercase" }}>
+                <span style={{ background: published ? "#4a9e7a18" : "color-mix(in srgb, var(--admin-accent) 10%, transparent)", color: published ? "#4a9e7a" : "var(--admin-accent)", border: `1px solid ${published ? "#4a9e7a30" : "color-mix(in srgb, var(--admin-accent) 25%, transparent)"}`, padding: "0.2rem 0.875rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", textTransform: "uppercase" }}>
                   {published ? "Published" : "Draft"}
                 </span>
               </div>
@@ -1162,14 +1162,14 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Featured */}
               <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
-                <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 18, height: 18, accentColor: "#c8a97e" }} />
+                <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--admin-accent)" }} />
                 <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068" }}>Pin as Featured post</span>
               </label>
 
               {/* Updated notice — only relevant when editing a published post */}
               {isEdit && published && (
                 <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
-                  <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 18, height: 18, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
+                  <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
                   <div>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice to readers</span>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Displays the edit date on the post so readers know it was revised</span>
@@ -1202,7 +1202,7 @@ export default function PostForm({ post }: { post?: PostData }) {
               {/* Notify subscribers toggle — only relevant on first publish */}
               {!published && (
                 <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
-                  <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 18, height: 18, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
+                  <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
                   <div>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.88rem", color: "#3a5068", display: "block" }}>Notify subscribers</span>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>Send email to subscribers on publish</span>
@@ -1212,10 +1212,10 @@ export default function PostForm({ post }: { post?: PostData }) {
 
               {/* Publish actions */}
               <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", paddingTop: "0.25rem" }}>
-                <button onClick={() => save(true)} disabled={saving} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 12, padding: "1rem", fontFamily: "Inter, sans-serif", fontSize: "1rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
+                <button onClick={() => save(true)} disabled={saving} style={{ background: "var(--admin-primary)", color: "var(--admin-accent)", border: "none", borderRadius: 12, padding: "1rem", fontFamily: "Inter, sans-serif", fontSize: "1rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
                   {saving ? "Publishing…" : published ? "Update Post" : "Publish Now"}
                 </button>
-                <button onClick={() => save(false)} disabled={saving} style={{ background: "transparent", color: "#3a5068", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 12, padding: "0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: "pointer" }}>
+                <button onClick={() => save(false)} disabled={saving} style={{ background: "transparent", color: "var(--admin-primary)", border: "1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)", borderRadius: 12, padding: "0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", cursor: "pointer" }}>
                   Save as Draft
                 </button>
                 {isEdit && published && (
@@ -1292,14 +1292,14 @@ interface SettingsProps {
 function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, setShowUpdatedNotice, save, saving, isEdit, coverImage, setCoverImage, uploading, uploadCover, coverImgRef, categories, selectedCats, toggleCat, inputStyle, labelStyle, postSlug, notifySubscribers, setNotifySubscribers, username }: SettingsProps) {
   return (
     <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 10, overflow: "hidden" }}>
-      <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid rgba(13,31,60,0.07)", background: "#f5f0e8" }}>
-        <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#0d1f3c", margin: 0, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Publish</h3>
+      <div style={{ padding: "0.875rem 1.25rem", borderBottom: "1px solid rgba(13,31,60,0.07)", background: "var(--admin-bg)" }}>
+        <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "var(--admin-primary)", margin: 0, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Publish</h3>
       </div>
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068" }}>Status</span>
-          <span style={{ background: published ? "#4a9e7a18" : "#c8a97e18", color: published ? "#4a9e7a" : "#c8a97e", border: `1px solid ${published ? "#4a9e7a30" : "#c8a97e30"}`, padding: "0.15rem 0.7rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", textTransform: "uppercase" }}>
+          <span style={{ background: published ? "#4a9e7a18" : "color-mix(in srgb, var(--admin-accent) 10%, transparent)", color: published ? "#4a9e7a" : "var(--admin-accent)", border: `1px solid ${published ? "#4a9e7a30" : "color-mix(in srgb, var(--admin-accent) 25%, transparent)"}`, padding: "0.15rem 0.7rem", borderRadius: 12, fontFamily: "Inter, sans-serif", fontSize: "0.72rem", textTransform: "uppercase" }}>
             {published ? "Published" : "Draft"}
           </span>
         </div>
@@ -1308,13 +1308,13 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
         {published && postSlug && <AudioGenPanel />}
 
         <label style={{ display: "flex", alignItems: "center", gap: "0.625rem", cursor: "pointer" }}>
-          <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#c8a97e" }} />
+          <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--admin-accent)" }} />
           <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068" }}>Mark as Featured</span>
         </label>
 
         {isEdit && published && (
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", cursor: "pointer" }}>
-            <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
+            <input type="checkbox" checked={showUpdatedNotice} onChange={e => setShowUpdatedNotice(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
             <div>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Show &quot;Updated&quot; notice</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Show readers the edit date</span>
@@ -1325,7 +1325,7 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
         {/* Notify subscribers toggle — only relevant on first publish */}
         {!published && (
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", cursor: "pointer" }}>
-            <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#c8a97e", marginTop: 2, flexShrink: 0 }} />
+            <input type="checkbox" checked={notifySubscribers} onChange={e => setNotifySubscribers(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--admin-accent)", marginTop: 2, flexShrink: 0 }} />
             <div>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#3a5068", display: "block" }}>Notify subscribers</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1" }}>Send email on publish</span>
@@ -1333,10 +1333,10 @@ function SettingsPanel({ published, featured, setFeatured, showUpdatedNotice, se
           </label>
         )}
 
-        <button onClick={() => save(true)} disabled={saving} style={{ width: "100%", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.875rem", fontWeight: 600, cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
+        <button onClick={() => save(true)} disabled={saving} style={{ width: "100%", background: "var(--admin-primary)", color: "var(--admin-accent)", border: "none", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.875rem", fontWeight: 600, cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
           {saving ? "Saving…" : published ? "Update" : "Publish"}
         </button>
-        <button onClick={() => save(false)} disabled={saving} style={{ width: "100%", background: "transparent", color: "#3a5068", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.875rem", cursor: "pointer" }}>
+        <button onClick={() => save(false)} disabled={saving} style={{ width: "100%", background: "transparent", color: "var(--admin-primary)", border: "1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.875rem", cursor: "pointer" }}>
           Save as Draft
         </button>
         {isEdit && published && (
@@ -1517,20 +1517,20 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
               <div>
                 <div style={{ fontSize: "1.5rem", lineHeight: 1 }}>🎉</div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", color: "#0d1f3c", margin: "0.25rem 0 0.1rem", fontWeight: 600 }}>Your post is live!</h2>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", margin: 0 }}>Tap the preview to view it ↗</p>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", color: "var(--admin-primary)", margin: "0.25rem 0 0.1rem", fontWeight: 600 }}>Your post is live!</h2>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "var(--admin-sidebar-muted)", margin: 0 }}>Tap the preview to view it ↗</p>
               </div>
             </div>
 
             {/* Download + share image row */}
             <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
               <button onClick={downloadCard} disabled={downloading}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: downloading ? 0.7 : 1 }}>
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "var(--admin-bg)", color: "var(--admin-primary)", border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: downloading ? 0.7 : 1 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 {downloading ? "Saving…" : "Download"}
               </button>
               <button onClick={shareWithPreview} disabled={sharing}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: sharing ? 0.7 : 1 }}>
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", background: "var(--admin-primary)", color: "var(--admin-accent)", border: "none", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", opacity: sharing ? 0.7 : 1 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                 {sharing ? "Sharing…" : "Share with cover"}
               </button>
@@ -1538,14 +1538,14 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
 
             {/* Copy link */}
             <button onClick={shareLinkOnly}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", marginBottom: "1rem" }}>
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", background: "var(--admin-bg)", color: "var(--admin-primary)", border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 8, padding: "0.7rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", marginBottom: "1rem" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
               Share link only
             </button>
 
             <CopyLinkRow url={postUrl} />
 
-            <a href={`/${username}/inkwell`} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f0e8", color: "#0d1f3c", border: "1px solid rgba(13,31,60,0.15)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
+            <a href={`/${username}/inkwell`} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--admin-bg)", color: "var(--admin-primary)", border: "1px solid color-mix(in srgb, var(--admin-primary) 15%, transparent)", borderRadius: 8, padding: "0.75rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", marginBottom: "0.5rem" }}>
               Dashboard
             </a>
             <button onClick={onDismiss}
@@ -1568,9 +1568,9 @@ function CopyLinkRow({ url }: { url: string }) {
     setTimeout(() => setCopied(false), 2500);
   };
   return (
-    <div style={{ background: "#f5f0e8", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 8, padding: "0.75rem 1rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+    <div style={{ background: "var(--admin-bg)", border: "1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", borderRadius: 8, padding: "0.75rem 1rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
       <span style={{ flex: 1, fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#3a5068", wordBreak: "break-all", lineHeight: 1.5 }}>{url}</span>
-      <button onClick={copy} style={{ flexShrink: 0, background: copied ? "#4a9e7a" : "#0d1f3c", color: copied ? "#fff" : "#c8a97e", border: "none", borderRadius: 6, padding: "0.45rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap" }}>
+      <button onClick={copy} style={{ flexShrink: 0, background: copied ? "#4a9e7a" : "var(--admin-primary)", color: copied ? "#fff" : "var(--admin-accent)", border: "none", borderRadius: 6, padding: "0.45rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s, color 0.2s", whiteSpace: "nowrap" }}>
         {copied ? "✓ Copied!" : "Copy Link"}
       </button>
     </div>
@@ -1777,7 +1777,7 @@ function SpinnerIcon() {
 function AudioGenPanel() {
   return (
     <div style={{ borderTop: "1px solid rgba(13,31,60,0.07)", paddingTop: "0.875rem" }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#0d1f3c", margin: "0 0 0.3rem" }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--admin-primary)", margin: "0 0 0.3rem" }}>
         Audio
       </p>
       <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#8fa3b1", margin: 0 }}>

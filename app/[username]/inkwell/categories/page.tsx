@@ -14,7 +14,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Category | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", color: "#2d7d9a" });
+  const [form, setForm] = useState({ name: "", description: "", color: "var(--admin-accent)" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,7 +24,7 @@ export default function CategoriesPage() {
   };
   useEffect(load, []);
 
-  const openCreate = () => { setForm({ name: "", description: "", color: "#2d7d9a" }); setEditing(null); setCreating(true); setError(""); };
+  const openCreate = () => { setForm({ name: "", description: "", color: "var(--admin-accent)" }); setEditing(null); setCreating(true); setError(""); };
   const openEdit = (cat: Category) => { setForm({ name: cat.name, description: cat.description || "", color: cat.color }); setEditing(cat); setCreating(true); setError(""); };
   const close = () => { setCreating(false); setEditing(null); setError(""); };
 
@@ -44,27 +44,27 @@ export default function CategoriesPage() {
     load();
   };
 
-  const inputStyle: React.CSSProperties = { width: "100%", background: "#fffef9", border: "1px solid rgba(13,31,60,0.18)", borderRadius: 6, padding: "0.7rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "#0d1f3c", outline: "none", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.35rem" };
+  const inputStyle: React.CSSProperties = { width: "100%", background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 18%, transparent)", borderRadius: 6, padding: "0.7rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", color: "var(--admin-primary)", outline: "none", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.35rem" };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
         <div style={{ maxWidth: 700, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", marginBottom: "1.75rem" }}>
             <div>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Categories · {categories.length}</p>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Sections & Topics</h1>
+              <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Categories · {categories.length}</p>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary)", margin: 0, fontWeight: 600 }}>Sections & Topics</h1>
             </div>
-            <button onClick={openCreate} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 6, padding: "0.65rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", flexShrink: 0 }}>
+            <button onClick={openCreate} style={{ background: "var(--admin-primary)", color: "var(--admin-accent)", border: "none", borderRadius: 6, padding: "0.65rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", cursor: "pointer", flexShrink: 0 }}>
               + New Category
             </button>
           </div>
 
           {creating && (
-            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.12)", borderRadius: 10, padding: "1.75rem", marginBottom: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "#0d1f3c", margin: "0 0 1.25rem", fontWeight: 600 }}>
+            <div style={{ background: "#fffef9", border: "1px solid color-mix(in srgb, var(--admin-primary) 12%, transparent)", borderRadius: 10, padding: "1.75rem", marginBottom: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "var(--admin-primary)", margin: "0 0 1.25rem", fontWeight: 600 }}>
                 {editing ? `Edit: ${editing.name}` : "New Category"}
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -74,42 +74,42 @@ export default function CategoriesPage() {
                   <label style={labelStyle}>Color</label>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
                     {PRESET_COLORS.map(c => (
-                      <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: form.color === c ? "3px solid #0d1f3c" : "2px solid transparent", cursor: "pointer", outline: "none", flexShrink: 0 }} />
+                      <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: form.color === c ? `3px solid var(--admin-primary)` : "2px solid transparent", cursor: "pointer", outline: "none", flexShrink: 0 }} />
                     ))}
-                    <input type="color" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))} style={{ width: 36, height: 28, border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, cursor: "pointer", padding: 2 }} />
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1" }}>{form.color}</span>
+                    <input type="color" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))} style={{ width: 36, height: 28, border: `1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)`, borderRadius: 4, cursor: "pointer", padding: 2 }} />
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)" }}>{form.color}</span>
                   </div>
                 </div>
                 {error && <p style={{ color: "#c04040", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", margin: 0 }}>{error}</p>}
                 <div style={{ display: "flex", gap: "0.75rem" }}>
-                  <button onClick={save} disabled={saving} style={{ background: "#0d1f3c", color: "#c8a97e", border: "none", borderRadius: 6, padding: "0.65rem 1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
+                  <button onClick={save} disabled={saving} style={{ background: "var(--admin-primary)", color: "var(--admin-accent)", border: "none", borderRadius: 6, padding: "0.65rem 1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
                     {saving ? "Saving…" : editing ? "Save Changes" : "Create"}
                   </button>
-                  <button onClick={close} style={{ background: "transparent", color: "#3a5068", border: "1px solid rgba(13,31,60,0.2)", borderRadius: 6, padding: "0.65rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer" }}>Cancel</button>
+                  <button onClick={close} style={{ background: "transparent", color: "var(--admin-primary)", border: `1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)`, borderRadius: 6, padding: "0.65rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer" }}>Cancel</button>
                 </div>
               </div>
             </div>
           )}
 
-          <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden" }}>
             {loading ? (
-              <p style={{ padding: "2rem", textAlign: "center", color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>Loading…</p>
+              <p style={{ padding: "2rem", textAlign: "center", color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p>
             ) : categories.length === 0 ? (
               <div style={{ padding: "3rem", textAlign: "center" }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "#0d1f3c", margin: "0 0 0.5rem" }}>No categories yet.</p>
-                <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", margin: 0 }}>Create your first section to organize your writing.</p>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "var(--admin-primary)", margin: "0 0 0.5rem" }}>No categories yet.</p>
+                <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", margin: 0 }}>Create your first section to organize your writing.</p>
               </div>
             ) : (
               categories.map((cat, i) => (
-                <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 1.25rem", borderBottom: i < categories.length - 1 ? "1px solid rgba(13,31,60,0.05)" : "none" }}>
+                <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 1.25rem", borderBottom: i < categories.length - 1 ? `1px solid color-mix(in srgb, var(--admin-primary) 5%, transparent)` : "none" }}>
                   <div style={{ width: 12, height: 12, borderRadius: "50%", background: cat.color, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "#0d1f3c" }}>{cat.name}</div>
-                    {cat.description && <div style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", marginTop: "0.15rem" }}>{cat.description}</div>}
+                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "var(--admin-primary)" }}>{cat.name}</div>
+                    {cat.description && <div style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", marginTop: "0.15rem" }}>{cat.description}</div>}
                   </div>
-                  <span style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", flexShrink: 0 }}>{cat._count?.posts ?? 0} posts</span>
+                  <span style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", flexShrink: 0 }}>{cat._count?.posts ?? 0} posts</span>
                   <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
-                    <button onClick={() => openEdit(cat)} style={{ background: "transparent", color: "#2d7d9a", border: "none", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer", padding: "0.2rem 0.5rem" }}>Edit</button>
+                    <button onClick={() => openEdit(cat)} style={{ background: "transparent", color: "var(--admin-accent)", border: "none", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer", padding: "0.2rem 0.5rem" }}>Edit</button>
                     <button onClick={() => del(cat.id)} style={{ background: "transparent", color: "#c04040", border: "none", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer", padding: "0.2rem 0.5rem" }}>Delete</button>
                   </div>
                 </div>

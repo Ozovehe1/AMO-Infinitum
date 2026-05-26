@@ -32,34 +32,34 @@ export default function EditAbout() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
         <div style={{ maxWidth: 860, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "2rem" }}>
             <div>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Content</p>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Edit About Page</h1>
+              <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Content</p>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary)", margin: 0, fontWeight: 600 }}>Edit About Page</h1>
             </div>
-            <button onClick={save} disabled={saving || loading} style={{ background: saved ? "#4a9e7a" : "#0d1f3c", color: saved ? "#fff" : "#c8a97e", border: "none", borderRadius: 6, padding: "0.65rem 1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+            <button onClick={save} disabled={saving || loading} style={{ background: saved ? "#4a9e7a" : "var(--admin-primary)", color: saved ? "#fff" : "var(--admin-accent)", border: "none", borderRadius: 6, padding: "0.65rem 1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
               {saving ? "Saving…" : saved ? "✓ Saved!" : "Save Changes"}
             </button>
           </div>
 
-          {loading ? <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif" }}>Loading…</p> : (
+          {loading ? <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif" }}>Loading…</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
-              <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
-                <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.75rem" }}>Hero Subtitle</label>
+              <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+                <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.75rem" }}>Hero Subtitle</label>
                 <textarea
                   value={heroSubtitle}
                   onChange={e => setHeroSubtitle(e.target.value)}
                   rows={3}
-                  style={{ width: "100%", boxSizing: "border-box", background: "#f5f0e8", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "'Source Serif 4', serif", fontSize: "1rem", color: "#0d1f3c", lineHeight: 1.6, resize: "vertical", outline: "none" }}
+                  style={{ width: "100%", boxSizing: "border-box", background: "var(--admin-bg)", border: `1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)`, borderRadius: 6, padding: "0.75rem 1rem", fontFamily: "'Source Serif 4', serif", fontSize: "1rem", color: "var(--admin-primary)", lineHeight: 1.6, resize: "vertical", outline: "none" }}
                 />
               </div>
-              <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
-                <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8fa3b1", marginBottom: "0.75rem" }}>About Body</label>
-                <div style={{ border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, overflow: "hidden" }}>
+              <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+                <label style={{ display: "block", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--admin-sidebar-muted)", marginBottom: "0.75rem" }}>About Body</label>
+                <div style={{ border: `1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)`, borderRadius: 6, overflow: "hidden" }}>
                   <Editor content={body} onChange={setBody} placeholder="Write about yourself and this blog…" />
                 </div>
               </div>
