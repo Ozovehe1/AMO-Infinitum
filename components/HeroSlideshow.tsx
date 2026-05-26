@@ -91,7 +91,7 @@ export default function HeroSlideshow({ slides }: { slides: Slide[] }) {
         {/* Dark gradient — protects hero text at bottom */}
         <div style={{
           position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
-          background: "linear-gradient(to bottom, rgba(13,31,60,0.35) 0%, rgba(13,31,60,0.5) 40%, rgba(13,31,60,0.96) 75%, rgba(13,31,60,0.99) 100%)",
+          background: "linear-gradient(to bottom, rgba(13,31,60,0.55) 0%, rgba(13,31,60,0.35) 30%, rgba(13,31,60,0.45) 55%, rgba(13,31,60,0.96) 75%, rgba(13,31,60,0.99) 100%)",
         }} />
 
         {/* Dot indicators */}
@@ -143,28 +143,25 @@ function SlideContent({ slide }: { slide: Slide }) {
         paddingTop: "22vh", textAlign: "center",
         zIndex: 1,
       }}>
-        <div style={{
-          background: "rgba(13,31,60,0.52)", borderRadius: 3,
-          padding: "1rem 2.25rem", backdropFilter: "blur(2px)",
+        <p style={{
+          fontFamily: "Inter, sans-serif", fontSize: "0.72rem",
+          letterSpacing: "0.18em", textTransform: "uppercase",
+          color: "#fffef9", margin: 0,
+          textShadow: "0 1px 8px rgba(0,0,0,0.6)",
         }}>
+          {slide.siteName}
+        </p>
+        <div style={{ width: 28, height: 1, background: "#c8a97e", margin: "0.75rem auto" }} />
+        {slide.tagline && (
           <p style={{
-            fontFamily: "Inter, sans-serif", fontSize: "0.72rem",
-            letterSpacing: "0.18em", textTransform: "uppercase",
-            color: "#fffef9", margin: 0,
+            fontFamily: "'Source Serif 4', Georgia, serif",
+            fontSize: "0.88rem", fontStyle: "italic",
+            color: "rgba(255,254,249,0.88)", margin: 0, maxWidth: 320, lineHeight: 1.6,
+            textShadow: "0 1px 8px rgba(0,0,0,0.6)",
           }}>
-            {slide.siteName}
+            {slide.tagline}
           </p>
-          <div style={{ width: 28, height: 1, background: "#c8a97e", margin: "0.75rem auto" }} />
-          {slide.tagline && (
-            <p style={{
-              fontFamily: "'Source Serif 4', Georgia, serif",
-              fontSize: "0.88rem", fontStyle: "italic",
-              color: "rgba(255,254,249,0.78)", margin: 0, maxWidth: 320, lineHeight: 1.6,
-            }}>
-              {slide.tagline}
-            </p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
