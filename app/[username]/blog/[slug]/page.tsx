@@ -127,7 +127,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
           <div className="prose-amo" dangerouslySetInnerHTML={{ __html: post.content }} />
         </article>
 
-        <ShareButtons title={post.title} slug={`${username}/blog/${post.slug}`} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} />
+        <ShareButtons title={post.title} slug={`${username}/blog/${post.slug}`} excerpt={post.excerpt || undefined} coverImage={post.coverImage || undefined} siteName={theme.siteName} colorAccent={accent} colorPrimary={primary} />
 
         {post.categories.length > 0 && (
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 2rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
