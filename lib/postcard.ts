@@ -4,10 +4,16 @@ export async function makePostcardBlob({
   title,
   excerpt,
   coverImage,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
 }: {
   title: string;
   excerpt?: string;
   coverImage?: string;
+  siteName?: string;
+  colorAccent?: string;
+  colorPrimary?: string;
 }): Promise<Blob> {
   let img: HTMLImageElement | null = null;
 
@@ -24,8 +30,8 @@ export async function makePostcardBlob({
   const ctx = canvas.getContext("2d")!;
 
   return img
-    ? drawWithCover(canvas, ctx, img, title, excerpt)
-    : drawBranded(canvas, ctx, title, excerpt);
+    ? drawWithCover(canvas, ctx, img, title, excerpt, siteName, colorAccent, colorPrimary)
+    : drawBranded(canvas, ctx, title, excerpt, siteName, colorAccent, colorPrimary);
 }
 
 // ── Cover-photo card (canvas sized to photo) ─────────────────────────────────
@@ -36,6 +42,9 @@ function drawWithCover(
   img: HTMLImageElement,
   title: string,
   excerpt?: string,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
 ): Promise<Blob> {
   const maxDim = 1200;
   const scale  = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
@@ -56,10 +65,10 @@ function drawWithCover(
   const H   = canvas.height;
   const PAD = Math.round(W * PAD_RATIO);
 
-  drawBadge(ctx, W, H, PAD, /* onCover */ true);
+  drawBadge(ctx, W, H, PAD, /* onCover */ true, siteName, colorAccent, colorPrimary);
 
   const ruleY = H - Math.round(H * 0.09);
-  ctx.fillStyle = "#c8a97e";
+  ctx.fillStyle = colorAccent;
   ctx.fillRect(PAD, ruleY, Math.round(W * 0.04), Math.round(H * 0.005));
 
   const titleSize    = Math.round(W * (title.length > 60 ? 0.044 : 0.055));
@@ -109,6 +118,9 @@ function drawBranded(
   ctx: CanvasRenderingContext2D,
   title: string,
   excerpt?: string,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
 ): Promise<Blob> {
   const W   = 1200;
   const PAD = Math.round(W * PAD_RATIO);
@@ -143,23 +155,23 @@ function drawBranded(
   canvas.height = H;
 
   // Background
-  ctx.fillStyle = "#0d1f3c";
+  ctx.fillStyle = colorPrimary;
   ctx.fillRect(0, 0, W, H);
 
   // Radial accents
   const r1 = ctx.createRadialGradient(W * 0.8, H * 0.2, 0, W * 0.8, H * 0.2, W * 0.45);
-  r1.addColorStop(0, "rgba(45,125,154,0.40)");
-  r1.addColorStop(1, "rgba(45,125,154,0)");
+  r1.addColorStop(0, `${colorAccent}66`);
+  r1.addColorStop(1, `${colorAccent}00`);
   ctx.fillStyle = r1;
   ctx.fillRect(0, 0, W, H);
 
   const r2 = ctx.createRadialGradient(W * 0.15, H * 0.85, 0, W * 0.15, H * 0.85, W * 0.4);
-  r2.addColorStop(0, "rgba(200,169,126,0.25)");
-  r2.addColorStop(1, "rgba(200,169,126,0)");
+  r2.addColorStop(0, `${colorAccent}40`);
+  r2.addColorStop(1, `${colorAccent}00`);
   ctx.fillStyle = r2;
   ctx.fillRect(0, 0, W, H);
 
-  drawBadge(ctx, W, H, PAD, /* onCover */ false);
+  drawBadge(ctx, W, H, PAD, /* onCover */ false, siteName, colorAccent, colorPrimary);
 
   // Text block
   let ty = BADGE_AREA;
@@ -172,13 +184,13 @@ function drawBranded(
 
   if (excerptLines.length > 0) {
     ty += TEXT_GAP;
-    ctx.fillStyle = "rgba(200,169,126,0.85)";
+    ctx.fillStyle = `${colorAccent}d9`;
     ctx.font = `${excerptSize}px sans-serif`;
     for (const line of excerptLines) { ctx.fillText(line, PAD, ty); ty += EXCERPT_LINE_H; }
   }
 
-  // Gold rule
-  ctx.fillStyle = "#c8a97e";
+  // Accent rule
+  ctx.fillStyle = colorAccent;
   ctx.fillRect(PAD, ty + 16, Math.round(W * 0.04), 4);
 
   return canvasToBlob(canvas);
@@ -192,27 +204,32 @@ function drawBadge(
   H: number,
   PAD: number,
   onCover: boolean,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
 ) {
-  const badgeR = Math.round(W * 0.030);
-  const bx     = PAD + badgeR;
-  const by     = onCover ? Math.round(H * 0.10) : 55;
+  const badgeR   = Math.round(W * 0.030);
+  const bx       = PAD + badgeR;
+  const by       = onCover ? Math.round(H * 0.10) : 55;
+  const badgeLetter = siteName.charAt(0).toUpperCase() || "B";
+  const displayName = siteName.toUpperCase();
 
   ctx.beginPath();
   ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
-  ctx.fillStyle = "#c8a97e";
+  ctx.fillStyle = colorAccent;
   ctx.fill();
 
-  ctx.fillStyle    = onCover ? "#000" : "#0d1f3c";
+  ctx.fillStyle    = onCover ? "#000000" : colorPrimary;
   ctx.font         = `bold ${Math.round(badgeR * 1.1)}px sans-serif`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("A", bx, by);
+  ctx.fillText(badgeLetter, bx, by);
 
-  ctx.fillStyle    = "#c8a97e";
+  ctx.fillStyle    = colorAccent;
   ctx.font         = `bold ${Math.round(W * 0.026)}px serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("AMO INFINITUM", bx + badgeR + Math.round(W * 0.016), by);
+  ctx.fillText(displayName, bx + badgeR + Math.round(W * 0.016), by);
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {

@@ -124,9 +124,25 @@ export default function PostForm({ post }: { post?: PostData }) {
   // Force re-render when editor selection changes (for toolbar active states)
   const [, setEditorVersion] = useState(0);
 
+  const [themeBranding, setThemeBranding] = useState({ siteName: "Blog", colorAccent: "#c8a97e", colorPrimary: "#0d1f3c" });
+
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!username) return;
+    fetch(`/api/settings?username=${username}`)
+      .then(r => r.json())
+      .then(s => {
+        setThemeBranding({
+          siteName: s.site_name || "Blog",
+          colorAccent: s.color_accent || "#c8a97e",
+          colorPrimary: s.color_primary || "#0d1f3c",
+        });
+      })
+      .catch(() => {});
+  }, [username]);
 
   // Auto-size title + subtitle textareas on mount so existing drafts aren't clipped
   useEffect(() => {
@@ -484,6 +500,9 @@ export default function PostForm({ post }: { post?: PostData }) {
           content={content}
           onDismiss={() => setPublishedSlug(null)}
           username={username}
+          siteName={themeBranding.siteName}
+          colorAccent={themeBranding.colorAccent}
+          colorPrimary={themeBranding.colorPrimary}
         />
       )}
 
@@ -1387,8 +1406,9 @@ function ShareRow({ slug, username }: { slug: string; username: string }) {
   );
 }
 
-function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss, username }: {
+function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDismiss, username, siteName, colorAccent, colorPrimary }: {
   slug: string; title: string; excerpt: string; coverImage: string; content: string; onDismiss: () => void; username: string;
+  siteName?: string; colorAccent?: string; colorPrimary?: string;
 }) {
   const [sharing, setSharing] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -1401,7 +1421,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const downloadCard = async () => {
     setDownloading(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}-postcard.png`;
@@ -1426,7 +1446,7 @@ function PublishSuccessOverlay({ slug, title, excerpt, coverImage, content, onDi
   const shareWithPreview = async () => {
     setSharing(true);
     try {
-      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined });
+      const blob = await makePostcardBlob({ title, excerpt: preview, coverImage: coverImage || undefined, siteName, colorAccent, colorPrimary });
       const shareData: ShareData = { title: shareText, url: postUrl };
       const file = new File([blob], `${slug}-postcard.png`, { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
