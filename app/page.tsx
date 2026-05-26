@@ -62,7 +62,7 @@ export default async function PlatformLanding() {
           AMO Infinitum is a platform for writers who care about words. Start your blog in minutes — AI sets up your theme, you do the writing.
         </p>
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
-          <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 700, padding: "0.875rem 2rem", borderRadius: 4 }}>
+          <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 600, padding: "0.875rem 2rem", borderRadius: 2 }}>
             Create Your Blog →
           </Link>
           <Link href="/login" style={{ color: "#8fa3b1", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.85rem" }}>
@@ -90,7 +90,7 @@ export default async function PlatformLanding() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }} className="disc-grid">
               {posts.map(post => (
                 <Link key={post.id} href={`/${post.username}/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                  <article style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, overflow: "hidden", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", height: "100%" }} className="disc-card">
+                  <article style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 4, overflow: "hidden", cursor: "pointer", transition: "transform 0.25s, box-shadow 0.25s", height: "100%" }} className="disc-card">
                     {post.coverImage ? (
                       <div style={{ height: 160, overflow: "hidden" }}>
                         <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} className="disc-img" />
@@ -125,8 +125,8 @@ export default async function PlatformLanding() {
             </div>
           </div>
           <style>{`
-            .disc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(13,31,60,0.12); }
-            .disc-card:hover .disc-img { transform: scale(1.04); }
+            .disc-card:hover { transform: translateY(-1px); box-shadow: 0 2px 14px rgba(13,31,60,0.07); }
+            .disc-card:hover .disc-img { transform: scale(1.02); }
             @media (max-width: 640px) { .disc-grid { grid-template-columns: 1fr !important; } }
           `}</style>
         </section>
@@ -136,8 +136,8 @@ export default async function PlatformLanding() {
       <section style={{ background: "#0d1f3c", padding: "5rem 1.5rem", textAlign: "center", borderTop: "1px solid rgba(200,169,126,0.12)" }}>
         <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.75rem, 4vw, 2.75rem)", color: "#fffef9", margin: "0 0 1rem", fontWeight: 600 }}>Ready to start writing?</h2>
         <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", margin: "0 0 2rem" }}>Set up your blog in minutes. AI handles the design, you handle the words.</p>
-        <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.9rem", fontWeight: 700, padding: "0.875rem 2.5rem", borderRadius: 4 }}>
-          Create Your Blog →
+        <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#c8a97e", color: "#0d1f3c", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, letterSpacing: "0.06em", padding: "0.875rem 2.5rem", borderRadius: 2 }}>
+          Create Your Blog
         </Link>
       </section>
     </div>

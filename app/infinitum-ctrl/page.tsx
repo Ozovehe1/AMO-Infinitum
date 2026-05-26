@@ -39,16 +39,11 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
 
 function TrendPill({ curr, prev }: { curr: number; prev: number }) {
   if (prev === 0 && curr === 0) return <span style={{ fontSize: "0.65rem", color: MGR.textDim }}>—</span>;
-  if (prev === 0) return <span style={{ fontSize: "0.65rem", color: "#34d399", fontWeight: 600 }}>↑ new</span>;
+  if (prev === 0) return <span style={{ fontSize: "0.65rem", color: MGR.textDim, letterSpacing: "0.04em" }}>↑ new</span>;
   const pct = Math.round(((curr - prev) / prev) * 100);
   const up = pct >= 0;
   return (
-    <span style={{
-      fontSize: "0.65rem", fontWeight: 700,
-      color: up ? "#34d399" : "#f87171",
-      background: up ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
-      borderRadius: 4, padding: "0.1rem 0.4rem",
-    }}>
+    <span style={{ fontSize: "0.65rem", color: up ? "#4a9e7a" : "#c05050", letterSpacing: "0.04em" }}>
       {up ? "↑" : "↓"} {Math.abs(pct)}%
     </span>
   );
@@ -63,7 +58,7 @@ function KpiCard({ label, value, suffix = "", sub, accent, spark, curr, prev }: 
     <div style={{
       background: MGR.card, border: `1px solid ${MGR.border}`,
       borderTop: `2px solid ${accent}`,
-      borderRadius: 10, padding: "1rem",
+      borderRadius: 4, padding: "1rem",
       display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: 0,
     }}>
       <p style={{ margin: 0, color: MGR.textDim, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600 }}>{label}</p>
@@ -134,7 +129,7 @@ export default function ManagerOverview() {
         {/* Panels */}
         <div className="mgr-panels">
           {/* Top writers */}
-          <div style={{ background: MGR.card, border: `1px solid ${MGR.border}`, borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ background: MGR.card, border: `1px solid ${MGR.border}`, borderRadius: 4, overflow: "hidden" }}>
             <div style={{ padding: "0.875rem 1.1rem", borderBottom: `1px solid ${MGR.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "0.8rem", fontWeight: 600, color: MGR.text }}>Top Writers</span>
               <Link href="/infinitum-ctrl/blogs" style={{ color: MGR.accent, fontSize: "0.65rem", textDecoration: "none", opacity: 0.8 }}>See all →</Link>
@@ -163,7 +158,7 @@ export default function ManagerOverview() {
           </div>
 
           {/* Recent posts */}
-          <div style={{ background: MGR.card, border: `1px solid ${MGR.border}`, borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ background: MGR.card, border: `1px solid ${MGR.border}`, borderRadius: 4, overflow: "hidden" }}>
             <div style={{ padding: "0.875rem 1.1rem", borderBottom: `1px solid ${MGR.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "0.8rem", fontWeight: 600, color: MGR.text }}>Latest Posts</span>
               <Link href="/infinitum-ctrl/activity" style={{ color: MGR.accent, fontSize: "0.65rem", textDecoration: "none", opacity: 0.8 }}>Full feed →</Link>

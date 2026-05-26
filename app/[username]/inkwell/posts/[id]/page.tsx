@@ -58,11 +58,11 @@ export default function EditPost() {
             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
               {post?.published && (
                 <>
-                  <Link href={`/${username}/blog/${post.slug}`} target="_blank" style={{ color: "#2d7d9a", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>
+                  <Link href={`/${username}/blog/${post.slug}`} target="_blank" style={{ color: "#9a8e7e", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", textDecoration: "none" }}>
                     ↗ View Live
                   </Link>
-                  <button onClick={sharePost} style={{ background: shareCopied ? "#4a9e7a" : "#0d1f3c", color: shareCopied ? "#fff" : "#c8a97e", border: "none", borderRadius: 4, padding: "0.4rem 0.875rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer" }}>
-                    {shareCopied ? "✓ Copied!" : "📤 Share"}
+                  <button onClick={sharePost} style={{ background: "transparent", color: shareCopied ? "#4a9e7a" : "#9a8e7e", border: "none", padding: "0.4rem 0", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", cursor: "pointer" }}>
+                    {shareCopied ? "Copied" : "Share"}
                   </button>
                 </>
               )}
