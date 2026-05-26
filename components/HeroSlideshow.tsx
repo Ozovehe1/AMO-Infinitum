@@ -32,7 +32,7 @@ export default function HeroSlideshow({ slides }: { slides: Slide[] }) {
 
   useEffect(() => {
     if (slides.length < 2) return;
-    timerRef.current = setInterval(advance, 5000);
+    timerRef.current = setInterval(advance, 3000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [slides.length]);
 
