@@ -34,7 +34,7 @@ export default async function PlatformLanding() {
   ]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0c0c0f", color: "#fffef9" }}>
+    <div style={{ minHeight: "100vh", background: "#0d1f3c", color: "#fffef9" }}>
 
       {/* Nav */}
       <nav style={{
@@ -168,7 +168,7 @@ export default async function PlatformLanding() {
         </section>
 
       {/* Footer */}
-      <footer style={{ background: "#0c0c0f", padding: "4rem 1.5rem", borderTop: "1px solid rgba(200,169,126,0.07)" }}>
+      <footer style={{ background: "#0d1f3c", padding: "4rem 1.5rem", borderTop: "1px solid rgba(200,169,126,0.07)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1.5rem" }}>
           <div>
             <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", fontWeight: 400, color: "#c8a97e", fontStyle: "italic", margin: "0 0 0.4rem" }}>AMO Infinitum</p>
