@@ -106,7 +106,7 @@ export default async function UserBlogHome({
             {theme.siteName}
           </h1>
           {theme.heroQuote && (
-            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "rgba(245,240,232,0.75)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic" }}>
+            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(1rem, 2vw, 1.2rem)", color: "color-mix(in srgb, var(--blog-bg, #f5f0e8) 75%, transparent)", maxWidth: 600, lineHeight: 1.75, margin: "0 0 2.5rem", fontStyle: "italic" }}>
               {theme.heroQuote}
             </p>
           )}
@@ -131,7 +131,7 @@ export default async function UserBlogHome({
             <Link href={`${base}/blog/${featured.slug}`} style={{ textDecoration: "none" }}>
               <div style={{ display: "grid", gridTemplateColumns: featured.coverImage ? "1fr 1fr" : "1fr", gap: "4rem", alignItems: "center" }} className="featured-grid">
                 {featured.coverImage && (
-                  <div style={{ borderRadius: 6, overflow: "hidden", aspectRatio: "4/3", background: "#1a4a5c" }}>
+                  <div style={{ borderRadius: 6, overflow: "hidden", aspectRatio: "4/3", background: "color-mix(in srgb, var(--blog-primary, #0d1f3c) 70%, var(--blog-accent, #c8a97e) 30%)" }}>
                     <img src={featured.coverImage} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} className="featured-img" />
                   </div>
                 )}
@@ -166,10 +166,10 @@ export default async function UserBlogHome({
       {/* Posts grid */}
       <main id="posts" style={{ flex: 1, background: bg, padding: "5rem 1.5rem" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "3rem", paddingBottom: "2rem", borderBottom: "1px solid rgba(13,31,60,0.1)" }}>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "3rem", paddingBottom: "2rem", borderBottom: "1px solid color-mix(in srgb, var(--blog-primary, #0d1f3c) 10%, transparent)" }}>
             <Link href={base} style={{ padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none", border: "1px solid " + (!category ? accent : `${primary}33`), background: !category ? accent : "transparent", color: !category ? bg : subtleOnLight, transition: "all 0.2s" }}>All</Link>
             {categories.map(cat => (
-              <Link key={cat.id} href={`${base}?category=${cat.slug}`} style={{ padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none", border: "1px solid " + (category === cat.slug ? cat.color : "rgba(13,31,60,0.2)"), background: category === cat.slug ? cat.color : "transparent", color: category === cat.slug ? "#fff" : subtleOnLight, transition: "all 0.2s" }}>
+              <Link key={cat.id} href={`${base}?category=${cat.slug}`} style={{ padding: "0.45rem 1.1rem", borderRadius: 20, fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.04em", textDecoration: "none", border: "1px solid " + (category === cat.slug ? cat.color : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 20%, transparent)"), background: category === cat.slug ? cat.color : "transparent", color: category === cat.slug ? "#fff" : subtleOnLight, transition: "all 0.2s" }}>
                 {cat.name}
                 <span style={{ marginLeft: "0.4rem", opacity: 0.65, fontSize: "0.68rem" }}>({cat._count.posts})</span>
               </Link>

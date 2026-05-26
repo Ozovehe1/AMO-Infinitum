@@ -46,10 +46,10 @@ export default function PostCard({ post, username, siteName = "Blog", featured =
   const darkTheme = isDark(bg);
 
   const cardBg = darkTheme ? "rgba(255,255,255,0.04)" : "#fffef9";
-  const cardBorder = darkTheme ? "rgba(255,255,255,0.08)" : "rgba(13,31,60,0.1)";
+  const cardBorder = darkTheme ? "rgba(255,255,255,0.08)" : `color-mix(in srgb, ${primary} 10%, transparent)`;
   const titleColor = darkTheme ? "#fffef9" : primary;
-  const textColor = darkTheme ? "rgba(255,254,249,0.62)" : "#3a5068";
-  const metaColor = darkTheme ? "rgba(255,254,249,0.38)" : "#8fa3b1";
+  const textColor = darkTheme ? "rgba(255,254,249,0.62)" : `${primary}aa`;
+  const metaColor = darkTheme ? "rgba(255,254,249,0.38)" : `${primary}60`;
 
   if (featured) {
     return (

@@ -48,7 +48,7 @@ export default async function AboutPage({ params }: { params: Promise<{ username
           {theme.aboutBody ? (
             <div className="prose-amo" dangerouslySetInnerHTML={{ __html: theme.aboutBody }} />
           ) : (
-            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "1.05rem", color: "#3a5068", lineHeight: 1.8 }}>
+            <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "1.05rem", color: `${primary}aa`, lineHeight: 1.8 }}>
               Welcome to {theme.siteName}.
             </p>
           )}

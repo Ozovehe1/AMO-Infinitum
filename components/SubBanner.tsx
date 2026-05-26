@@ -21,9 +21,9 @@ export default function SubBanner() {
   if (!visible || !sub || !MESSAGES[sub]) return null;
 
   const isError = sub === "invalid";
-  const bg = isError ? "rgba(224,112,112,0.12)" : "rgba(200,169,126,0.12)";
-  const border = isError ? "rgba(224,112,112,0.3)" : "rgba(200,169,126,0.3)";
-  const color = isError ? "#e07070" : "#c8a97e";
+  const bg     = isError ? "rgba(224,112,112,0.12)" : "color-mix(in srgb, var(--blog-accent, #c8a97e) 12%, transparent)";
+  const border = isError ? "rgba(224,112,112,0.3)"  : "color-mix(in srgb, var(--blog-accent, #c8a97e) 30%, transparent)";
+  const color  = isError ? "#e07070" : "var(--blog-accent, #c8a97e)";
 
   return (
     <div style={{
@@ -32,7 +32,7 @@ export default function SubBanner() {
       left: "50%",
       transform: "translateX(-50%)",
       zIndex: 9999,
-      background: "#0d1f3c",
+      background: "var(--blog-primary, #0d1f3c)",
       border: `1px solid ${border}`,
       borderLeft: `3px solid ${color}`,
       borderRadius: 6,
@@ -48,7 +48,7 @@ export default function SubBanner() {
       </p>
       <button
         onClick={() => setVisible(false)}
-        style={{ background: "none", border: "none", cursor: "pointer", color: "#8fa3b1", fontSize: "1.1rem", lineHeight: 1, padding: 0, flexShrink: 0 }}
+        style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,254,249,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0, flexShrink: 0 }}
         aria-label="Dismiss"
       >
         ×

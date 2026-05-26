@@ -4,7 +4,7 @@ import { getThemeByUsername } from "@/lib/theme";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { formatDate, truncate, subtleColor } from "@/lib/utils";
+import { formatDate, truncate } from "@/lib/utils";
 import ReadingProgress from "@/components/ReadingProgress";
 import ShareButtons from "@/components/ShareButtons";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -29,10 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     `${siteUrl}/api/og` +
     `?title=${encodeURIComponent(post.title)}` +
     `&excerpt=${encodeURIComponent(post.excerpt || truncate(post.content, 130))}` +
-    `&cover=${encodeURIComponent(post.coverImage || "")}` +
-    `&siteName=${encodeURIComponent(theme.siteName || "")}` +
-    `&colorAccent=${encodeURIComponent(theme.colorAccent || "#c8a97e")}` +
-    `&colorPrimary=${encodeURIComponent(theme.colorPrimary || "#0d1f3c")}`;
+    `&cover=${encodeURIComponent(post.coverImage || "")}`;
   return {
     title: `${post.title} — ${theme.siteName}`,
     description: desc,
@@ -106,15 +103,15 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
       <div style={{ background: primary, paddingTop: 64 }}>
         {post.coverImage ? (
           <div style={{ position: "relative", height: "clamp(280px, 45vh, 520px)", overflow: "hidden" }}>
-            <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, transparent 0%, transparent 25%, ${primary}bb 75%, ${primary}f5 100%)` }} />
+            <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />
+            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${primary}66, ${primary}e8)` }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "3rem 1.5rem" }}>
-              <PostMeta post={post} date={date} onDark accent={accent} primary={primary} />
+              <PostMeta post={post} date={date} onDark accent={accent} />
             </div>
           </div>
         ) : (
           <div style={{ padding: "5rem 1.5rem 4rem" }}>
-            <PostMeta post={post} date={date} onDark accent={accent} primary={primary} />
+            <PostMeta post={post} date={date} onDark accent={accent} />
           </div>
         )}
       </div>
@@ -140,7 +137,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
         )}
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem" }}>
-          <hr style={{ border: "none", borderTop: "1px solid rgba(13,31,60,0.1)", margin: "2rem 0" }} />
+          <hr style={{ border: "none", borderTop: "1px solid color-mix(in srgb, var(--blog-primary, #0d1f3c) 10%, transparent)", margin: "2rem 0" }} />
         </div>
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 1.5rem 3rem" }}>
@@ -168,7 +165,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
   );
 }
 
-function PostMeta({ post, date, onDark, accent, primary }: {
+function PostMeta({ post, date, onDark, accent }: {
   post: {
     title: string;
     readingTime: number;
@@ -179,10 +176,11 @@ function PostMeta({ post, date, onDark, accent, primary }: {
   date: string;
   onDark?: boolean;
   accent?: string;
-  primary?: string;
 }) {
-  const textColor = onDark ? "#fffef9" : "#0d1f3c";
-  const subColor = onDark ? subtleColor(primary || "#0d1f3c") : `${primary || "#0d1f3c"}99`;
+  const textColor = onDark ? "#fffef9" : "var(--blog-primary, #0d1f3c)";
+  const subColor = onDark
+    ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 55%, transparent)"
+    : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 55%, transparent)";
   return (
     <div style={{ maxWidth: 760 }}>
       {post.categories.length > 0 && (

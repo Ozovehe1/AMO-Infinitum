@@ -16,6 +16,7 @@ interface SetupAnswers {
   blogName: string;
   tagline: string;
   bio: string;
+  readingFeel: string;
   imageStyle: string;
 }
 
@@ -43,6 +44,7 @@ BLOG SETUP DATA:
 - Niche/Topic: ${answers.niche}
 - Target audience: ${answers.audience}
 - Writing tone: ${answers.tone}
+- Desired reading experience: ${answers.readingFeel || "not specified"}
 - Color mood: ${answers.colorMood}
 - Blog name (user's choice): ${answers.blogName}
 - Tagline (user's choice): ${answers.tagline}
@@ -50,41 +52,49 @@ BLOG SETUP DATA:
 - Preferred imagery style: ${answers.imageStyle}
 - Base color palette: primary=${preset.primary}, accent=${preset.accent}, bg=${preset.bg}
 
-DESIGN PRINCIPLES — apply these strictly:
-- Readability is the highest priority. Every color choice must ensure strong contrast between text and background (minimum 4.5:1 ratio). Never pair light text on light backgrounds or dark text on dark backgrounds.
-- colorBg must be a light, warm, or neutral tone that makes body text easy to read for long sessions. Avoid pure white (#ffffff) — use off-whites, creams, or very light tints.
-- colorPrimary is used for headings and UI elements on the light background — it must be dark enough to read clearly against colorBg.
-- colorAccent is used for links, buttons, and highlights — it must stand out against both colorBg and colorPrimary without being garish.
-- Spacing and breathing room matter. The tagline and heroQuote should be concise — short enough to be read in a single breath, with natural rhythm. No run-on sentences.
-- The aboutText should have natural paragraph breaks — write it as 2 short paragraphs, not one dense block.
-- All text fields (tagline, heroQuote, footerTagline) should feel considered and intentional — not padded or generic.
+TYPOGRAPHY — choose one heading font and one body font based on the writer's niche, tone, bio, and desired reading experience. These choices must feel intentional and personal, not random.
 
-TYPOGRAPHY OPTIONS — choose one heading font and one body font that best match the blog's tone and color mood:
-Heading fonts: "Playfair Display" (elegant/literary), "Lora" (refined/warm), "Cormorant Garamond" (classical/old-world), "DM Serif Display" (editorial/bold), "Libre Baskerville" (authoritative/clean), "Georgia" (universal/timeless)
-Body fonts: "Source Serif 4" (literary/comfortable), "Lora" (warm serif), "Merriweather" (legible long-form), "Georgia" (classic), "EB Garamond" (old-world), "Inter" (clean/modern sans)
+Available heading fonts (pick one):
+- "Playfair Display" — classic, literary, elegant serif; suits timeless essayists, culture writers, thoughtful personal blogs
+- "Cormorant Garamond" — ethereal, poetic, old-world serif; suits poets, philosophy writers, intimate memoir-style blogs
+- "Lora" — warm, readable, grounded serif; suits personal storytellers, lifestyle writers, anyone who wants approachable elegance
+- "Libre Baskerville" — authoritative, journalistic serif; suits investigative writing, commentary, long-form analysis
+- "DM Serif Display" — contemporary editorial serif; suits modern essayists, design-conscious writers, cultural commentary
+- "Fraunces" — distinctive, warm display serif; suits narrative non-fiction, personal essays, journals with strong voice
+- "Space Grotesk" — modern, geometric sans; suits tech writers, developers, startup founders, data-driven blogs
+- "Plus Jakarta Sans" — clean, versatile sans; suits productivity writers, business content, clean minimalist blogs
+
+Available body fonts (pick one that pairs with your heading choice):
+- "Source Serif 4" — refined, digital-first serif; pairs with Playfair Display, DM Serif Display
+- "Lora" — warm serif for body; pairs with Cormorant Garamond, Fraunces
+- "Merriweather" — strong, high-readability serif; pairs with Libre Baskerville
+- "Literata" — designed for long reading; pairs with Lora, Fraunces
+- "Inter" — neutral, highly readable sans; pairs with Space Grotesk, Plus Jakarta Sans
+- "DM Sans" — modern, clean sans; pairs with Space Grotesk, Plus Jakarta Sans
 
 Return this exact JSON structure:
 {
   "siteName": "clean version of the blog name",
-  "tagline": "refined version of their tagline — keep their voice, max 12 words",
+  "tagline": "refined version of their tagline — keep their voice",
   "description": "2 sentences for SEO that capture the blog's purpose and audience",
-  "heroQuote": "1 powerful original sentence that captures the blog's spirit — under 20 words, no clichés",
-  "colorPrimary": "hex color — dark, readable on colorBg",
-  "colorAccent": "hex color — vivid but harmonious, readable on both light and dark surfaces",
-  "colorBg": "hex color — light, warm or neutral, easy on the eyes for long reading",
-  "fontHeading": "one heading font name from the list above",
-  "fontBody": "one body font name from the list above",
-  "footerTagline": "short poetic closing phrase — under 8 words, matches niche and tone",
-  "aboutText": "2 short paragraphs in first person, warm and specific to this writer — separated by \\n\\n",
-  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images"
+  "heroQuote": "1 powerful, original sentence that captures the blog's deepest spirit — not generic",
+  "colorPrimary": "hex color based on color mood",
+  "colorAccent": "hex complementary accent",
+  "colorBg": "hex light background",
+  "footerTagline": "short poetic closing phrase that matches the niche and tone",
+  "aboutText": "2-3 sentences rewritten from the bio in first person, warm and authentic",
+  "fontHeading": "exact font name from the heading list — must reflect who this writer is",
+  "fontBody": "exact font name from the body list — must pair well with fontHeading",
+  "imageQuery": "a highly specific Unsplash search query (4-8 words) that combines the niche '${answers.niche}', the imagery style '${answers.imageStyle}', and the color mood '${answers.colorMood}' — must produce photos that feel deeply resonant with this specific blog, not generic stock images. Think: what single photograph would feel like the soul of this blog?"
 }
 
-The colors must work together as a cohesive, readable system. Test your choices mentally: can someone read a 1500-word essay on this blog without eye strain?`;
+The imageQuery is critical — it must be specific enough that the photos returned feel like they belong to THIS blog and no other. Avoid generic terms like 'blog', 'minimal', 'abstract' alone. Combine mood + subject + aesthetic.
+The font choices are critical — they must feel like they belong to THIS specific writer, chosen by someone who truly read their answers, not defaults.`;
 
     try {
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 600,
+        max_tokens: 700,
         messages: [{ role: "user", content: prompt }],
       });
       const text = (msg.content[0] as { text: string }).text.trim();
@@ -107,14 +117,6 @@ The colors must work together as a cohesive, readable system. Test your choices 
     if (!config) return NextResponse.json({ error: "No config" }, { status: 400 });
 
     const { userId } = session;
-
-    const aboutParagraphs = (config.aboutText || "")
-      .split(/\n\n+/)
-      .map((p: string) => p.trim())
-      .filter(Boolean);
-    const aboutHeroSubtitle = aboutParagraphs[0] || "";
-    const aboutBody = aboutParagraphs.map((p: string) => `<p>${p}</p>`).join("\n");
-
     const settingsToSave: { key: string; value: string }[] = [
       { key: "site_name", value: config.siteName || "" },
       { key: "site_tagline", value: config.tagline || "" },
@@ -123,11 +125,10 @@ The colors must work together as a cohesive, readable system. Test your choices 
       { key: "color_primary", value: config.colorPrimary || "" },
       { key: "color_accent", value: config.colorAccent || "" },
       { key: "color_bg", value: config.colorBg || "" },
-      { key: "font_heading", value: config.fontHeading || "Playfair Display" },
-      { key: "font_body", value: config.fontBody || "Source Serif 4" },
       { key: "footer_tagline", value: config.footerTagline || "" },
-      { key: "about_hero_subtitle", value: aboutHeroSubtitle },
-      { key: "about_body", value: aboutBody },
+      { key: "about_hero_subtitle", value: config.aboutText || "" },
+      ...(config.fontHeading ? [{ key: "font_heading", value: config.fontHeading }] : []),
+      ...(config.fontBody ? [{ key: "font_body", value: config.fontBody }] : []),
       ...(coverImage ? [{ key: "cover_image", value: coverImage }] : []),
     ];
 

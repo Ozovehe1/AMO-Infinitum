@@ -1,14 +1,5 @@
 import slugifyLib from "slugify";
 
-export function subtleColor(hex: string): string {
-  const c = hex.replace("#", "");
-  const r = parseInt(c.slice(0, 2), 16);
-  const g = parseInt(c.slice(2, 4), 16);
-  const b = parseInt(c.slice(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance < 0.45 ? "rgba(255,254,249,0.6)" : "rgba(13,31,60,0.5)";
-}
-
 export function slugify(text: string) {
   return slugifyLib(text, { lower: true, strict: true });
 }
@@ -40,6 +31,16 @@ export function truncate(text: string, length: number): string {
   const plain = stripHtml(text);
   if (plain.length <= length) return plain;
   return plain.slice(0, length).trimEnd() + "…";
+}
+
+export function subtleColor(hex: string): string {
+  if (!hex || hex.length < 7) return "rgba(255,255,255,0.6)";
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return r * 0.299 + g * 0.587 + b * 0.114 < 128
+    ? "rgba(255,254,249,0.6)"
+    : "rgba(0,0,0,0.55)";
 }
 
 export function firstSentence(text: string): string {

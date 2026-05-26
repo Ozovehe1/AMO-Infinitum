@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type State = "idle" | "loading" | "sent" | "already" | "cooldown" | "error";
 
-export default function SubscribeForm({ dark = false, username, siteName, subtleText }: { dark?: boolean; username: string; siteName?: string; subtleText?: string }) {
+export default function SubscribeForm({ dark = false, username }: { dark?: boolean; username: string }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<State>("idle");
 
@@ -30,10 +30,10 @@ export default function SubscribeForm({ dark = false, username, siteName, subtle
     }
   };
 
-  const textColor  = dark ? "#fffef9" : "#0d1f3c";
-  const subColor   = dark ? (subtleText || "rgba(255,254,249,0.6)") : "#3a5068";
+  const textColor  = dark ? "#fffef9" : "var(--blog-primary, #0d1f3c)";
+  const subColor   = dark ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 55%, transparent)" : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 55%, transparent)";
   const inputBg    = dark ? "rgba(255,254,249,0.06)" : "#fffef9";
-  const inputBorder = dark ? "rgba(200,169,126,0.25)" : "rgba(13,31,60,0.18)";
+  const inputBorder = dark ? "color-mix(in srgb, var(--blog-accent, #c8a97e) 25%, transparent)" : "color-mix(in srgb, var(--blog-primary, #0d1f3c) 18%, transparent)";
 
   if (state === "sent" || state === "already" || state === "cooldown") {
     const message = state === "sent"
@@ -44,7 +44,7 @@ export default function SubscribeForm({ dark = false, username, siteName, subtle
 
     return (
       <div style={{ padding: "0.5rem 0" }}>
-        <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c8a97e" }}>
+        <p style={{ margin: "0 0 0.35rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "var(--blog-accent, #c8a97e)" }}>
           {message}
         </p>
         {state === "sent" && (
@@ -62,7 +62,7 @@ export default function SubscribeForm({ dark = false, username, siteName, subtle
         Stay in the loop
       </p>
       <p style={{ margin: "0 0 1rem", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", color: subColor, lineHeight: 1.6 }}>
-        {siteName ? `New posts from ${siteName}, delivered straight to your inbox.` : "New posts delivered straight to your inbox."}
+        New essays delivered straight to your inbox.
       </p>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <input
@@ -86,9 +86,9 @@ export default function SubscribeForm({ dark = false, username, siteName, subtle
           disabled={state === "loading"}
           style={{
             padding: "0.6rem 1.25rem",
-            background: "#c8a97e", border: "none", borderRadius: 4,
+            background: "var(--blog-accent, #c8a97e)", border: "none", borderRadius: 4,
             fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600,
-            color: "#0d1f3c",
+            color: "var(--blog-primary, #0d1f3c)",
             cursor: state === "loading" ? "not-allowed" : "pointer",
             opacity: state === "loading" ? 0.7 : 1,
             whiteSpace: "nowrap",

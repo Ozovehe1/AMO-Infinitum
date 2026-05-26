@@ -101,7 +101,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
         <>
           <div onClick={() => setOpen(false)} style={{
             position: "fixed", inset: 0, zIndex: 2000,
-            background: "rgba(13,31,60,0.6)", backdropFilter: "blur(2px)",
+            background: `${colorPrimary}99`, backdropFilter: "blur(2px)",
           }} />
 
           <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 2001, display: "flex", justifyContent: "center" }}>
@@ -113,7 +113,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
 
                 {/* Handle */}
                 <div style={{ padding: "0.875rem 1.5rem 0" }}>
-                  <div style={{ width: 36, height: 4, background: "rgba(13,31,60,0.15)", borderRadius: 2, margin: "0 auto" }} />
+                  <div style={{ width: 36, height: 4, background: `${colorPrimary}26`, borderRadius: 2, margin: "0 auto" }} />
                 </div>
 
                 {/* Inline CSS preview card */}
@@ -126,11 +126,11 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(14px,4%,32px) clamp(16px,5%,44px)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 42, height: 42, borderRadius: "50%", background: colorAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: colorPrimary, flexShrink: 0 }}>{badgeLetter}</div>
-                          <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: colorAccent, letterSpacing: "0.06em" }}>{siteName.toUpperCase()}</span>
+                          <span style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: colorAccent, letterSpacing: "0.06em" }}>{siteName.toUpperCase()}</span>
                         </div>
                         <div>
                           <h2 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
-                          {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
+                          {excerpt && <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(17px,4.5vw,26px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{excerpt}</p>}
                           <div style={{ width: 28, height: 2, background: colorAccent, borderRadius: 1 }} />
                         </div>
                       </div>
@@ -141,11 +141,11 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 80% 20%, ${colorAccent}66 0%, transparent 55%), radial-gradient(ellipse at 15% 85%, ${colorAccent}40 0%, transparent 50%)` }} />
                       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
                         <div style={{ width: 42, height: 42, borderRadius: "50%", background: colorAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, color: colorPrimary, flexShrink: 0 }}>{badgeLetter}</div>
-                        <span style={{ fontFamily: "Georgia, serif", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: colorAccent, letterSpacing: "0.06em" }}>{siteName.toUpperCase()}</span>
+                        <span style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(16px,4vw,24px)", fontWeight: 700, color: colorAccent, letterSpacing: "0.06em" }}>{siteName.toUpperCase()}</span>
                       </div>
                       <div style={{ position: "relative" }}>
                         <h2 style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "clamp(22px,5.5vw,34px)", fontWeight: 700, color: "#fff", lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h2>
-                        {excerpt && <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(17px,4.5vw,26px)", color: `${colorAccent}d0`, lineHeight: 1.5, margin: "0 0 12px" }}>{excerpt}</p>}
+                        {excerpt && <p style={{ fontFamily: "var(--blog-font-body, 'Source Serif 4', Georgia, serif)", fontSize: "clamp(17px,4.5vw,26px)", color: `${colorAccent}d0`, lineHeight: 1.5, margin: "0 0 12px" }}>{excerpt}</p>}
                         <div style={{ width: 28, height: 2, background: colorAccent, borderRadius: 1 }} />
                       </div>
                     </div>
@@ -157,7 +157,7 @@ export default function ShareButtons({ title, slug, excerpt, coverImage, siteNam
                   {/* Header */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
                     <p style={{ fontFamily: "var(--blog-font-heading, 'Playfair Display', Georgia, serif)", fontSize: "1rem", color: colorPrimary, margin: 0, fontWeight: 600 }}>Share this post</p>
-                    <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#8fa3b1", fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
+                    <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: `${colorPrimary}60`, fontSize: "1.3rem", cursor: "pointer", lineHeight: 1, padding: "0 0 0 1rem" }}>×</button>
                   </div>
 
                   {/* Share with cover */}

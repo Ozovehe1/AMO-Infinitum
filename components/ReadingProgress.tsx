@@ -15,8 +15,8 @@ export default function ReadingProgress() {
   }, []);
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, zIndex: 200, background: "rgba(13,31,60,0.1)" }}>
-      <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(to right, #2d7d9a, #c8a97e)", transition: "width 0.1s linear" }} />
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, zIndex: 200, background: "color-mix(in srgb, var(--blog-primary, #0d1f3c) 10%, transparent)" }}>
+      <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(to right, var(--blog-primary, #0d1f3c), var(--blog-accent, #c8a97e))", transition: "width 0.1s linear" }} />
     </div>
   );
 }

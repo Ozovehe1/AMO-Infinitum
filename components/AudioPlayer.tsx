@@ -34,7 +34,6 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
     a.addEventListener("pause",          onPause);
     a.addEventListener("ended",          onEnded);
 
-    // Handle case where metadata already loaded before effect ran
     if (a.readyState >= 1 && isFinite(a.duration)) setDuration(a.duration);
 
     return () => {
@@ -76,7 +75,8 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
       <audio ref={audioRef} src={audioUrl} preload="metadata" style={{ display: "none" }} />
 
       <div style={{
-        background: "#fffef9", border: "1px solid rgba(13,31,60,0.12)",
+        background: "#fffef9",
+        border: "1px solid color-mix(in srgb, var(--blog-primary, #0d1f3c) 12%, transparent)",
         borderRadius: 10, padding: "0.875rem 1rem", margin: "0 0 2rem",
         fontFamily: "Inter, sans-serif",
       }}>
@@ -87,17 +87,18 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
             aria-label={playing ? "Pause" : "Play"}
             style={{
               width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
-              background: "#0d1f3c", border: "none", cursor: "pointer",
+              background: "var(--blog-primary, #0d1f3c)", border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--blog-accent, #c8a97e)",
             }}
           >
             {playing ? (
-              <svg width="12" height="14" viewBox="0 0 12 14" fill="#c8a97e">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor">
                 <rect x="0" y="0" width="4" height="14" rx="1"/>
                 <rect x="8" y="0" width="4" height="14" rx="1"/>
               </svg>
             ) : (
-              <svg width="12" height="14" viewBox="0 0 12 14" fill="#c8a97e" style={{ marginLeft: 2 }}>
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" style={{ marginLeft: 2 }}>
                 <path d="M0 0 L12 7 L0 14 Z"/>
               </svg>
             )}
@@ -117,21 +118,22 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
               }}
             >
               <div style={{
-                height: 3, width: "100%", background: "rgba(13,31,60,0.1)",
+                height: 3, width: "100%",
+                background: "color-mix(in srgb, var(--blog-primary, #0d1f3c) 10%, transparent)",
                 borderRadius: 2, position: "relative", overflow: "hidden",
               }}>
                 <div style={{
                   position: "absolute", left: 0, top: 0,
                   height: "100%", width: `${pct}%`,
-                  background: "#c8a97e", borderRadius: 2,
+                  background: "var(--blog-accent, #c8a97e)", borderRadius: 2,
                   transition: "width 0.2s linear",
                 }} />
               </div>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.65rem", color: "rgba(255,254,249,0.55)" }}>Listen to this essay</span>
-              <span style={{ fontSize: "0.65rem", color: "rgba(255,254,249,0.55)", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: "0.65rem", color: "color-mix(in srgb, var(--blog-primary, #0d1f3c) 45%, transparent)" }}>Listen to this essay</span>
+              <span style={{ fontSize: "0.65rem", color: "color-mix(in srgb, var(--blog-primary, #0d1f3c) 45%, transparent)", whiteSpace: "nowrap" }}>
                 {duration > 0 ? `${fmt(current)} / ${fmt(duration)}` : ""}
               </span>
             </div>
@@ -140,7 +142,9 @@ export default function AudioPlayer({ audioUrl }: { audioUrl: string | null }) {
           <button
             onClick={cycleSpeed}
             style={{
-              flexShrink: 0, background: "#0d1f3c", color: "#c8a97e",
+              flexShrink: 0,
+              background: "var(--blog-primary, #0d1f3c)",
+              color: "var(--blog-accent, #c8a97e)",
               border: "none", borderRadius: 5, padding: "4px 8px",
               fontSize: "0.65rem", fontWeight: 700, cursor: "pointer",
               fontFamily: "Inter, sans-serif", minWidth: 36, textAlign: "center",
