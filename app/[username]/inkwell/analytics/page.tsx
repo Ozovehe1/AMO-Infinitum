@@ -138,8 +138,8 @@ function Sparkline({ values }: { values: number[] }) {
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block", flexShrink: 0 }}>
       {allZero
-        ? <line x1="0" y1={H / 2} x2={W} y2={H / 2} stroke="rgba(13,31,60,0.15)" strokeWidth="1.5" />
-        : <path d={d} fill="none" stroke="#c8a97e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
+        ? <line x1="0" y1={H / 2} x2={W} y2={H / 2} stroke="color-mix(in srgb, var(--admin-primary) 15%, transparent)" strokeWidth="1.5" />
+        : <path d={d} fill="none" stroke="var(--admin-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
     </svg>
   );
 }
@@ -148,7 +148,7 @@ function Sparkline({ values }: { values: number[] }) {
 
 function TrendBadge({ curr, prev }: { curr: number; prev: number }) {
   const base: CSSProperties = { fontSize: "0.72rem", fontWeight: 700, fontFamily: "Inter,sans-serif" };
-  if (prev === 0 && curr === 0) return <span style={{ ...base, color: "#8fa3b1", fontWeight: 400 }}>no prior data</span>;
+  if (prev === 0 && curr === 0) return <span style={{ ...base, color: "var(--admin-sidebar-muted)", fontWeight: 400 }}>no prior data</span>;
   if (prev === 0) return <span style={{ ...base, color: "#4a9e7a" }}>↑ new growth</span>;
   const pct = Math.round(((curr - prev) / prev) * 100);
   const up = pct >= 0;
@@ -157,7 +157,7 @@ function TrendBadge({ curr, prev }: { curr: number; prev: number }) {
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, sparkValues, trend, accent = "#c8a97e" }: {
+function StatCard({ label, value, sub, sparkValues, trend, accent = "var(--admin-accent)" }: {
   label: string; value: string | number; sub?: string;
   sparkValues?: number[]; trend?: { curr: number; prev: number }; accent?: string;
 }) {
@@ -165,20 +165,20 @@ function StatCard({ label, value, sub, sparkValues, trend, accent = "#c8a97e" }:
     <div style={{
       background: "#fff",
       borderRadius: 12,
-      border: "1px solid rgba(13,31,60,0.07)",
+      border: "1px solid var(--admin-primary-border)",
       borderTop: `3px solid ${accent}`,
       padding: "1.1rem 1.25rem",
       display: "flex", flexDirection: "column", gap: "0.4rem",
       minWidth: 0,
     }}>
-      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.65rem", color: "#8fa3b1", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600 }}>{label}</p>
+      <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.65rem", color: "var(--admin-sidebar-muted)", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600 }}>{label}</p>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "0.5rem" }}>
-        <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "2rem", fontWeight: 800, color: "#0d1f3c", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</p>
+        <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "2rem", fontWeight: 800, color: "var(--admin-primary)", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</p>
         {sparkValues && <Sparkline values={sparkValues} />}
       </div>
       <div style={{ minHeight: 16, display: "flex", alignItems: "center", gap: "0.4rem" }}>
         {trend && <TrendBadge curr={trend.curr} prev={trend.prev} />}
-        {sub && <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.7rem", color: "#8fa3b1" }}>{sub}</span>}
+        {sub && <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.7rem", color: "var(--admin-sidebar-muted)" }}>{sub}</span>}
       </div>
     </div>
   );
@@ -498,26 +498,26 @@ export default function AnalyticsPage() {
 
   const card: CSSProperties = {
     background: "#fff", borderRadius: 12,
-    border: "1px solid rgba(13,31,60,0.08)",
+    border: "1px solid var(--admin-primary-border)",
     padding: "1.25rem 1.5rem",
   };
   const secLabel: CSSProperties = {
     margin: "0 0 0.25rem", fontFamily: "Inter,sans-serif",
-    fontSize: "0.7rem", fontWeight: 700, color: "#0d1f3c",
+    fontSize: "0.7rem", fontWeight: 700, color: "var(--admin-primary)",
     letterSpacing: "0.1em", textTransform: "uppercase",
   };
   const subText: CSSProperties = {
     margin: "0 0 1rem", fontFamily: "Inter,sans-serif",
-    fontSize: "0.75rem", color: "#8fa3b1",
+    fontSize: "0.75rem", color: "var(--admin-sidebar-muted)",
   };
 
   const TH = ({ col, children }: { col: SortKey; children: React.ReactNode }) => (
     <th onClick={() => handleSort(col)} style={{
       textAlign: "left", padding: "0 0.75rem 0.75rem 0",
       fontFamily: "Inter,sans-serif", fontSize: "0.65rem",
-      color: sortKey === col ? "#0d1f3c" : "#8fa3b1",
+      color: sortKey === col ? "var(--admin-primary)" : "var(--admin-sidebar-muted)",
       letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700,
-      borderBottom: "2px solid rgba(13,31,60,0.08)",
+      borderBottom: "2px solid var(--admin-primary-border)",
       cursor: "pointer", userSelect: "none", whiteSpace: "nowrap",
     }}>
       {children}{sortKey === col ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
@@ -528,7 +528,7 @@ export default function AnalyticsPage() {
   const sparkPosts = data ? Object.values(data.postsByMonth) : [];
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
         <div style={{ maxWidth: 960, width: "100%", paddingBottom: "4rem" }}>
@@ -536,16 +536,16 @@ export default function AnalyticsPage() {
           {/* Header */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.75rem", flexWrap: "wrap", gap: "1rem" }}>
             <div>
-              <h1 style={{ margin: "0 0 3px", fontFamily: "Inter,sans-serif", fontSize: "1.4rem", fontWeight: 800, color: "#0d1f3c", letterSpacing: "-0.02em" }}>Analytics</h1>
-              <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>
+              <h1 style={{ margin: "0 0 3px", fontFamily: "Inter,sans-serif", fontSize: "1.4rem", fontWeight: 800, color: "var(--admin-primary)", letterSpacing: "-0.02em" }}>Analytics</h1>
+              <p style={{ margin: 0, fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)" }}>
                 {updatedAt ? `Updated at ${updatedAt}` : "Your blog at a glance"}
               </p>
             </div>
-            <div style={{ display: "flex", background: "rgba(13,31,60,0.06)", borderRadius: 8, padding: 3, gap: 2 }}>
+            <div style={{ display: "flex", background: "color-mix(in srgb, var(--admin-primary) 6%, transparent)", borderRadius: 8, padding: 3, gap: 2 }}>
               {RANGES.map(r => (
                 <button key={r.value} onClick={() => setRange(r.value)} style={{
-                  background: range === r.value ? "#0d1f3c" : "transparent",
-                  color: range === r.value ? "#fff" : "#8fa3b1",
+                  background: range === r.value ? "var(--admin-primary)" : "transparent",
+                  color: range === r.value ? "#fff" : "var(--admin-sidebar-muted)",
                   border: "none", borderRadius: 6, padding: "5px 14px",
                   fontFamily: "Inter,sans-serif", fontSize: "0.75rem", fontWeight: 600,
                   cursor: "pointer", transition: "all 0.15s",
@@ -570,7 +570,7 @@ export default function AnalyticsPage() {
                   sub={data.pendingSubscribers > 0 ? `${data.pendingSubscribers} pending` : "verified"}
                   sparkValues={sparkSubs} accent="#4a9e7a" />
                 <StatCard label="New this period" value={data.newSubscribers.toLocaleString()}
-                  sparkValues={sparkSubs} trend={{ curr: data.newSubscribers, prev: data.prevNewSubscribers }} accent="#c8a97e" />
+                  sparkValues={sparkSubs} trend={{ curr: data.newSubscribers, prev: data.prevNewSubscribers }} accent="var(--admin-accent)" />
                 <StatCard label="Total Views" value={data.totalViews.toLocaleString()} sub="all time"
                   sparkValues={sparkPosts} accent="#6b9fd4" />
                 <StatCard label="Posts Published" value={data.totalPublished.toLocaleString()} sub="all time"
@@ -583,7 +583,7 @@ export default function AnalyticsPage() {
                   <p style={secLabel}>Subscriber Growth</p>
                   <p style={subText}>Cumulative subscribers over time</p>
                   <LineChart data={data.subscribersByMonth} />
-                  <div style={{ margin: "1.5rem 0 0.75rem", paddingTop: "1.25rem", borderTop: "1px solid rgba(13,31,60,0.06)" }}>
+                  <div style={{ margin: "1.5rem 0 0.75rem", paddingTop: "1.25rem", borderTop: "1px solid color-mix(in srgb, var(--admin-primary) 6%, transparent)" }}>
                     <p style={{ ...subText, margin: "0 0 0.75rem" }}>Net new per period</p>
                     <BarChart data={data.newSubscribersByMonth} unit="" emptyMsg="No subscriber changes this period" allowNegative />
                   </div>
@@ -602,9 +602,9 @@ export default function AnalyticsPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                     <input type="text" placeholder="Search…" value={search}
                       onChange={e => { setSearch(e.target.value); setPage(1); }}
-                      style={{ fontFamily: "Inter,sans-serif", fontSize: "0.78rem", color: "#0d1f3c", background: "rgba(13,31,60,0.04)", border: "1px solid rgba(13,31,60,0.1)", borderRadius: 6, padding: "5px 10px", outline: "none", width: 140 }}
+                      style={{ fontFamily: "Inter,sans-serif", fontSize: "0.78rem", color: "var(--admin-primary)", background: "color-mix(in srgb, var(--admin-primary) 4%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-primary) 10%, transparent)", borderRadius: 6, padding: "5px 10px", outline: "none", width: 140 }}
                     />
-                    <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.7rem", color: "#8fa3b1", whiteSpace: "nowrap" }}>{sortedPosts.length} post{sortedPosts.length !== 1 ? "s" : ""}</span>
+                    <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.7rem", color: "var(--admin-sidebar-muted)", whiteSpace: "nowrap" }}>{sortedPosts.length} post{sortedPosts.length !== 1 ? "s" : ""}</span>
                   </div>
                 </div>
                 <div style={{ overflowX: "auto" }}>
@@ -614,15 +614,15 @@ export default function AnalyticsPage() {
                     </thead>
                     <tbody>
                       {pagedPosts.length === 0 ? (
-                        <tr><td colSpan={4} style={{ textAlign: "center", padding: "2rem", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1" }}>No posts match your search</td></tr>
+                        <tr><td colSpan={4} style={{ textAlign: "center", padding: "2rem", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)" }}>No posts match your search</td></tr>
                       ) : pagedPosts.map(post => (
                         <tr key={post.id} className="tr-hover">
-                          <td style={{ padding: "0.55rem 0.75rem 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#0d1f3c", borderBottom: "1px solid rgba(13,31,60,0.05)" }}>
-                            <a href={`/${username}/blog/${post.slug}`} target="_blank" rel="noreferrer" style={{ color: "#0d1f3c", textDecoration: "none" }}>{post.title}</a>
+                          <td style={{ padding: "0.55rem 0.75rem 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "var(--admin-primary)", borderBottom: "1px solid color-mix(in srgb, var(--admin-primary) 5%, transparent)" }}>
+                            <a href={`/${username}/blog/${post.slug}`} target="_blank" rel="noreferrer" style={{ color: "var(--admin-primary)", textDecoration: "none" }}>{post.title}</a>
                           </td>
-                          <td style={{ padding: "0.55rem 0.75rem 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#0d1f3c", borderBottom: "1px solid rgba(13,31,60,0.05)", whiteSpace: "nowrap" }}>{post.views.toLocaleString()}</td>
-                          <td style={{ padding: "0.55rem 0.75rem 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", borderBottom: "1px solid rgba(13,31,60,0.05)", whiteSpace: "nowrap" }}>{post.readingTime} min</td>
-                          <td style={{ padding: "0.55rem 0 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "#8fa3b1", borderBottom: "1px solid rgba(13,31,60,0.05)", whiteSpace: "nowrap" }}>
+                          <td style={{ padding: "0.55rem 0.75rem 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "var(--admin-primary)", borderBottom: "1px solid color-mix(in srgb, var(--admin-primary) 5%, transparent)", whiteSpace: "nowrap" }}>{post.views.toLocaleString()}</td>
+                          <td style={{ padding: "0.55rem 0.75rem 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)", borderBottom: "1px solid color-mix(in srgb, var(--admin-primary) 5%, transparent)", whiteSpace: "nowrap" }}>{post.readingTime} min</td>
+                          <td style={{ padding: "0.55rem 0 0.55rem 0", fontFamily: "Inter,sans-serif", fontSize: "0.82rem", color: "var(--admin-sidebar-muted)", borderBottom: "1px solid color-mix(in srgb, var(--admin-primary) 5%, transparent)", whiteSpace: "nowrap" }}>
                             {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                           </td>
                         </tr>
@@ -631,16 +631,16 @@ export default function AnalyticsPage() {
                   </table>
                 </div>
                 {totalPages > 1 && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(13,31,60,0.06)", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.7rem", color: "#8fa3b1" }}>Page {page} of {totalPages}</span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid color-mix(in srgb, var(--admin-primary) 6%, transparent)", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.7rem", color: "var(--admin-sidebar-muted)" }}>Page {page} of {totalPages}</span>
                     <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
                       {paginationPages(page, totalPages).map((p, i) =>
                         p === "…"
-                          ? <span key={i} style={{ padding: "3px 7px", fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "#8fa3b1" }}>…</span>
+                          ? <span key={i} style={{ padding: "3px 7px", fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)" }}>…</span>
                           : <button key={p} onClick={() => setPage(p as number)} style={{
                               padding: "3px 9px", borderRadius: 5, border: "none", cursor: "pointer",
-                              background: page === p ? "#0d1f3c" : "rgba(13,31,60,0.06)",
-                              color: page === p ? "#fff" : "#0d1f3c",
+                              background: page === p ? "var(--admin-primary)" : "color-mix(in srgb, var(--admin-primary) 6%, transparent)",
+                              color: page === p ? "#fff" : "var(--admin-primary)",
                               fontFamily: "Inter,sans-serif", fontSize: "0.75rem", fontWeight: 600,
                             }}>{p}</button>
                       )}
@@ -653,16 +653,16 @@ export default function AnalyticsPage() {
               <div style={card}>
                 <p style={secLabel}>Posts by category</p>
                 {data.categories.length === 0 ? (
-                  <p style={{ margin: "0.5rem 0 0", fontFamily: "Inter,sans-serif", fontSize: "0.8rem", color: "#8fa3b1" }}>No categories yet</p>
+                  <p style={{ margin: "0.5rem 0 0", fontFamily: "Inter,sans-serif", fontSize: "0.8rem", color: "var(--admin-sidebar-muted)" }}>No categories yet</p>
                 ) : (() => {
                   const sorted = [...data.categories].sort((a, b) => b.count - a.count);
                   const maxCount = Math.max(...sorted.map(c => c.count), 1);
                   return sorted.map(cat => (
                     <div key={cat.name} style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.7rem" }}>
                       <div style={{ width: 9, height: 9, borderRadius: "50%", background: cat.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.8rem", color: "#0d1f3c", width: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{cat.name}</span>
-                      <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "#8fa3b1", width: 22, textAlign: "right", flexShrink: 0 }}>{cat.count}</span>
-                      <div style={{ flex: 1, height: 5, background: "rgba(13,31,60,0.06)", borderRadius: 3, minWidth: 0 }}>
+                      <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.8rem", color: "var(--admin-primary)", width: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{cat.name}</span>
+                      <span style={{ fontFamily: "Inter,sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)", width: 22, textAlign: "right", flexShrink: 0 }}>{cat.count}</span>
+                      <div style={{ flex: 1, height: 5, background: "color-mix(in srgb, var(--admin-primary) 6%, transparent)", borderRadius: 3, minWidth: 0 }}>
                         <div style={{ height: "100%", width: `${(cat.count / maxCount) * 100}%`, background: cat.color, borderRadius: 3 }} />
                       </div>
                     </div>

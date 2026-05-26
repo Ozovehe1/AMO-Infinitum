@@ -14,7 +14,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Category | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", color: "var(--admin-accent)" });
+  const [form, setForm] = useState({ name: "", description: "", color: "#2d7d9a" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,7 +24,7 @@ export default function CategoriesPage() {
   };
   useEffect(load, []);
 
-  const openCreate = () => { setForm({ name: "", description: "", color: "var(--admin-accent)" }); setEditing(null); setCreating(true); setError(""); };
+  const openCreate = () => { setForm({ name: "", description: "", color: "#2d7d9a" }); setEditing(null); setCreating(true); setError(""); };
   const openEdit = (cat: Category) => { setForm({ name: cat.name, description: cat.description || "", color: cat.color }); setEditing(cat); setCreating(true); setError(""); };
   const close = () => { setCreating(false); setEditing(null); setError(""); };
 

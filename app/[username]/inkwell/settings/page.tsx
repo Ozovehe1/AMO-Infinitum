@@ -61,16 +61,16 @@ export default function SettingsPage() {
   );
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f0e8" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
       <AdminNav />
       <main className="admin-main" style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
         <div style={{ maxWidth: 700, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "2rem" }}>
             <div>
-              <p style={{ color: "#8fa3b1", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Blog</p>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "#0d1f3c", margin: 0, fontWeight: 600 }}>Settings</h1>
+              <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Blog</p>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary)", margin: 0, fontWeight: 600 }}>Settings</h1>
             </div>
-            <button onClick={save} disabled={saving} style={{ background: saved ? "#4a9e7a" : "#0d1f3c", color: saved ? "#fff" : "#c8a97e", border: "none", borderRadius: 6, padding: "0.65rem 1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+            <button onClick={save} disabled={saving} style={{ background: saved ? "#4a9e7a" : "var(--admin-primary)", color: saved ? "#fff" : "var(--admin-accent)", border: "none", borderRadius: 6, padding: "0.65rem 1.5rem", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
               {saving ? "Saving…" : saved ? "✓ Saved!" : "Save Changes"}
             </button>
           </div>
@@ -78,8 +78,8 @@ export default function SettingsPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
             {/* Identity */}
-            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 1rem" }}>Identity</h3>
+            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Identity</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div><label style={labelStyle}>Blog Name</label><input value={form.site_name} onChange={e => setForm(f => ({ ...f, site_name: e.target.value }))} style={inputStyle} /></div>
                 <div><label style={labelStyle}>Tagline</label><input value={form.site_tagline} onChange={e => setForm(f => ({ ...f, site_tagline: e.target.value }))} style={inputStyle} /></div>
@@ -88,8 +88,8 @@ export default function SettingsPage() {
             </div>
 
             {/* Colors */}
-            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 1rem" }}>Colors</h3>
+            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Colors</h3>
               {(["primary", "accent", "bg"] as const).map(type => {
                 const key = `color_${type}` as keyof typeof form;
                 return (
@@ -97,10 +97,10 @@ export default function SettingsPage() {
                     <label style={labelStyle}>{type.charAt(0).toUpperCase() + type.slice(1)} Color</label>
                     <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
                       {PRESET_COLORS[type].map(c => (
-                        <button key={c} onClick={() => setForm(f => ({ ...f, [key]: c }))} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: form[key] === c ? "3px solid #0d1f3c" : "2px solid rgba(13,31,60,0.2)", cursor: "pointer", outline: "none" }} />
+                        <button key={c} onClick={() => setForm(f => ({ ...f, [key]: c }))} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: form[key] === c ? `3px solid var(--admin-primary)` : `2px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)`, cursor: "pointer", outline: "none" }} />
                       ))}
-                      <input type="color" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} style={{ width: 36, height: 28, border: "1px solid rgba(13,31,60,0.2)", borderRadius: 4, cursor: "pointer", padding: 2 }} />
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1" }}>{form[key]}</span>
+                      <input type="color" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} style={{ width: 36, height: 28, border: `1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)`, borderRadius: 4, cursor: "pointer", padding: 2 }} />
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)" }}>{form[key]}</span>
                     </div>
                   </div>
                 );
@@ -108,9 +108,9 @@ export default function SettingsPage() {
             </div>
 
             {/* Typography */}
-            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 0.25rem" }}>Typography</h3>
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", margin: "0 0 1rem", lineHeight: 1.5 }}>
+            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 0.25rem" }}>Typography</h3>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem", lineHeight: 1.5 }}>
                 Choose fonts for your blog&apos;s headings and body text.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -126,9 +126,9 @@ export default function SettingsPage() {
                           style={{
                             padding: "0.4rem 0.875rem",
                             borderRadius: 4,
-                            border: form[key] === f ? "2px solid #0d1f3c" : "1px solid rgba(13,31,60,0.2)",
-                            background: form[key] === f ? "#0d1f3c" : "#fffef9",
-                            color: form[key] === f ? "#c8a97e" : "#0d1f3c",
+                            border: form[key] === f ? `2px solid var(--admin-primary)` : `1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent)`,
+                            background: form[key] === f ? "var(--admin-primary)" : "#fffef9",
+                            color: form[key] === f ? "var(--admin-accent)" : "var(--admin-primary)",
                             fontFamily: `'${f}', Georgia, serif`,
                             fontSize: "0.88rem",
                             cursor: "pointer",
@@ -139,7 +139,7 @@ export default function SettingsPage() {
                         </button>
                       ))}
                     </div>
-                    <p style={{ fontFamily: `'${form[key]}', Georgia, serif`, fontSize: "1.05rem", color: "#0d1f3c", margin: "0.75rem 0 0", lineHeight: 1.6 }}>
+                    <p style={{ fontFamily: `'${form[key]}', Georgia, serif`, fontSize: "1.05rem", color: "var(--admin-primary)", margin: "0.75rem 0 0", lineHeight: 1.6 }}>
                       {key === "font_heading" ? "The quick brown fox jumps over the lazy dog" : "Reading is the quiet revolution of the self."}
                     </p>
                   </div>
@@ -148,8 +148,8 @@ export default function SettingsPage() {
             </div>
 
             {/* Footer & Social */}
-            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 1rem" }}>Footer & Social</h3>
+            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Footer & Social</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div><label style={labelStyle}>Footer Tagline</label><input value={form.footer_tagline} onChange={e => setForm(f => ({ ...f, footer_tagline: e.target.value }))} style={inputStyle} /></div>
                 <div><label style={labelStyle}>Footer Copyright</label><input value={form.footer_copy} onChange={e => setForm(f => ({ ...f, footer_copy: e.target.value }))} style={inputStyle} /></div>
@@ -158,10 +158,10 @@ export default function SettingsPage() {
             </div>
 
             {/* Subscribers */}
-            <div style={{ background: "#fffef9", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 8, padding: "1.5rem" }}>
+            <div style={{ background: "#fffef9", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
               <div style={{ marginBottom: "1rem" }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#0d1f3c", margin: "0 0 0.25rem" }}>Subscribers</h3>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#8fa3b1", margin: 0, lineHeight: 1.5 }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 0.25rem" }}>Subscribers</h3>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)", margin: 0, lineHeight: 1.5 }}>
                   This message appears in the confirmation email sent when someone subscribes to your blog.
                 </p>
               </div>
@@ -175,17 +175,17 @@ export default function SettingsPage() {
                   style={{ ...inputStyle, resize: "vertical", lineHeight: 1.65, minHeight: 90 }}
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.4rem" }}>
-                  <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "#8fa3b1", margin: 0 }}>
+                  <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-sidebar-muted)", margin: 0 }}>
                     Leave blank to use the default message. Plain text only — no HTML.
                   </p>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: form.sub_confirm_message.length > 300 ? "#e07070" : "#8fa3b1" }}>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: form.sub_confirm_message.length > 300 ? "#e07070" : "var(--admin-sidebar-muted)" }}>
                     {form.sub_confirm_message.length}/300
                   </span>
                 </div>
                 {form.sub_confirm_message.length > 0 && (
-                  <div style={{ marginTop: "0.875rem", background: "#f5f0e8", border: "1px solid rgba(13,31,60,0.08)", borderRadius: 6, padding: "0.875rem 1rem" }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "#8fa3b1", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 0.4rem" }}>Preview</p>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#3a5068", margin: 0, lineHeight: 1.65 }}>
+                  <div style={{ marginTop: "0.875rem", background: "var(--admin-bg)", border: "1px solid var(--admin-primary-border)", borderRadius: 6, padding: "0.875rem 1rem" }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", color: "var(--admin-sidebar-muted)", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 0.4rem" }}>Preview</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "var(--admin-primary)", margin: 0, lineHeight: 1.65 }}>
                       {form.sub_confirm_message}
                     </p>
                   </div>

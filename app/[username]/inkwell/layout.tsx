@@ -28,6 +28,8 @@ export default async function InkwellLayout({ children, params }: Props) {
           "--admin-sidebar-muted": sidebarMuted,
           "--admin-accent-faint": `${accent}18`,
           "--admin-primary-border": "rgba(0,0,0,0.08)",
+          "--admin-muted": `${primary}80`,
+          "--admin-bg-card": "#fffef9",
         } as React.CSSProperties
       }
     >
