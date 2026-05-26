@@ -14,6 +14,8 @@ export interface Theme {
   aboutHeroSubtitle: string;
   aboutBody: string;
   coverImage: string;
+  fontHeading: string;
+  fontBody: string;
 }
 
 const DEFAULTS: Theme = {
@@ -30,6 +32,8 @@ const DEFAULTS: Theme = {
   aboutHeroSubtitle: "A space that holds everything.",
   aboutBody: "<p>Welcome to my blog.</p>",
   coverImage: "",
+  fontHeading: "Playfair Display",
+  fontBody: "Source Serif 4",
 };
 
 export async function getTheme(userId: number): Promise<Theme> {
@@ -51,6 +55,8 @@ export async function getTheme(userId: number): Promise<Theme> {
       aboutHeroSubtitle: map.about_hero_subtitle ?? DEFAULTS.aboutHeroSubtitle,
       aboutBody: map.about_body ?? DEFAULTS.aboutBody,
       coverImage: map.cover_image ?? DEFAULTS.coverImage,
+      fontHeading: map.font_heading ?? DEFAULTS.fontHeading,
+      fontBody: map.font_body ?? DEFAULTS.fontBody,
     };
   } catch {
     return DEFAULTS;

@@ -4,10 +4,18 @@ export async function makePostcardBlob({
   title,
   excerpt,
   coverImage,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
+  fontHeading = "Playfair Display",
 }: {
   title: string;
   excerpt?: string;
   coverImage?: string;
+  siteName?: string;
+  colorAccent?: string;
+  colorPrimary?: string;
+  fontHeading?: string;
 }): Promise<Blob> {
   let img: HTMLImageElement | null = null;
 
@@ -17,15 +25,15 @@ export async function makePostcardBlob({
         ? `/api/img?src=${encodeURIComponent(coverImage)}`
         : coverImage;
       img = await loadImage(src);
-    } catch { /* fall through to navy fallback */ }
+    } catch { /* fall through to branded fallback */ }
   }
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
 
   return img
-    ? drawWithCover(canvas, ctx, img, title, excerpt)
-    : drawBranded(canvas, ctx, title, excerpt);
+    ? drawWithCover(canvas, ctx, img, title, excerpt, siteName, colorAccent, colorPrimary, fontHeading)
+    : drawBranded(canvas, ctx, title, excerpt, siteName, colorAccent, colorPrimary, fontHeading);
 }
 
 // ── Cover-photo card (canvas sized to photo) ─────────────────────────────────
@@ -36,6 +44,10 @@ function drawWithCover(
   img: HTMLImageElement,
   title: string,
   excerpt?: string,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
+  fontHeading = "Playfair Display",
 ): Promise<Blob> {
   const maxDim = 1200;
   const scale  = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
@@ -56,10 +68,10 @@ function drawWithCover(
   const H   = canvas.height;
   const PAD = Math.round(W * PAD_RATIO);
 
-  drawBadge(ctx, W, H, PAD, /* onCover */ true);
+  drawBadge(ctx, W, H, PAD, true, siteName, colorAccent, colorPrimary, fontHeading);
 
   const ruleY = H - Math.round(H * 0.09);
-  ctx.fillStyle = "#c8a97e";
+  ctx.fillStyle = colorAccent;
   ctx.fillRect(PAD, ruleY, Math.round(W * 0.04), Math.round(H * 0.005));
 
   const titleSize    = Math.round(W * (title.length > 60 ? 0.044 : 0.055));
@@ -67,7 +79,7 @@ function drawWithCover(
   const excerptSize  = Math.round(W * 0.040);
   const EXCERPT_LINE_H = Math.round(excerptSize * 1.48);
 
-  ctx.font = `bold ${titleSize}px serif`;
+  ctx.font = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   const titleLines = wrapText(ctx, title, W - PAD * 2 - Math.round(W * 0.04), 3);
 
   let excerptLines: string[] = [];
@@ -87,7 +99,7 @@ function drawWithCover(
   let ty = Math.max(Math.round(H * 0.28), ruleY - Math.round(H * 0.025) - blockH);
 
   ctx.fillStyle    = "#ffffff";
-  ctx.font         = `bold ${titleSize}px serif`;
+  ctx.font         = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "top";
   for (const line of titleLines) { ctx.fillText(line, PAD, ty); ty += TITLE_LINE_H; }
@@ -102,13 +114,17 @@ function drawWithCover(
   return canvasToBlob(canvas);
 }
 
-// ── Branded navy card (dynamic height — grows to fit full excerpt) ─────────────
+// ── Branded card (dynamic height — grows to fit full excerpt) ─────────────────
 
 function drawBranded(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   title: string,
   excerpt?: string,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
+  fontHeading = "Playfair Display",
 ): Promise<Blob> {
   const W   = 1200;
   const PAD = Math.round(W * PAD_RATIO);
@@ -118,15 +134,14 @@ function drawBranded(
   const excerptSize  = Math.round(W * 0.028);
   const EXCERPT_LINE_H = Math.round(excerptSize * 1.5);
 
-  // Measure text before committing canvas height
   const mc = document.createElement("canvas").getContext("2d")!;
-  mc.font = `bold ${titleSize}px serif`;
+  mc.font = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   const titleLines = wrapText(mc, title, W - PAD * 2, 4);
 
   let excerptLines: string[] = [];
   if (excerpt) {
     mc.font = `${excerptSize}px sans-serif`;
-    excerptLines = wrapText(mc, excerpt, W - PAD * 2, 999); // no practical limit
+    excerptLines = wrapText(mc, excerpt, W - PAD * 2, 999);
   }
 
   const BADGE_AREA = 100;
@@ -142,43 +157,40 @@ function drawBranded(
   canvas.width  = W;
   canvas.height = H;
 
-  // Background
-  ctx.fillStyle = "#0d1f3c";
+  ctx.fillStyle = colorPrimary;
   ctx.fillRect(0, 0, W, H);
 
-  // Radial accents
+  // Radial accents derived from colorAccent
   const r1 = ctx.createRadialGradient(W * 0.8, H * 0.2, 0, W * 0.8, H * 0.2, W * 0.45);
-  r1.addColorStop(0, "rgba(45,125,154,0.40)");
-  r1.addColorStop(1, "rgba(45,125,154,0)");
+  r1.addColorStop(0, `${colorAccent}66`);
+  r1.addColorStop(1, `${colorAccent}00`);
   ctx.fillStyle = r1;
   ctx.fillRect(0, 0, W, H);
 
   const r2 = ctx.createRadialGradient(W * 0.15, H * 0.85, 0, W * 0.15, H * 0.85, W * 0.4);
-  r2.addColorStop(0, "rgba(200,169,126,0.25)");
-  r2.addColorStop(1, "rgba(200,169,126,0)");
+  r2.addColorStop(0, `${colorAccent}40`);
+  r2.addColorStop(1, `${colorAccent}00`);
   ctx.fillStyle = r2;
   ctx.fillRect(0, 0, W, H);
 
-  drawBadge(ctx, W, H, PAD, /* onCover */ false);
+  drawBadge(ctx, W, H, PAD, false, siteName, colorAccent, colorPrimary, fontHeading);
 
-  // Text block
   let ty = BADGE_AREA;
 
   ctx.fillStyle    = "#ffffff";
-  ctx.font         = `bold ${titleSize}px serif`;
+  ctx.font         = `bold ${titleSize}px '${fontHeading}', Georgia, serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "top";
   for (const line of titleLines) { ctx.fillText(line, PAD, ty); ty += TITLE_LINE_H; }
 
   if (excerptLines.length > 0) {
     ty += TEXT_GAP;
-    ctx.fillStyle = "rgba(200,169,126,0.85)";
+    ctx.fillStyle = `${colorAccent}d9`;
     ctx.font = `${excerptSize}px sans-serif`;
     for (const line of excerptLines) { ctx.fillText(line, PAD, ty); ty += EXCERPT_LINE_H; }
   }
 
-  // Gold rule
-  ctx.fillStyle = "#c8a97e";
+  ctx.fillStyle = colorAccent;
   ctx.fillRect(PAD, ty + 16, Math.round(W * 0.04), 4);
 
   return canvasToBlob(canvas);
@@ -192,6 +204,10 @@ function drawBadge(
   H: number,
   PAD: number,
   onCover: boolean,
+  siteName = "Blog",
+  colorAccent = "#c8a97e",
+  colorPrimary = "#0d1f3c",
+  fontHeading = "Playfair Display",
 ) {
   const badgeR = Math.round(W * 0.030);
   const bx     = PAD + badgeR;
@@ -199,20 +215,20 @@ function drawBadge(
 
   ctx.beginPath();
   ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
-  ctx.fillStyle = "#c8a97e";
+  ctx.fillStyle = colorAccent;
   ctx.fill();
 
-  ctx.fillStyle    = onCover ? "#000" : "#0d1f3c";
+  ctx.fillStyle    = onCover ? "#000" : colorPrimary;
   ctx.font         = `bold ${Math.round(badgeR * 1.1)}px sans-serif`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("A", bx, by);
+  ctx.fillText(siteName.charAt(0).toUpperCase(), bx, by);
 
-  ctx.fillStyle    = "#c8a97e";
-  ctx.font         = `bold ${Math.round(W * 0.026)}px serif`;
+  ctx.fillStyle    = colorAccent;
+  ctx.font         = `bold ${Math.round(W * 0.026)}px '${fontHeading}', Georgia, serif`;
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("AMO INFINITUM", bx + badgeR + Math.round(W * 0.016), by);
+  ctx.fillText(siteName.toUpperCase(), bx + badgeR + Math.round(W * 0.016), by);
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
@@ -250,7 +266,6 @@ function wrapText(
       lines.push(current);
       current = word;
       if (lines.length >= maxLines) {
-        // Truncate only when the limit is genuinely hit
         let last = lines[maxLines - 1];
         while (ctx.measureText(`${last}…`).width > maxWidth && last.length > 0) {
           last = last.slice(0, -1);
