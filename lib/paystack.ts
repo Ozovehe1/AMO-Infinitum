@@ -93,6 +93,22 @@ export async function enableSubscription(code: string, token: string): Promise<v
   await request("POST", "/subscription/enable", { code, token });
 }
 
+export interface CreateSubscriptionOptions {
+  customer: string;       // customer code (CUS_xxx)
+  plan: string;           // plan code (PLN_xxx)
+  authorization?: string; // authorization code from card-auth charge (AUTH_xxx)
+  start_date?: string;    // ISO 8601 — when billing should begin (for trials)
+}
+
+/**
+ * Creates a Paystack subscription, optionally with a delayed start_date.
+ * Used for the free-trial flow: authorize ₦100 first, then schedule the
+ * real subscription to begin 30 days later.
+ */
+export async function createSubscription(opts: CreateSubscriptionOptions): Promise<PaystackSubscription> {
+  return request("POST", "/subscription", opts as unknown as Record<string, unknown>);
+}
+
 /**
  * Returns the Paystack-hosted subscription management URL.
  * Users can update card, cancel, or resume from here.

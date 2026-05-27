@@ -56,7 +56,7 @@ export default function UpgradePrompt({ feature, description, inline = false }: 
             cursor: "pointer", whiteSpace: "nowrap", opacity: loading ? 0.6 : 1,
           }}
         >
-          {loading ? "Loading…" : "Upgrade"}
+          {loading ? "Loading…" : "First month free →"}
         </button>
       </div>
     );
@@ -98,10 +98,10 @@ export default function UpgradePrompt({ feature, description, inline = false }: 
           textTransform: "uppercase", cursor: "pointer", opacity: loading ? 0.6 : 1,
         }}
       >
-        {loading ? "Loading…" : "Get Premium — $9 / month"}
+        {loading ? "Loading…" : "Start free trial — first month free"}
       </button>
       <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-muted)", marginTop: "0.75rem" }}>
-        Paid via Paystack · Cancel anytime
+        First month free · then $9/mo · Cancel anytime
       </p>
     </div>
   );

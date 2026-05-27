@@ -48,6 +48,7 @@ export default function BillingPage() {
   };
 
   const isPremium    = status?.plan === "premium";
+  const isTrialing   = status?.subscriptionStatus === "trialing";
   const isNonRenew   = status?.subscriptionStatus === "non-renewing";
   const isPastDue    = status?.subscriptionStatus === "past_due";
   const isCancelled  = status?.subscriptionStatus === "cancelled";
@@ -56,9 +57,9 @@ export default function BillingPage() {
   const endsAt       = status?.subscriptionEndsAt ? new Date(status.subscriptionEndsAt) : null;
 
   const ctaLabel = (): string => {
-    if (isPastDue) return "Update Payment — restore access";
+    if (isPastDue)  return "Update Payment — restore access";
     if (isCancelled || (!isPremium && !isFirstTime)) return "Reactivate Premium — $9/month";
-    if (isFirstTime) return "Get Premium — $9 / month";
+    if (isFirstTime) return "Start free trial — first month free";
     return "Manage Subscription";
   };
 
@@ -93,9 +94,15 @@ export default function BillingPage() {
                     : "color-mix(in srgb, var(--admin-primary) 15%, transparent)"}`,
                 }}>
                   {isPremium ? "✦ Premium" : "Free"}
-                  {isNonRenew && <span style={{ opacity: 0.7, fontSize: "0.72rem" }}> · Cancelling</span>}
+                  {isTrialing  && <span style={{ opacity: 0.7, fontSize: "0.72rem" }}> · Free trial</span>}
+                  {isNonRenew  && <span style={{ opacity: 0.7, fontSize: "0.72rem" }}> · Cancelling</span>}
                 </span>
 
+                {isTrialing && endsAt && (
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-muted)" }}>
+                    Free until {endsAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · then $9/mo
+                  </span>
+                )}
                 {isNonRenew && endsAt && (
                   <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-muted)" }}>
                     Access until {endsAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
@@ -121,7 +128,7 @@ export default function BillingPage() {
               <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, overflow: "hidden", marginBottom: "2rem" }}>
                 <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--admin-primary-border)" }}>
                   <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--admin-muted)", margin: 0 }}>
-                    Premium Features · $9 / month
+                    Premium Features · First month free · then $9/mo
                   </p>
                 </div>
                 {PREMIUM_FEATURES.map((f, i) => (
@@ -163,7 +170,7 @@ export default function BillingPage() {
                   </button>
                   {isFirstTime && (
                     <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-muted)", margin: 0 }}>
-                      Paid via Paystack · Cancel anytime from your subscription dashboard
+                      Card required to start — first 30 days are completely free, then $9/mo via Paystack · Cancel anytime
                     </p>
                   )}
                 </div>
@@ -184,7 +191,9 @@ export default function BillingPage() {
                     </button>
                   )}
                   <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-muted)", margin: 0 }}>
-                    Update your card, pause, or cancel — all from your Paystack subscription dashboard.
+                    {isTrialing
+                      ? "You're in your free trial — your card will be charged $9/mo after 30 days. Cancel anytime from your Paystack dashboard."
+                      : "Update your card, pause, or cancel — all from your Paystack subscription dashboard."}
                   </p>
                 </div>
               )}

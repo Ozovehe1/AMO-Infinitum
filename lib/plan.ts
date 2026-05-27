@@ -14,7 +14,7 @@ export async function getUserPlan(userId: number): Promise<Plan> {
       select: { plan: true, subscriptionStatus: true },
     });
     if (!user) return "free";
-    const paidStates = ["active", "non-renewing"];
+    const paidStates = ["active", "non-renewing", "trialing"];
     if (user.plan === "premium" && user.subscriptionStatus && paidStates.includes(user.subscriptionStatus)) {
       return "premium";
     }

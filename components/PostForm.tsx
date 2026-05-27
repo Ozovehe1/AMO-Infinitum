@@ -982,13 +982,14 @@ export default function PostForm({ post }: { post?: PostData }) {
                         <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
                       </svg>
                       <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "var(--admin-bg-card)", margin: "0 0 0.5rem" }}>AI Writing Assistant</p>
-                      <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.78rem", fontStyle: "italic", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem" }}>Premium feature</p>
+                      <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.78rem", fontStyle: "italic", color: "var(--admin-sidebar-muted)", margin: "0 0 0.35rem" }}>Premium feature</p>
+                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem", opacity: 0.75 }}>First month free · then $9/mo</p>
                       <button onClick={async () => {
                         const res = await fetch("/api/billing/checkout", { method: "POST" });
                         const d = await res.json();
                         if (d.url) window.location.href = d.url;
                       }} style={{ background: "var(--admin-accent)", color: "var(--admin-primary)", border: "none", borderRadius: 3, padding: "0.6rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer" }}>
-                        Get Premium
+                        Start free trial
                       </button>
                     </div>
                   </div>
@@ -1257,16 +1258,16 @@ export default function PostForm({ post }: { post?: PostData }) {
                   <span style={{ fontSize: "1rem", flexShrink: 0 }}>🎧</span>
                   <div style={{ flex: 1 }}>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-primary)", display: "block", marginBottom: "0.2rem" }}>
-                      Audio narration is a Premium feature.
+                      🎧 Audio narration — Premium feature
                     </span>
                     <span style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.75rem", fontStyle: "italic", color: "var(--admin-muted)" }}>
-                      Subscribers get an auto-generated audio version of every post.{" "}
+                      Every Premium post gets an auto-generated audio version for your readers.{" "}
                       <button onClick={async () => {
                         const res = await fetch("/api/billing/checkout", { method: "POST" });
                         const d = await res.json();
                         if (d.url) window.location.href = d.url;
                       }} style={{ background: "none", border: "none", color: "var(--admin-accent)", cursor: "pointer", fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.75rem", fontStyle: "italic", padding: 0 }}>
-                        Upgrade →
+                        First month free →
                       </button>
                     </span>
                   </div>

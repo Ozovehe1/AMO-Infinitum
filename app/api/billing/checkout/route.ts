@@ -21,20 +21,45 @@ export async function POST() {
   });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // isFirstTime drives which CTA copy the frontend showed, but the actual
-  // checkout flow is identical — Paystack handles the plan billing from here.
-  const tx = await initializeTransaction({
-    email: user.email,
-    amount: 0,                                 // 0 = Paystack uses the plan amount
-    plan: PLAN_CODE,
-    callback_url: `${APP_URL}/${username}/inkwell/billing?success=1`,
-    metadata: {
-      userId: String(userId),
-      username,
-      cancel_action: `${APP_URL}/${username}/inkwell/billing`,
-    },
-    channels: ["card"],
-  });
+  // First-time subscriber → card auth (₦100) + delayed subscription (trial).
+  // Returning subscriber → direct plan checkout, charged immediately.
+  const isFirstTime = !user.paystackSubscriptionCode;
+
+  let tx;
+
+  if (isFirstTime) {
+    // Step 1 of 2 — authorise the card with a small ₦100 charge.
+    // The webhook (charge.success) will read metadata.trial === "true" and
+    // call POST /subscription with start_date = now + 30 days, making
+    // the subscription free for the first month.
+    tx = await initializeTransaction({
+      email: user.email,
+      amount: 10000, // ₦100 in kobo — minimum Paystack allows for card auth
+      callback_url: `${APP_URL}/${username}/inkwell/billing?success=1`,
+      metadata: {
+        trial: "true",
+        plan_code: PLAN_CODE,
+        userId: String(userId),
+        username,
+        cancel_action: `${APP_URL}/${username}/inkwell/billing`,
+      },
+      channels: ["card"],
+    });
+  } else {
+    // Returning subscriber — immediate recurring subscription at plan price.
+    tx = await initializeTransaction({
+      email: user.email,
+      amount: 0, // Paystack uses the plan amount
+      plan: PLAN_CODE,
+      callback_url: `${APP_URL}/${username}/inkwell/billing?success=1`,
+      metadata: {
+        userId: String(userId),
+        username,
+        cancel_action: `${APP_URL}/${username}/inkwell/billing`,
+      },
+      channels: ["card"],
+    });
+  }
 
   return NextResponse.json({ url: tx.authorization_url });
 }
