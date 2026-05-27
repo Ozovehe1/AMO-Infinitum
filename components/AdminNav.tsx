@@ -32,7 +32,7 @@ export default function AdminNav() {
   const NavContent = () => (
     <>
       <div style={{ padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid rgba(255,255,255,0.09)" }}>
-        <Link href={`/${username}`} target="_blank" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
+        <Link href={`/${username}`} target="_blank" style={{ textDecoration: "none", display: "block" }} onClick={() => setOpen(false)}>
           <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "var(--admin-accent)" }}>
             /{username}
           </span>
@@ -41,7 +41,7 @@ export default function AdminNav() {
         {plan === "premium" ? (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: "0.35rem",
-            marginTop: "0.5rem",
+            marginTop: "0.75rem",
             padding: "0.3rem 0.75rem",
             borderRadius: 4,
             background: "rgba(200,169,126,0.12)",
@@ -55,7 +55,7 @@ export default function AdminNav() {
             }}>Premium</span>
           </div>
         ) : (
-          <p style={{ color: "var(--admin-sidebar-muted)", fontSize: "0.68rem", fontFamily: "Inter, sans-serif", margin: "0.3rem 0 0", letterSpacing: "0.08em", textTransform: "uppercase" }}>Writing Panel</p>
+          <p style={{ color: "var(--admin-sidebar-muted)", fontSize: "0.68rem", fontFamily: "Inter, sans-serif", margin: "0.75rem 0 0", letterSpacing: "0.08em", textTransform: "uppercase" }}>Writing Panel</p>
         )}
       </div>
       <nav style={{ flex: 1, padding: "1rem 0.75rem" }}>
