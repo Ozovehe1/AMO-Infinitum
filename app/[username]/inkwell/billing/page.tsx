@@ -7,7 +7,7 @@ interface BillingStatus {
   subscriptionStatus: string | null;
   subscriptionEndsAt: string | null;
   hasEverSubscribed: boolean;
-  hasStripeCustomer: boolean;
+  hasEmailToken: boolean;
 }
 
 const PREMIUM_FEATURES = [
@@ -47,21 +47,22 @@ export default function BillingPage() {
     } catch { setActionLoading(false); }
   };
 
-  const isPremium = status?.plan === "premium";
-  const isTrialing = status?.subscriptionStatus === "trialing";
-  const isPastDue = status?.subscriptionStatus === "past_due";
-  const isCanceled = status?.subscriptionStatus === "canceled";
-  const isFirstTime = !status?.hasEverSubscribed;
-  const endsAt = status?.subscriptionEndsAt ? new Date(status.subscriptionEndsAt) : null;
+  const isPremium    = status?.plan === "premium";
+  const isNonRenew   = status?.subscriptionStatus === "non-renewing";
+  const isPastDue    = status?.subscriptionStatus === "past_due";
+  const isCancelled  = status?.subscriptionStatus === "cancelled";
+  const isFirstTime  = !status?.hasEverSubscribed;
+  const canManage    = status?.hasEmailToken;
+  const endsAt       = status?.subscriptionEndsAt ? new Date(status.subscriptionEndsAt) : null;
 
-  const ctaLabel = () => {
-    if (isPremium && (isTrialing || status?.subscriptionStatus === "active")) return "Manage Subscription";
-    if (isPastDue) return "Update Payment — restore Premium access";
-    if (isFirstTime) return "Start free trial — 1 month free, then $9/mo";
-    return "Reactivate Premium — $9/month";
+  const ctaLabel = (): string => {
+    if (isPastDue) return "Update Payment — restore access";
+    if (isCancelled || (!isPremium && !isFirstTime)) return "Reactivate Premium — $9/month";
+    if (isFirstTime) return "Get Premium — $9 / month";
+    return "Manage Subscription";
   };
 
-  const ctaAction = isPremium || isPastDue || isCanceled ? handlePortal : handleCheckout;
+  const ctaAction = isPremium && canManage ? handlePortal : handleCheckout;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
@@ -78,26 +79,31 @@ export default function BillingPage() {
           ) : (
             <>
               {/* Plan badge */}
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem", flexWrap: "wrap" }}>
                 <span style={{
                   display: "inline-flex", alignItems: "center", gap: "0.4rem",
                   padding: "0.35rem 0.875rem", borderRadius: 20,
-                  background: isPremium ? "color-mix(in srgb, var(--admin-accent) 15%, transparent)" : "color-mix(in srgb, var(--admin-primary) 8%, transparent)",
+                  background: isPremium
+                    ? "color-mix(in srgb, var(--admin-accent) 15%, transparent)"
+                    : "color-mix(in srgb, var(--admin-primary) 8%, transparent)",
                   color: isPremium ? "var(--admin-accent)" : "var(--admin-muted)",
                   fontFamily: "Inter, sans-serif", fontSize: "0.8rem", letterSpacing: "0.06em",
-                  border: `1px solid ${isPremium ? "color-mix(in srgb, var(--admin-accent) 30%, transparent)" : "color-mix(in srgb, var(--admin-primary) 15%, transparent)"}`,
+                  border: `1px solid ${isPremium
+                    ? "color-mix(in srgb, var(--admin-accent) 30%, transparent)"
+                    : "color-mix(in srgb, var(--admin-primary) 15%, transparent)"}`,
                 }}>
                   {isPremium ? "✦ Premium" : "Free"}
-                  {isTrialing && <span style={{ opacity: 0.7, fontSize: "0.72rem" }}> · Trial</span>}
+                  {isNonRenew && <span style={{ opacity: 0.7, fontSize: "0.72rem" }}> · Cancelling</span>}
                 </span>
-                {isTrialing && endsAt && (
+
+                {isNonRenew && endsAt && (
                   <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-muted)" }}>
-                    Trial ends {endsAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                    Access until {endsAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                   </span>
                 )}
-                {isCanceled && endsAt && (
+                {isCancelled && endsAt && (
                   <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "#c04040" }}>
-                    Access until {endsAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                    Expired {endsAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                   </span>
                 )}
               </div>
@@ -106,7 +112,7 @@ export default function BillingPage() {
               {isPastDue && (
                 <div style={{ background: "rgba(192,64,64,0.08)", border: "1px solid rgba(192,64,64,0.2)", borderRadius: 6, padding: "0.875rem 1rem", marginBottom: "1.5rem" }}>
                   <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.85rem", color: "#c04040", margin: 0 }}>
-                    ⚠ Your last payment failed. Update your billing details to continue Premium access.
+                    ⚠ Your last payment failed. Update your card to continue Premium access.
                   </p>
                 </div>
               )}
@@ -140,7 +146,7 @@ export default function BillingPage() {
               </div>
 
               {/* CTA */}
-              {!isPremium || isPastDue || isCanceled ? (
+              {!isPremium || isPastDue || isCancelled ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                   <button
                     onClick={ctaAction}
@@ -157,26 +163,28 @@ export default function BillingPage() {
                   </button>
                   {isFirstTime && (
                     <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-muted)", margin: 0 }}>
-                      No charge for 30 days · Card required · Cancel anytime
+                      Paid via Paystack · Cancel anytime from your subscription dashboard
                     </p>
                   )}
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <button
-                    onClick={handlePortal}
-                    disabled={actionLoading}
-                    style={{
-                      background: "transparent", color: "var(--admin-primary)",
-                      border: "1px solid var(--admin-primary-border)", borderRadius: 3, padding: "0.75rem 1.5rem",
-                      fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.06em",
-                      cursor: "pointer", opacity: actionLoading ? 0.6 : 1, alignSelf: "flex-start",
-                    }}
-                  >
-                    {actionLoading ? "Loading…" : "Manage Subscription"}
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={handlePortal}
+                      disabled={actionLoading}
+                      style={{
+                        background: "transparent", color: "var(--admin-primary)",
+                        border: "1px solid var(--admin-primary-border)", borderRadius: 3, padding: "0.75rem 1.5rem",
+                        fontFamily: "Inter, sans-serif", fontSize: "0.82rem", letterSpacing: "0.06em",
+                        cursor: "pointer", opacity: actionLoading ? 0.6 : 1, alignSelf: "flex-start",
+                      }}
+                    >
+                      {actionLoading ? "Loading…" : "Manage Subscription"}
+                    </button>
+                  )}
                   <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-muted)", margin: 0 }}>
-                    Update payment method, download invoices, or cancel — all from the billing portal.
+                    Update your card, pause, or cancel — all from your Paystack subscription dashboard.
                   </p>
                 </div>
               )}

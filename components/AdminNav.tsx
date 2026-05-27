@@ -71,7 +71,7 @@ export default function AdminNav() {
             AI writing, audio, analytics & custom theme.
           </p>
           <Link href={`${base}/billing`} onClick={() => setOpen(false)} style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-accent)", textDecoration: "none", letterSpacing: "0.06em" }}>
-            $9 / month → Upgrade
+            $9 / month via Paystack → Upgrade
           </Link>
         </div>
       )}

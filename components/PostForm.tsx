@@ -988,7 +988,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                         const d = await res.json();
                         if (d.url) window.location.href = d.url;
                       }} style={{ background: "var(--admin-accent)", color: "var(--admin-primary)", border: "none", borderRadius: 3, padding: "0.6rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer" }}>
-                        Start free trial
+                        Get Premium
                       </button>
                     </div>
                   </div>
@@ -1131,7 +1131,7 @@ export default function PostForm({ post }: { post?: PostData }) {
                     const d = await res.json();
                     if (d.url) window.location.href = d.url;
                   }} style={{ background: "var(--admin-accent)", color: "var(--admin-primary)", border: "none", borderRadius: 3, padding: "0.6rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer" }}>
-                    Start free trial
+                    Get Premium
                   </button>
                 </div>
               </div>

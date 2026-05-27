@@ -98,10 +98,10 @@ export default function UpgradePrompt({ feature, description, inline = false }: 
           textTransform: "uppercase", cursor: "pointer", opacity: loading ? 0.6 : 1,
         }}
       >
-        {loading ? "Loading…" : "Start free trial — 1 month free, then $9/mo"}
+        {loading ? "Loading…" : "Get Premium — $9 / month"}
       </button>
       <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-muted)", marginTop: "0.75rem" }}>
-        Cancel anytime · Card required
+        Paid via Paystack · Cancel anytime
       </p>
     </div>
   );

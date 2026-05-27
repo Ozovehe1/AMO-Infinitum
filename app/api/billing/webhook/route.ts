@@ -1,76 +1,117 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { verifyWebhookSignature } from "@/lib/paystack";
 import { prisma } from "@/lib/db";
-import type Stripe from "stripe";
 
-export const config = { api: { bodyParser: false } };
-
+// Paystack sends JSON; we must read the raw body to verify the HMAC signature.
 export async function POST(req: NextRequest) {
-  if (!stripe) return NextResponse.json({ error: "Billing not configured" }, { status: 503 });
-
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const signature = req.headers.get("x-paystack-signature") ?? "";
 
-  if (!sig || !webhookSecret) {
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-  }
-
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err) {
-    console.error("[webhook] signature verification failed:", err);
+  if (!verifyWebhookSignature(body, signature)) {
+    console.error("[webhook] Paystack signature mismatch");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  let event: { event: string; data: Record<string, unknown> };
   try {
-    switch (event.type) {
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
-        const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-        const status = sub.status; // "active" | "trialing" | "past_due" | "canceled" | etc.
-        const isPremium = ["active", "trialing"].includes(status);
-        // Use trial_end for trialing subs, cancel_at for others, fallback null
-        const endsAtTs = sub.trial_end ?? sub.cancel_at ?? null;
-        const endsAt = endsAtTs ? new Date(endsAtTs * 1000) : null;
+    event = JSON.parse(body);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { event: type, data } = event;
+
+  try {
+    switch (type) {
+
+      // ── New subscription created (fires after first successful charge) ──────
+      case "subscription.create": {
+        const sub     = data as Record<string, unknown>;
+        const customer = sub.customer as Record<string, string>;
+        const code    = sub.subscription_code as string;
+        const token   = sub.email_token as string;
+        const status  = (sub.status as string) ?? "active";
 
         await prisma.user.updateMany({
-          where: { stripeCustomerId: customerId },
+          where: { email: customer.email },
           data: {
-            plan: isPremium ? "premium" : "free",
-            stripeSubscriptionId: sub.id,
+            plan: "premium",
+            paystackCustomerCode: customer.customer_code,
+            paystackSubscriptionCode: code,
+            paystackEmailToken: token,
             subscriptionStatus: status,
-            subscriptionEndsAt: endsAt,
+            subscriptionEndsAt: null,
           },
         });
         break;
       }
 
-      case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
-        const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-        const endsAtTs = sub.cancel_at ?? null;
+      // ── Successful charge (covers renewals + initial payment) ──────────────
+      case "charge.success": {
+        const charge  = data as Record<string, unknown>;
+        const meta    = (charge.metadata as Record<string, string> | null) ?? {};
+        const customer = charge.customer as Record<string, string> | undefined;
+
+        // Only act if this is a subscription charge (has plan in metadata or plan field)
+        const hasPlan = !!(charge.plan || meta.plan_code);
+        if (!hasPlan) break;
+
+        if (customer?.email) {
+          await prisma.user.updateMany({
+            where: { email: customer.email },
+            data: {
+              plan: "premium",
+              subscriptionStatus: "active",
+              subscriptionEndsAt: null,
+            },
+          });
+        }
+        break;
+      }
+
+      // ── Subscription set to not renew (still active until period ends) ─────
+      case "subscription.not_renew": {
+        const sub     = data as Record<string, unknown>;
+        const customer = sub.customer as Record<string, string>;
+        const nextDate = sub.next_payment_date as string | null;
 
         await prisma.user.updateMany({
-          where: { stripeCustomerId: customerId },
+          where: { email: customer.email },
+          data: {
+            subscriptionStatus: "non-renewing",
+            subscriptionEndsAt: nextDate ? new Date(nextDate) : null,
+          },
+        });
+        break;
+      }
+
+      // ── Subscription disabled / cancelled ─────────────────────────────────
+      case "subscription.disable": {
+        const sub     = data as Record<string, unknown>;
+        const customer = sub.customer as Record<string, string>;
+
+        await prisma.user.updateMany({
+          where: { email: customer.email },
           data: {
             plan: "free",
-            subscriptionStatus: "canceled",
-            subscriptionEndsAt: endsAtTs ? new Date(endsAtTs * 1000) : null,
+            subscriptionStatus: "cancelled",
           },
         });
         break;
       }
 
+      // ── Payment failed on renewal ──────────────────────────────────────────
       case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
-        if (customerId) {
+        const inv     = data as Record<string, unknown>;
+        const customer = inv.customer as Record<string, string> | undefined;
+
+        if (customer?.email) {
           await prisma.user.updateMany({
-            where: { stripeCustomerId: customerId },
-            data: { subscriptionStatus: "past_due", plan: "free" },
+            where: { email: customer.email },
+            data: {
+              plan: "free",
+              subscriptionStatus: "past_due",
+            },
           });
         }
         break;

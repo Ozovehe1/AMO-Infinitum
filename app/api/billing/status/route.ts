@@ -9,7 +9,14 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { plan: true, subscriptionStatus: true, subscriptionEndsAt: true, stripeCustomerId: true, stripeSubscriptionId: true },
+    select: {
+      plan: true,
+      subscriptionStatus: true,
+      subscriptionEndsAt: true,
+      paystackCustomerCode: true,
+      paystackSubscriptionCode: true,
+      paystackEmailToken: true,
+    },
   });
 
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -17,10 +24,11 @@ export async function GET() {
   const plan = await getUserPlan(session.userId);
 
   return NextResponse.json({
-    plan,                                              // effective plan ("free" | "premium")
-    subscriptionStatus: user.subscriptionStatus,       // raw stripe status
+    plan,                                                    // "free" | "premium"
+    subscriptionStatus: user.subscriptionStatus,             // Paystack status string
     subscriptionEndsAt: user.subscriptionEndsAt,
-    hasEverSubscribed: !!user.stripeSubscriptionId,    // used to determine trial eligibility
-    hasStripeCustomer: !!user.stripeCustomerId,
+    hasEverSubscribed: !!user.paystackSubscriptionCode,      // trial eligibility
+    hasPaystackCustomer: !!user.paystackCustomerCode,
+    hasEmailToken: !!user.paystackEmailToken,
   });
 }

@@ -19,11 +19,12 @@ model User {
   createdAt            DateTime  @default(now())
 
   // Subscription
-  plan                 String    @default("free")    // "free" | "premium"
-  stripeCustomerId     String?   @unique
-  stripeSubscriptionId String?
-  subscriptionStatus   String?   // "active" | "trialing" | "past_due" | "canceled"
-  subscriptionEndsAt   DateTime?
+  plan                    String    @default("free")    // "free" | "premium"
+  paystackCustomerCode    String?   @unique
+  paystackSubscriptionCode String?
+  paystackEmailToken      String?   // for subscription management link
+  subscriptionStatus      String?   // "active" | "non-renewing" | "past_due" | "cancelled"
+  subscriptionEndsAt      DateTime?
 
   posts       Post[]
   categories  Category[]

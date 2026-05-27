@@ -3,8 +3,9 @@ import { prisma } from "@/lib/db";
 export type Plan = "free" | "premium";
 
 /**
- * Returns the user's current plan, accounting for active/trialing subscriptions.
- * Treats "past_due" and "canceled" as free.
+ * Returns the user's current effective plan.
+ * Only "active" and "non-renewing" Paystack states count as premium.
+ * "non-renewing" = still paid up, just not going to renew — still Premium until period ends.
  */
 export async function getUserPlan(userId: number): Promise<Plan> {
   try {
@@ -13,8 +14,8 @@ export async function getUserPlan(userId: number): Promise<Plan> {
       select: { plan: true, subscriptionStatus: true },
     });
     if (!user) return "free";
-    const activeStates = ["active", "trialing"];
-    if (user.plan === "premium" && user.subscriptionStatus && activeStates.includes(user.subscriptionStatus)) {
+    const paidStates = ["active", "non-renewing"];
+    if (user.plan === "premium" && user.subscriptionStatus && paidStates.includes(user.subscriptionStatus)) {
       return "premium";
     }
     return "free";
@@ -24,8 +25,7 @@ export async function getUserPlan(userId: number): Promise<Plan> {
 }
 
 /**
- * Throws a structured error if the user is not on Premium.
- * API routes catch this and return 403 { error: "PREMIUM_REQUIRED" }.
+ * Throws { status: 403, code: "PREMIUM_REQUIRED" } if the user is not on Premium.
  */
 export async function requirePremium(userId: number): Promise<void> {
   const plan = await getUserPlan(userId);
