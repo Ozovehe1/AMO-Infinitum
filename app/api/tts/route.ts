@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
 
   let row;
   if (username) {
-    const user = await prisma.user.findUnique({ where: { username } });
+    const user = await prisma.user.findUnique({ where: { username }, select: { id: true } });
     if (user) {
       row = await prisma.siteSettings.findUnique({
         where: { userId_key: { userId: user.id, key: `audio_${slug}` } },

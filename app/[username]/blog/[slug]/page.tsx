@@ -16,7 +16,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ username: string; slug: string }> }) {
   const { username, slug } = await params;
   const [user, theme] = await Promise.all([
-    prisma.user.findUnique({ where: { username } }),
+    prisma.user.findUnique({ where: { username }, select: { id: true } }),
     getThemeByUsername(username),
   ]);
   if (!user || !theme) return {};
@@ -56,7 +56,7 @@ export default async function BlogPost({ params }: { params: Promise<{ username:
   const { username, slug } = await params;
 
   const [user, theme] = await Promise.all([
-    prisma.user.findUnique({ where: { username } }),
+    prisma.user.findUnique({ where: { username }, select: { id: true } }),
     getThemeByUsername(username),
   ]);
   if (!user || !theme) notFound();

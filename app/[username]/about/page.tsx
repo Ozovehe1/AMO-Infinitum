@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
 export default async function AboutPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const [user, theme] = await Promise.all([
-    prisma.user.findUnique({ where: { username } }),
+    prisma.user.findUnique({ where: { username }, select: { id: true } }),
     getThemeByUsername(username),
   ]);
   if (!user || !theme) notFound();

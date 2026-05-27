@@ -36,7 +36,7 @@ export default async function UserBlogHome({
 
   const [theme, user] = await Promise.all([
     getThemeByUsername(username),
-    prisma.user.findUnique({ where: { username } }),
+    prisma.user.findUnique({ where: { username }, select: { id: true } }),
   ]);
 
   if (!theme || !user) notFound();

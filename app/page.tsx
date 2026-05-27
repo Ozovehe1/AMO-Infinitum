@@ -10,7 +10,10 @@ export default async function PlatformLanding() {
     prisma.post.count({ where: { published: true, user: { emailVerified: true, onboarded: true } } }),
     prisma.user.findMany({
       where: { emailVerified: true, onboarded: true },
-      include: { settings: { where: { key: { in: ["cover_image", "site_name", "site_tagline"] } } } },
+      select: {
+        username: true,
+        settings: { where: { key: { in: ["cover_image", "site_name", "site_tagline"] } } },
+      },
       orderBy: { createdAt: "asc" },
     }),
   ]);

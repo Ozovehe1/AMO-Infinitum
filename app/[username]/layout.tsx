@@ -33,7 +33,7 @@ export default async function UserLayout({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-  const user = await prisma.user.findUnique({ where: { username } });
+  const user = await prisma.user.findUnique({ where: { username }, select: { id: true } });
   if (!user) notFound();
 
   const theme = await getTheme(user.id);

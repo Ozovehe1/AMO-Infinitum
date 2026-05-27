@@ -6,7 +6,10 @@ export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
   if (!token) return NextResponse.redirect(new URL("/register?error=invalid", req.url));
 
-  const user = await prisma.user.findUnique({ where: { verifyToken: token } });
+  const user = await prisma.user.findUnique({
+    where: { verifyToken: token },
+    select: { id: true, username: true, role: true, onboarded: true },
+  });
   if (!user) return NextResponse.redirect(new URL("/register?error=invalid", req.url));
 
   await prisma.user.update({
