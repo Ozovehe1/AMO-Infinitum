@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
+import { requirePremium } from "@/lib/plan";
 import {
   subMonths, subWeeks, subDays,
   startOfMonth, startOfWeek, startOfDay,
@@ -59,6 +60,10 @@ function buildBuckets(granularity: Granularity, monthCount: number): Record<stri
 export async function GET(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try { await requirePremium(session.userId); } catch {
+    return NextResponse.json({ error: "PREMIUM_REQUIRED" }, { status: 403 });
+  }
 
   const { userId } = session;
   const range = (req.nextUrl.searchParams.get("range") || "3m") as Range;

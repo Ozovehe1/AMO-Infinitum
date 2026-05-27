@@ -2,22 +2,31 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "./AdminGuard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AdminNav() {
   const pathname = usePathname();
   const { logout, username } = useAuth();
   const [open, setOpen] = useState(false);
+  const [plan, setPlan] = useState<"free" | "premium" | null>(null);
   const base = `/${username}/inkwell`;
+
+  useEffect(() => {
+    fetch("/api/billing/status")
+      .then(r => r.json())
+      .then(d => setPlan(d.plan))
+      .catch(() => setPlan("free"));
+  }, []);
 
   const links = [
     { href: base, label: "Dashboard", icon: "⌂" },
-    { href: `${base}/analytics`, label: "Analytics", icon: "◎" },
+    { href: `${base}/analytics`, label: "Analytics", icon: "◎", premiumOnly: true },
     { href: `${base}/posts/new`, label: "New Post", icon: "✎" },
     { href: `${base}/posts`, label: "All Posts", icon: "≡" },
     { href: `${base}/categories`, label: "Categories", icon: "◈" },
     { href: `${base}/about`, label: "About Page", icon: "✦" },
     { href: `${base}/settings`, label: "Settings", icon: "⚙" },
+    { href: `${base}/billing`, label: "Billing", icon: "◇" },
   ];
 
   const NavContent = () => (
@@ -33,6 +42,7 @@ export default function AdminNav() {
       <nav style={{ flex: 1, padding: "1rem 0.75rem" }}>
         {links.map(l => {
           const active = l.href === base ? pathname === base : pathname.startsWith(l.href);
+          const locked = (l as { premiumOnly?: boolean }).premiumOnly && plan === "free";
           return (
             <Link key={l.href} href={l.href} onClick={() => setOpen(false)} style={{
               display: "flex", alignItems: "center", gap: "0.625rem",
@@ -45,10 +55,27 @@ export default function AdminNav() {
             }}>
               <span style={{ fontSize: "1.1rem" }}>{l.icon}</span>
               {l.label}
+              {locked && (
+                <span style={{ marginLeft: "auto", fontSize: "0.6rem", color: "var(--admin-accent)", opacity: 0.6, letterSpacing: "0.06em", fontFamily: "Inter, sans-serif" }}>✦</span>
+              )}
             </Link>
           );
         })}
       </nav>
+
+      {/* Mature upgrade card — free users only, pinned above footer */}
+      {plan === "free" && (
+        <div style={{ margin: "0 0.75rem 0.75rem", padding: "0.875rem 1rem", borderRadius: 6, background: "rgba(200,169,126,0.06)", border: "1px solid rgba(200,169,126,0.15)" }}>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.82rem", color: "var(--admin-accent)", margin: "0 0 0.3rem", letterSpacing: "0.02em" }}>✦ Premium</p>
+          <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.75rem", fontStyle: "italic", color: "var(--admin-sidebar-muted)", margin: "0 0 0.7rem", lineHeight: 1.5 }}>
+            AI writing, audio, analytics & custom theme.
+          </p>
+          <Link href={`${base}/billing`} onClick={() => setOpen(false)} style={{ fontFamily: "Inter, sans-serif", fontSize: "0.72rem", color: "var(--admin-accent)", textDecoration: "none", letterSpacing: "0.06em" }}>
+            $9 / month → Upgrade
+          </Link>
+        </div>
+      )}
+
       <div style={{ padding: "1rem 0.75rem", borderTop: "1px solid rgba(255,255,255,0.09)" }}>
         <Link href={`/${username}`} target="_blank" onClick={() => setOpen(false)} style={{ display: "block", color: "var(--admin-sidebar-muted)", textDecoration: "none", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", padding: "0.5rem 0.875rem", marginBottom: "0.25rem" }}>
           ↗ View Blog

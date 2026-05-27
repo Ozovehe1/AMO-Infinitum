@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import AdminNav from "@/components/AdminNav";
+import UpgradePrompt from "@/components/UpgradePrompt";
 import { useParams } from "next/navigation";
 
 type Range = "1m" | "3m" | "6m" | "12m";
@@ -456,6 +457,7 @@ export default function AnalyticsPage() {
   const [range, setRange] = useState<Range>("1m");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("views");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -464,6 +466,25 @@ export default function AnalyticsPage() {
   const PAGE_SIZE = 20;
 
   useEffect(() => {
+    // Check plan first
+    fetch("/api/billing/status")
+      .then(r => r.json())
+      .then(d => {
+        setIsPremium(d.plan === "premium");
+        if (d.plan !== "premium") { setLoading(false); return; }
+        return fetch(`/api/analytics?range=${range}`)
+          .then(r => r.json())
+          .then(d => {
+            setData(d);
+            setLoading(false);
+            setUpdatedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+          });
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (isPremium === false || isPremium === null) return;
     setLoading(true);
     fetch(`/api/analytics?range=${range}`)
       .then(r => r.json())
@@ -473,7 +494,7 @@ export default function AnalyticsPage() {
         setUpdatedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
       })
       .catch(() => setLoading(false));
-  }, [range]);
+  }, [range, isPremium]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -526,6 +547,34 @@ export default function AnalyticsPage() {
 
   const sparkSubs = data ? Object.values(data.subscribersByMonth) : [];
   const sparkPosts = data ? Object.values(data.postsByMonth) : [];
+
+  if (isPremium === false) {
+    return (
+      <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>
+        <AdminNav />
+        <main className="admin-main" style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ maxWidth: 960 }}>
+            <p style={{ color: "var(--admin-sidebar-muted)", fontFamily: "Inter, sans-serif", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.5rem" }}>Analytics</p>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.6rem", color: "var(--admin-primary)", margin: "0 0 2rem", fontWeight: 600 }}>Analytics</h1>
+            <div style={{ position: "relative", minHeight: 320, borderRadius: 8, overflow: "hidden", border: "1px solid var(--admin-primary-border)" }}>
+              {/* Blurred preview */}
+              <div style={{ padding: "2rem", filter: "blur(6px)", opacity: 0.4, pointerEvents: "none", userSelect: "none" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "1.5rem" }}>
+                  {["Subscribers", "Posts", "Views", "New this period"].map(l => (
+                    <div key={l} style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.25rem" }}>
+                      <p style={{ margin: "0 0 0.5rem", fontSize: "0.7rem", fontFamily: "Inter, sans-serif", color: "var(--admin-muted)" }}>{l}</p>
+                      <p style={{ margin: 0, fontSize: "1.75rem", fontFamily: "'Playfair Display', serif", color: "var(--admin-primary)" }}>—</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <UpgradePrompt feature="Analytics Dashboard" description="Subscriber growth, post views, and engagement charts — all in one place." />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--admin-bg)" }}>

@@ -8,15 +8,22 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  email          String   @unique
-  username       String   @unique
-  passwordHash   String
-  role           String   @default("user")
-  onboarded      Boolean  @default(false)
-  emailVerified  Boolean  @default(false)
-  verifyToken    String?  @unique
-  createdAt      DateTime @default(now())
+  id                   Int       @id @default(autoincrement())
+  email                String    @unique
+  username             String    @unique
+  passwordHash         String
+  role                 String    @default("user")
+  onboarded            Boolean   @default(false)
+  emailVerified        Boolean   @default(false)
+  verifyToken          String?   @unique
+  createdAt            DateTime  @default(now())
+
+  // Subscription
+  plan                 String    @default("free")    // "free" | "premium"
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?
+  subscriptionStatus   String?   // "active" | "trialing" | "past_due" | "canceled"
+  subscriptionEndsAt   DateTime?
 
   posts       Post[]
   categories  Category[]

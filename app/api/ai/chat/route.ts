@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { requirePremium } from "@/lib/plan";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Stream } from "@anthropic-ai/sdk/streaming";
 
@@ -18,6 +19,10 @@ function stripHtml(html: string): string {
 export async function POST(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try { await requirePremium(session.userId); } catch {
+    return NextResponse.json({ error: "PREMIUM_REQUIRED" }, { status: 403 });
+  }
 
   const { messages, title, content } = await req.json();
 

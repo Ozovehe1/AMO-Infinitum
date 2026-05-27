@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { getUserPlan } from "@/lib/plan";
 import { revalidatePath } from "next/cache";
+
+const PREMIUM_KEYS = ["color_primary", "color_accent", "color_bg", "font_heading", "font_body"];
 
 const DEFAULTS: Record<string, string> = {
   site_name: "My Blog",
@@ -50,6 +53,15 @@ export async function PUT(req: NextRequest) {
 
   const { userId, username } = session;
   const updates: Record<string, string> = await req.json();
+
+  // Gate premium-only settings for free users
+  const premiumKeysInUpdate = Object.keys(updates).filter(k => PREMIUM_KEYS.includes(k));
+  if (premiumKeysInUpdate.length > 0) {
+    const plan = await getUserPlan(userId);
+    if (plan !== "premium") {
+      return NextResponse.json({ error: "PREMIUM_REQUIRED", keys: premiumKeysInUpdate }, { status: 403 });
+    }
+  }
 
   await Promise.all(
     Object.entries(updates).map(([key, value]) =>

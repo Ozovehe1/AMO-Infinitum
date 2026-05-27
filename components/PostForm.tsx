@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Editor as TiptapEditorType } from "@tiptap/core";
 import { makePostcardBlob } from "@/lib/postcard";
 import { firstSentence } from "@/lib/utils";
+import UpgradePrompt from "./UpgradePrompt";
 function timeSince(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
   if (s < 10) return "just now";
@@ -95,6 +96,12 @@ export default function PostForm({ post }: { post?: PostData }) {
   const [mobileUrlValue, setMobileUrlValue] = useState("");
   const [deleting,       setDeleting]       = useState(false);
   const [publishedSlug,  setPublishedSlug]  = useState<string | null>(null);
+
+  // Plan / billing
+  const [userPlan,     setUserPlan]     = useState<"free" | "premium" | null>(null);
+  useEffect(() => {
+    fetch("/api/billing/status").then(r => r.json()).then(d => setUserPlan(d.plan)).catch(() => setUserPlan("free"));
+  }, []);
 
   // AI chat state
   const [aiOpen,       setAiOpen]       = useState(false);
@@ -967,8 +974,25 @@ export default function PostForm({ post }: { post?: PostData }) {
                 </div>
               </div>
               {/* Body */}
-              <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-                {aiView === "history" ? (
+              <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem", position: "relative" }}>
+                {userPlan === "free" ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", padding: "1rem" }}>
+                    <div style={{ textAlign: "center" }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "0.75rem" }}>
+                        <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "var(--admin-bg-card)", margin: "0 0 0.5rem" }}>AI Writing Assistant</p>
+                      <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.78rem", fontStyle: "italic", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem" }}>Premium feature</p>
+                      <button onClick={async () => {
+                        const res = await fetch("/api/billing/checkout", { method: "POST" });
+                        const d = await res.json();
+                        if (d.url) window.location.href = d.url;
+                      }} style={{ background: "var(--admin-accent)", color: "var(--admin-primary)", border: "none", borderRadius: 3, padding: "0.6rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer" }}>
+                        Start free trial
+                      </button>
+                    </div>
+                  </div>
+                ) : aiView === "history" ? (
                   <AiHistoryView sessions={aiSessions} onResume={resumeSession} onDelete={deleteSession} />
                 ) : (
                   <>
@@ -1094,7 +1118,24 @@ export default function PostForm({ post }: { post?: PostData }) {
           </div>
           {/* Body */}
           <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-            {aiView === "history" ? (
+            {userPlan === "free" ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", padding: "1rem" }}>
+                <div style={{ textAlign: "center" }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "0.75rem" }}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.95rem", color: "var(--admin-bg-card)", margin: "0 0 0.5rem" }}>AI Writing Assistant</p>
+                  <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.78rem", fontStyle: "italic", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem" }}>Premium feature</p>
+                  <button onClick={async () => {
+                    const res = await fetch("/api/billing/checkout", { method: "POST" });
+                    const d = await res.json();
+                    if (d.url) window.location.href = d.url;
+                  }} style={{ background: "var(--admin-accent)", color: "var(--admin-primary)", border: "none", borderRadius: 3, padding: "0.6rem 1.25rem", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer" }}>
+                    Start free trial
+                  </button>
+                </div>
+              </div>
+            ) : aiView === "history" ? (
               <AiHistoryView sessions={aiSessions} onResume={resumeSession} onDelete={deleteSession} />
             ) : (
               <>
@@ -1115,8 +1156,8 @@ export default function PostForm({ post }: { post?: PostData }) {
               </>
             )}
           </div>
-          {/* Input — only in chat view */}
-          {aiView === "chat" && <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />}
+          {/* Input — only in chat view and for premium users */}
+          {aiView === "chat" && userPlan !== "free" && <AiInput value={aiInput} onChange={setAiInput} onSend={sendAiMessage} loading={aiLoading} />}
         </div>
       )}
 
@@ -1208,6 +1249,28 @@ export default function PostForm({ post }: { post?: PostData }) {
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-sidebar-muted)" }}>Send email to subscribers on publish</span>
                   </div>
                 </label>
+              )}
+
+              {/* TTS awareness for free users — shown at publish step */}
+              {userPlan === "free" && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", padding: "0.75rem", borderRadius: 8, background: "color-mix(in srgb, var(--admin-accent) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--admin-accent) 20%, transparent)" }}>
+                  <span style={{ fontSize: "1rem", flexShrink: 0 }}>🎧</span>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-primary)", display: "block", marginBottom: "0.2rem" }}>
+                      Audio narration is a Premium feature.
+                    </span>
+                    <span style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.75rem", fontStyle: "italic", color: "var(--admin-muted)" }}>
+                      Subscribers get an auto-generated audio version of every post.{" "}
+                      <button onClick={async () => {
+                        const res = await fetch("/api/billing/checkout", { method: "POST" });
+                        const d = await res.json();
+                        if (d.url) window.location.href = d.url;
+                      }} style={{ background: "none", border: "none", color: "var(--admin-accent)", cursor: "pointer", fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "0.75rem", fontStyle: "italic", padding: 0 }}>
+                        Upgrade →
+                      </button>
+                    </span>
+                  </div>
+                </div>
               )}
 
               {/* Publish actions */}

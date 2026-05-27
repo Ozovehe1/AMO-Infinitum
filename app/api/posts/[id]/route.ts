@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
+import { getUserPlan } from "@/lib/plan";
 import { slugify, estimateReadingTime } from "@/lib/utils";
 import { tasks } from "@trigger.dev/sdk/v3";
 import { sendNewPostNotifications } from "@/lib/email";
@@ -115,10 +116,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
   revalidatePath(`/${session.username}/blog/${post.slug}`);
 
   if (post.published && process.env.TRIGGER_SECRET_KEY) {
-    await prisma.siteSettings.deleteMany({ where: { userId, key: `audio_${post.slug}` } });
-    try {
-      await tasks.trigger("generate-post-audio", { userId, slug: post.slug, title: post.title, content: post.content });
-    } catch { /* Trigger.dev not configured */ }
+    // TTS is Premium-only — skip silently for free users
+    const plan = await getUserPlan(userId);
+    if (plan === "premium") {
+      await prisma.siteSettings.deleteMany({ where: { userId, key: `audio_${post.slug}` } });
+      try {
+        await tasks.trigger("generate-post-audio", { userId, slug: post.slug, title: post.title, content: post.content });
+      } catch { /* Trigger.dev not configured */ }
+    }
   }
 
   if (wasPublished && shouldNotify !== false) {

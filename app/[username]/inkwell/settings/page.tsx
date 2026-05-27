@@ -1,5 +1,6 @@
 "use client";
 import AdminNav from "@/components/AdminNav";
+import UpgradePrompt from "@/components/UpgradePrompt";
 import { useEffect, useState } from "react";
 
 const PRESET_COLORS = {
@@ -22,10 +23,15 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings").then(r => r.json()).then(data => {
+    Promise.all([
+      fetch("/api/settings").then(r => r.json()),
+      fetch("/api/billing/status").then(r => r.json()),
+    ]).then(([data, billing]) => {
       setForm(f => ({ ...f, ...Object.fromEntries(Object.keys(f).map(k => [k, data[k] ?? f[k as keyof typeof f]])) }));
+      setIsPremium(billing.plan === "premium");
       setLoading(false);
     });
   }, []);
@@ -87,13 +93,16 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Colors */}
-            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem" }}>Colors</h3>
+            {/* Colors — Premium only */}
+            <div style={{ position: "relative", background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                Colors
+                {!isPremium && <span style={{ fontSize: "0.65rem", color: "var(--admin-accent)", fontFamily: "Inter, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>✦ Premium</span>}
+              </h3>
               {(["primary", "accent", "bg"] as const).map(type => {
                 const key = `color_${type}` as keyof typeof form;
                 return (
-                  <div key={type} style={{ marginBottom: "1rem" }}>
+                  <div key={type} style={{ marginBottom: "1rem", opacity: isPremium ? 1 : 0.45, pointerEvents: isPremium ? "auto" : "none" }}>
                     <label style={labelStyle}>{type.charAt(0).toUpperCase() + type.slice(1)} Color</label>
                     <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
                       {PRESET_COLORS[type].map(c => (
@@ -105,15 +114,21 @@ export default function SettingsPage() {
                   </div>
                 );
               })}
+              {!isPremium && (
+                <UpgradePrompt feature="Custom Colors" description="Unlock full color control for your blog's visual identity." inline />
+              )}
             </div>
 
-            {/* Typography */}
-            <div style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 0.25rem" }}>Typography</h3>
+            {/* Typography — Premium only */}
+            <div style={{ position: "relative", background: "var(--admin-bg-card)", border: "1px solid var(--admin-primary-border)", borderRadius: 8, padding: "1.5rem" }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "var(--admin-primary)", margin: "0 0 0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                Typography
+                {!isPremium && <span style={{ fontSize: "0.65rem", color: "var(--admin-accent)", fontFamily: "Inter, sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>✦ Premium</span>}
+              </h3>
               <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.78rem", color: "var(--admin-sidebar-muted)", margin: "0 0 1rem", lineHeight: 1.5 }}>
                 Choose fonts for your blog&apos;s headings and body text.
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", opacity: isPremium ? 1 : 0.45, pointerEvents: isPremium ? "auto" : "none" }}>
                 {([["font_heading", "Heading Font", HEADING_FONTS], ["font_body", "Body Font", BODY_FONTS]] as const).map(([key, label, opts]) => (
                   <div key={key}>
                     <label style={labelStyle}>{label}</label>
@@ -145,6 +160,11 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
+              {!isPremium && (
+                <div style={{ marginTop: "1rem" }}>
+                  <UpgradePrompt feature="Custom Fonts" description="Choose heading and body fonts that match your writing style." inline />
+                </div>
+              )}
             </div>
 
             {/* Footer & Social */}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
+import { getUserPlan } from "@/lib/plan";
 import { slugify, estimateReadingTime } from "@/lib/utils";
 import { tasks } from "@trigger.dev/sdk/v3";
 import { sendNewPostNotifications } from "@/lib/email";
@@ -128,7 +129,11 @@ export async function POST(req: NextRequest) {
   });
 
   if (post.published) {
-    await triggerAudio(userId, post.slug, post.title, post.content);
+    // TTS is Premium-only — skip silently for free users
+    const plan = await getUserPlan(userId);
+    if (plan === "premium") {
+      await triggerAudio(userId, post.slug, post.title, post.content);
+    }
     if (shouldNotify !== false) {
       after(() => notifySubscribers(userId, post.title, post.slug, post.excerpt || "", post.coverImage, post.content));
     }
