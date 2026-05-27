@@ -13,22 +13,21 @@ export async function GET() {
       plan: true,
       subscriptionStatus: true,
       subscriptionEndsAt: true,
-      paystackCustomerCode: true,
-      paystackSubscriptionCode: true,
-      paystackEmailToken: true,
+      lsCustomerId: true,
+      lsSubscriptionId: true,
     },
   });
 
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // getUserPlan also handles owner bypass
   const plan = await getUserPlan(session.userId);
 
   return NextResponse.json({
-    plan,                                                    // "free" | "premium"
-    subscriptionStatus: user.subscriptionStatus,             // Paystack status string
+    plan,                                               // "free" | "premium" (owner always "premium")
+    subscriptionStatus: user.subscriptionStatus,
     subscriptionEndsAt: user.subscriptionEndsAt,
-    hasEverSubscribed: !!user.paystackSubscriptionCode,      // trial eligibility
-    hasPaystackCustomer: !!user.paystackCustomerCode,
-    hasEmailToken: !!user.paystackEmailToken,
+    hasEverSubscribed:  !!user.lsSubscriptionId,       // trial eligibility
+    hasPortal:          !!user.lsSubscriptionId,       // can open customer portal
   });
 }

@@ -18,12 +18,11 @@ model User {
   verifyToken          String?   @unique
   createdAt            DateTime  @default(now())
 
-  // Subscription
+  // Subscription (Lemon Squeezy)
   plan                    String    @default("free")    // "free" | "premium"
-  paystackCustomerCode    String?   @unique
-  paystackSubscriptionCode String?
-  paystackEmailToken      String?   // for subscription management link
-  subscriptionStatus      String?   // "active" | "non-renewing" | "past_due" | "cancelled"
+  lsCustomerId            String?                        // Lemon Squeezy customer ID
+  lsSubscriptionId        String?                        // Lemon Squeezy subscription ID (for portal)
+  subscriptionStatus      String?   // "trialing" | "active" | "non-renewing" | "past_due" | "cancelled"
   subscriptionEndsAt      DateTime?
 
   posts       Post[]

@@ -7,7 +7,7 @@ interface BillingStatus {
   subscriptionStatus: string | null;
   subscriptionEndsAt: string | null;
   hasEverSubscribed: boolean;
-  hasEmailToken: boolean;
+  hasPortal: boolean;
 }
 
 const PREMIUM_FEATURES = [
@@ -53,7 +53,7 @@ export default function BillingPage() {
   const isPastDue    = status?.subscriptionStatus === "past_due";
   const isCancelled  = status?.subscriptionStatus === "cancelled";
   const isFirstTime  = !status?.hasEverSubscribed;
-  const canManage    = status?.hasEmailToken;
+  const canManage    = status?.hasPortal;
   const endsAt       = status?.subscriptionEndsAt ? new Date(status.subscriptionEndsAt) : null;
 
   const ctaLabel = (): string => {
@@ -170,7 +170,7 @@ export default function BillingPage() {
                   </button>
                   {isFirstTime && (
                     <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-muted)", margin: 0 }}>
-                      Card required to start — first 30 days are completely free, then $9/mo via Paystack · Cancel anytime
+                      Card required to start — first 30 days are completely free, then $9/mo · Cancel anytime via Lemon Squeezy
                     </p>
                   )}
                 </div>
@@ -192,8 +192,8 @@ export default function BillingPage() {
                   )}
                   <p style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "var(--admin-muted)", margin: 0 }}>
                     {isTrialing
-                      ? "You're in your free trial — your card will be charged $9/mo after 30 days. Cancel anytime from your Paystack dashboard."
-                      : "Update your card, pause, or cancel — all from your Paystack subscription dashboard."}
+                      ? "You're in your free trial — your card will be charged $9/mo after 30 days. Cancel anytime from your billing portal."
+                      : "Update your card, pause, or cancel — all from your Lemon Squeezy billing portal."}
                   </p>
                 </div>
               )}

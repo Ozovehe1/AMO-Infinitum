@@ -4,17 +4,27 @@ export type Plan = "free" | "premium";
 
 /**
  * Returns the user's current effective plan.
- * Only "active" and "non-renewing" Paystack states count as premium.
- * "non-renewing" = still paid up, just not going to renew — still Premium until period ends.
+ *
+ * Special cases:
+ * - role === "owner" → always Premium (owner account is exempt from billing)
+ *
+ * Lemon Squeezy subscription states that count as Premium:
+ * - "active"       → paid and in good standing
+ * - "trialing"     → within the 30-day free trial
+ * - "non-renewing" → cancelled but still paid up until subscriptionEndsAt
  */
 export async function getUserPlan(userId: number): Promise<Plan> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { plan: true, subscriptionStatus: true },
+      select: { plan: true, subscriptionStatus: true, role: true },
     });
     if (!user) return "free";
-    const paidStates = ["active", "non-renewing", "trialing"];
+
+    // Owner account is always Premium — no billing required
+    if (user.role === "owner") return "premium";
+
+    const paidStates = ["active", "trialing", "non-renewing"];
     if (user.plan === "premium" && user.subscriptionStatus && paidStates.includes(user.subscriptionStatus)) {
       return "premium";
     }
